@@ -11,6 +11,7 @@ import { MatterDetail } from '@/components/dashboard/MatterDetail';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { Matter } from '@/types/matter';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 import { 
   FileText, 
   Clock, 
@@ -24,7 +25,6 @@ import {
 
 const Index = () => {
   const { 
-    matters, 
     filteredMatters, 
     filters, 
     setFilters, 
@@ -32,7 +32,10 @@ const Index = () => {
     addMatter,
     updateMatter,
     deleteMatter,
-    getExistingCaseIds
+    getExistingCaseIds,
+    loading,
+    refreshMatters,
+    matters
   } = useMatters();
 
   const { toast } = useToast();
@@ -56,36 +59,64 @@ const Index = () => {
     setDetailOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    deleteMatter(id);
-    toast({
-      title: 'Matter Deleted',
-      description: 'The matter has been removed from tracking.',
-    });
-  };
-
-  const handleFormSubmit = (data: Omit<Matter, 'id'>) => {
-    if (editingMatter) {
-      updateMatter(editingMatter.id, data);
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteMatter(id);
       toast({
-        title: 'Matter Updated',
-        description: 'The matter has been successfully updated.',
+        title: 'Matter Deleted',
+        description: 'The matter has been removed from tracking.',
       });
-    } else {
-      addMatter(data);
+    } catch {
       toast({
-        title: 'Matter Logged',
-        description: 'New matter has been added to tracking.',
+        title: 'Error',
+        description: 'Failed to delete matter.',
+        variant: 'destructive',
       });
     }
   };
 
-  const handleRefresh = () => {
+  const handleFormSubmit = async (data: Omit<Matter, 'id'>) => {
+    try {
+      if (editingMatter) {
+        await updateMatter(editingMatter.id, data);
+        toast({
+          title: 'Matter Updated',
+          description: 'The matter has been successfully updated.',
+        });
+      } else {
+        await addMatter(data);
+        toast({
+          title: 'Matter Logged',
+          description: 'New matter has been added to tracking.',
+        });
+      }
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Failed to save matter. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRefresh = async () => {
+    await refreshMatters();
     toast({
       title: 'Dashboard Refreshed',
       description: 'All data has been synchronized.',
     });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">

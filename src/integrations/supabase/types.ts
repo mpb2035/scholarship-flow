@@ -14,7 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      matters: {
+        Row: {
+          assigned_to: string | null
+          case_id: string
+          case_title: string
+          case_type: string
+          created_at: string
+          dsm_submitted_date: string
+          id: string
+          overall_sla_days: number
+          overall_status: string
+          priority: string
+          query_issued_date: string | null
+          query_response_date: string | null
+          query_status: string
+          remarks: string | null
+          signed_date: string | null
+          sla_status: string
+          suthe_received_date: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          case_id: string
+          case_title: string
+          case_type: string
+          created_at?: string
+          dsm_submitted_date: string
+          id?: string
+          overall_sla_days?: number
+          overall_status?: string
+          priority?: string
+          query_issued_date?: string | null
+          query_response_date?: string | null
+          query_status?: string
+          remarks?: string | null
+          signed_date?: string | null
+          sla_status?: string
+          suthe_received_date: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          case_id?: string
+          case_title?: string
+          case_type?: string
+          created_at?: string
+          dsm_submitted_date?: string
+          id?: string
+          overall_sla_days?: number
+          overall_status?: string
+          priority?: string
+          query_issued_date?: string | null
+          query_response_date?: string | null
+          query_status?: string
+          remarks?: string | null
+          signed_date?: string | null
+          sla_status?: string
+          suthe_received_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

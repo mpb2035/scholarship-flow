@@ -1,6 +1,7 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Matter, DashboardStats, OverallStatus, Priority, CaseType, SLAStatus } from '@/types/matter';
-import { initialMatters } from '@/data/sampleData';
+import { useToast } from '@/hooks/use-toast';
 
 export interface Filters {
   status: OverallStatus | 'all';
@@ -10,8 +11,63 @@ export interface Filters {
   search: string;
 }
 
+interface DbMatter {
+  id: string;
+  case_id: string;
+  case_title: string;
+  case_type: string;
+  priority: string;
+  dsm_submitted_date: string;
+  suthe_received_date: string;
+  query_issued_date: string | null;
+  query_response_date: string | null;
+  signed_date: string | null;
+  query_status: string;
+  overall_status: string;
+  overall_sla_days: number;
+  sla_status: string;
+  remarks: string | null;
+  assigned_to: string | null;
+}
+
+const calculateDaysInProcess = (submittedDate: string, signedDate?: string | null): number => {
+  const submitted = new Date(submittedDate);
+  const endDate = signedDate ? new Date(signedDate) : new Date();
+  return Math.floor((endDate.getTime() - submitted.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+const calculateQueryDaysPending = (queryIssuedDate?: string | null, queryResponseDate?: string | null): number => {
+  if (!queryIssuedDate || queryResponseDate) return 0;
+  const issued = new Date(queryIssuedDate);
+  const today = new Date();
+  return Math.floor((today.getTime() - issued.getTime()) / (1000 * 60 * 60 * 24));
+};
+
+const mapDbToMatter = (db: DbMatter): Matter => ({
+  id: db.id,
+  caseId: db.case_id,
+  caseTitle: db.case_title,
+  caseType: db.case_type as CaseType,
+  priority: db.priority as Priority,
+  dsmSubmittedDate: db.dsm_submitted_date,
+  sutheReceivedDate: db.suthe_received_date,
+  queryIssuedDate: db.query_issued_date || undefined,
+  queryResponseDate: db.query_response_date || undefined,
+  signedDate: db.signed_date || undefined,
+  queryStatus: db.query_status as Matter['queryStatus'],
+  overallStatus: db.overall_status as OverallStatus,
+  daysInProcess: calculateDaysInProcess(db.dsm_submitted_date, db.signed_date),
+  queryDaysPending: calculateQueryDaysPending(db.query_issued_date, db.query_response_date),
+  overallSlaDays: db.overall_sla_days,
+  slaStatus: db.sla_status as SLAStatus,
+  remarks: db.remarks || undefined,
+  assignedTo: db.assigned_to || undefined,
+});
+
 export function useMatters() {
-  const [matters, setMatters] = useState<Matter[]>(initialMatters);
+  const [matters, setMatters] = useState<Matter[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
   const [filters, setFilters] = useState<Filters>({
     status: 'all',
     priority: 'all',
@@ -19,6 +75,47 @@ export function useMatters() {
     slaStatus: 'all',
     search: '',
   });
+
+  // Fetch matters from database
+  const fetchMatters = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('matters')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching matters:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load matters from database.',
+        variant: 'destructive',
+      });
+    } else {
+      setMatters((data || []).map(mapDbToMatter));
+    }
+    setLoading(false);
+  }, [toast]);
+
+  // Subscribe to realtime changes
+  useEffect(() => {
+    fetchMatters();
+
+    const channel = supabase
+      .channel('matters-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'matters' },
+        () => {
+          fetchMatters();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchMatters]);
 
   const filteredMatters = useMemo(() => {
     return matters.filter((matter) => {
@@ -64,21 +161,74 @@ export function useMatters() {
     };
   }, [matters]);
 
-  const addMatter = useCallback((matter: Omit<Matter, 'id'>) => {
-    const newMatter: Matter = {
-      ...matter,
-      id: Date.now().toString(),
-    };
-    setMatters(prev => [...prev, newMatter]);
-    return newMatter;
+  const addMatter = useCallback(async (matter: Omit<Matter, 'id'>) => {
+    const { data, error } = await supabase
+      .from('matters')
+      .insert({
+        case_id: matter.caseId,
+        case_title: matter.caseTitle,
+        case_type: matter.caseType,
+        priority: matter.priority,
+        dsm_submitted_date: matter.dsmSubmittedDate,
+        suthe_received_date: matter.sutheReceivedDate,
+        query_issued_date: matter.queryIssuedDate || null,
+        query_response_date: matter.queryResponseDate || null,
+        signed_date: matter.signedDate || null,
+        query_status: matter.queryStatus,
+        overall_status: matter.overallStatus,
+        overall_sla_days: matter.overallSlaDays,
+        sla_status: matter.slaStatus,
+        remarks: matter.remarks || null,
+        assigned_to: matter.assignedTo || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding matter:', error);
+      throw error;
+    }
+    return data ? mapDbToMatter(data) : null;
   }, []);
 
-  const updateMatter = useCallback((id: string, updates: Partial<Matter>) => {
-    setMatters(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
+  const updateMatter = useCallback(async (id: string, updates: Partial<Matter>) => {
+    const dbUpdates: Record<string, unknown> = {};
+    if (updates.caseId !== undefined) dbUpdates.case_id = updates.caseId;
+    if (updates.caseTitle !== undefined) dbUpdates.case_title = updates.caseTitle;
+    if (updates.caseType !== undefined) dbUpdates.case_type = updates.caseType;
+    if (updates.priority !== undefined) dbUpdates.priority = updates.priority;
+    if (updates.dsmSubmittedDate !== undefined) dbUpdates.dsm_submitted_date = updates.dsmSubmittedDate;
+    if (updates.sutheReceivedDate !== undefined) dbUpdates.suthe_received_date = updates.sutheReceivedDate;
+    if (updates.queryIssuedDate !== undefined) dbUpdates.query_issued_date = updates.queryIssuedDate || null;
+    if (updates.queryResponseDate !== undefined) dbUpdates.query_response_date = updates.queryResponseDate || null;
+    if (updates.signedDate !== undefined) dbUpdates.signed_date = updates.signedDate || null;
+    if (updates.queryStatus !== undefined) dbUpdates.query_status = updates.queryStatus;
+    if (updates.overallStatus !== undefined) dbUpdates.overall_status = updates.overallStatus;
+    if (updates.overallSlaDays !== undefined) dbUpdates.overall_sla_days = updates.overallSlaDays;
+    if (updates.slaStatus !== undefined) dbUpdates.sla_status = updates.slaStatus;
+    if (updates.remarks !== undefined) dbUpdates.remarks = updates.remarks || null;
+
+    const { error } = await supabase
+      .from('matters')
+      .update(dbUpdates)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating matter:', error);
+      throw error;
+    }
   }, []);
 
-  const deleteMatter = useCallback((id: string) => {
-    setMatters(prev => prev.filter(m => m.id !== id));
+  const deleteMatter = useCallback(async (id: string) => {
+    const { error } = await supabase
+      .from('matters')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting matter:', error);
+      throw error;
+    }
   }, []);
 
   const getExistingCaseIds = useCallback(() => {
@@ -95,5 +245,7 @@ export function useMatters() {
     updateMatter,
     deleteMatter,
     getExistingCaseIds,
+    loading,
+    refreshMatters: fetchMatters,
   };
 }
