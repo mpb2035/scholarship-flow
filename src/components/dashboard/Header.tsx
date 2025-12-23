@@ -12,7 +12,7 @@ export function Header({ onAddNew, onRefresh }: HeaderProps) {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl md:text-4xl font-bold gold-text tracking-wide">
-            SUT HE OFFICE
+            SFZN WORK
           </h1>
           <p className="text-muted-foreground mt-1">
             Matter Tracking Dashboard
