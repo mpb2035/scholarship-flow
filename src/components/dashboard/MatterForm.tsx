@@ -388,7 +388,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
                 name="dsmSubmittedDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>DSM Submitted Date</FormLabel>
+                    <FormLabel>Submitted Date</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} className="bg-input border-border/50" />
                     </FormControl>
