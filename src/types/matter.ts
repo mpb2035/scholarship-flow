@@ -19,6 +19,15 @@ export type CaseType =
   | 'Budget Proposal'
   | 'Cross-Agency Project'
   | 'Scholarship Award'
+  | 'Extension Scholarship'
+  | 'Manpower Blueprint'
+  | 'Attachment Overseas'
+  | 'BPTV'
+  | 'TVET Scheme'
+  | 'HECAS'
+  | 'Greening Education Plan'
+  | 'SUSLR'
+  | 'MKPK'
   | 'Other';
 
 export type SLAStatus = 'Within SLA' | 'At Risk' | 'Critical' | 'Overdue' | 'Completed Overdue' | 'Completed';
