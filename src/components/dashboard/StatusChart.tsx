@@ -24,12 +24,11 @@ const STATUS_FILTER_MAP: Record<string, string> = {
 };
 
 export function StatusChart({ stats, onSegmentClick }: StatusChartProps) {
-  const data = [
+const data = [
     { name: 'Pending SUT HE', value: stats.pendingSutHe, color: COLORS.pending },
     { name: 'In Process', value: stats.inProcess, color: COLORS.inProcess },
     { name: 'Query Response', value: stats.returnedForQuery, color: COLORS.query },
     { name: 'Pending Higher Up', value: stats.pendingHigherUp, color: COLORS.approved },
-    { name: 'SLA Breached', value: stats.slaBreached, color: COLORS.overdue },
   ].filter(d => d.value > 0);
 
   const handleClick = (entry: { name: string }) => {
