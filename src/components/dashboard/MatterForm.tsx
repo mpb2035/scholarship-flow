@@ -84,8 +84,8 @@ const queryStatuses: QueryStatus[] = ['No Query', 'Query Issued', 'Query Resolve
 const overallStatuses: OverallStatus[] = [
   'Pending SUT HE Review',
   'In Process',
-  'DSM to Respond – SUT HE Query',
-  'DSM to Respond – Higher Up Query',
+  'Dept to Respond – SUT HE Query',
+  'Dept to Respond – Higher Up Query',
   'SUT HE Submitted to HU',
   'Pending Higher Up Approval',
   'Returned for Query',
@@ -176,9 +176,9 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
     let queryDaysPendingHigherUp = 0;
     if (data.queryIssuedDate && !data.queryResponseDate) {
       const queryDays = Math.floor((new Date().getTime() - new Date(data.queryIssuedDate).getTime()) / (1000 * 60 * 60 * 24));
-      if (data.overallStatus === 'DSM to Respond – SUT HE Query') {
+      if (data.overallStatus === 'Dept to Respond – SUT HE Query') {
         queryDaysPendingSutHe = queryDays;
-      } else if (data.overallStatus === 'DSM to Respond – Higher Up Query') {
+      } else if (data.overallStatus === 'Dept to Respond – Higher Up Query') {
         queryDaysPendingHigherUp = queryDays;
       }
     }

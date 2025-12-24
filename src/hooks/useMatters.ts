@@ -57,9 +57,9 @@ const calculateQueryDaysPending = (
   const today = new Date();
   const days = Math.floor((today.getTime() - issued.getTime()) / (1000 * 60 * 60 * 24));
   
-  if (overallStatus === 'DSM to Respond – SUT HE Query') {
+  if (overallStatus === 'Dept to Respond – SUT HE Query') {
     return { sutHe: days, higherUp: 0 };
-  } else if (overallStatus === 'DSM to Respond – Higher Up Query') {
+  } else if (overallStatus === 'Dept to Respond – Higher Up Query') {
     return { sutHe: 0, higherUp: days };
   }
   return { sutHe: 0, higherUp: 0 };
@@ -192,7 +192,7 @@ export function useMatters() {
       totalActive: active.length,
       inProcess: matters.filter(m => m.overallStatus === 'In Process').length,
       returnedForQuery: matters.filter(m => 
-        m.overallStatus.includes('DSM to Respond') || m.overallStatus === 'Returned for Query'
+        m.overallStatus.includes('Dept to Respond') || m.overallStatus === 'Returned for Query'
       ).length,
       approvedLast30Days: approved.filter(m => 
         m.signedDate && new Date(m.signedDate) >= thirtyDaysAgo
@@ -203,8 +203,8 @@ export function useMatters() {
         : 0,
       atRisk: matters.filter(m => m.slaStatus === 'At Risk' || m.slaStatus === 'Critical').length,
       pendingSutHe: matters.filter(m => m.overallStatus === 'Pending SUT HE Review').length,
-      dsmToRespondSutHe: matters.filter(m => m.overallStatus === 'DSM to Respond – SUT HE Query').length,
-      dsmToRespondHigherUp: matters.filter(m => m.overallStatus === 'DSM to Respond – Higher Up Query').length,
+      deptToRespondSutHe: matters.filter(m => m.overallStatus === 'Dept to Respond – SUT HE Query').length,
+      deptToRespondHigherUp: matters.filter(m => m.overallStatus === 'Dept to Respond – Higher Up Query').length,
       pendingHigherUp: matters.filter(m => m.overallStatus === 'Pending Higher Up Approval').length,
     };
   }, [matters]);

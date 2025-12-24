@@ -5,8 +5,8 @@ export type QueryStatus = 'No Query' | 'Query Issued' | 'Query Resolved';
 export type OverallStatus = 
   | 'Pending SUT HE Review'
   | 'In Process'
-  | 'DSM to Respond – SUT HE Query'
-  | 'DSM to Respond – Higher Up Query'
+  | 'Dept to Respond – SUT HE Query'
+  | 'Dept to Respond – Higher Up Query'
   | 'SUT HE Submitted to HU'
   | 'Pending Higher Up Approval'
   | 'Returned for Query'
@@ -75,7 +75,7 @@ export interface DashboardStats {
   avgDaysToApproval: number;
   atRisk: number;
   pendingSutHe: number;
-  dsmToRespondSutHe: number;
-  dsmToRespondHigherUp: number;
+  deptToRespondSutHe: number;
+  deptToRespondHigherUp: number;
   pendingHigherUp: number;
 }

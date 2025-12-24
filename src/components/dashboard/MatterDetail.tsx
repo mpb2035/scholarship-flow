@@ -94,7 +94,7 @@ export function MatterDetail({ open, onOpenChange, matter }: MatterDetailProps) 
                 <div className="flex items-center gap-3">
                   <Calendar className="h-4 w-4 text-primary" />
                   <div>
-                    <p className="text-xs text-muted-foreground">DSM Submitted</p>
+                    <p className="text-xs text-muted-foreground">Dept Submitted</p>
                     <p className="font-medium">{formatDate(matter.dsmSubmittedDate)}</p>
                   </div>
                 </div>

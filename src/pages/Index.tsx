@@ -27,7 +27,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 
-type KPIType = 'totalActive' | 'inProcess' | 'pendingReview' | 'dsmQuerySut' | 'dsmQueryHu' | 'higherUp' | 'slaBreached' | 'atRisk' | 'approved30d';
+type KPIType = 'totalActive' | 'inProcess' | 'pendingReview' | 'deptQuerySut' | 'deptQueryHu' | 'higherUp' | 'slaBreached' | 'atRisk' | 'approved30d';
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
@@ -69,8 +69,8 @@ const Index = () => {
       totalActive: matters.filter(m => !['Approved & Signed', 'Not Approved'].includes(m.overallStatus)),
       inProcess: matters.filter(m => m.overallStatus === 'In Process'),
       pendingReview: matters.filter(m => m.overallStatus === 'Pending SUT HE Review'),
-      dsmQuerySut: matters.filter(m => m.overallStatus === 'DSM to Respond – SUT HE Query'),
-      dsmQueryHu: matters.filter(m => m.overallStatus === 'DSM to Respond – Higher Up Query'),
+      deptQuerySut: matters.filter(m => m.overallStatus === 'Dept to Respond – SUT HE Query'),
+      deptQueryHu: matters.filter(m => m.overallStatus === 'Dept to Respond – Higher Up Query'),
       higherUp: matters.filter(m => m.overallStatus === 'Pending Higher Up Approval'),
       slaBreached: matters.filter(m => m.slaStatus === 'Overdue'),
       atRisk: matters.filter(m => m.slaStatus === 'At Risk' || m.slaStatus === 'Critical'),
@@ -82,8 +82,8 @@ const Index = () => {
     totalActive: 'Total Active Matters',
     inProcess: 'In Process Matters',
     pendingReview: 'Pending SUT HE Review',
-    dsmQuerySut: 'Dept to Respond – SUT HE Query',
-    dsmQueryHu: 'Dept to Respond – Higher Up Query',
+    deptQuerySut: 'Dept to Respond – SUT HE Query',
+    deptQueryHu: 'Dept to Respond – Higher Up Query',
     higherUp: 'Pending Higher Up Approval',
     slaBreached: 'SLA Breached Matters',
     atRisk: 'At Risk Matters',
@@ -217,19 +217,19 @@ const Index = () => {
           />
           <KPICard
             title="Dept Query (SUT)"
-            value={stats.dsmToRespondSutHe}
+            value={stats.deptToRespondSutHe}
             icon={MessageSquare}
             variant="warning"
             delay={150}
-            onClick={() => handleKPIClick('dsmQuerySut')}
+            onClick={() => handleKPIClick('deptQuerySut')}
           />
           <KPICard
             title="Dept Query (HU)"
-            value={stats.dsmToRespondHigherUp}
+            value={stats.deptToRespondHigherUp}
             icon={Send}
             variant="warning"
             delay={200}
-            onClick={() => handleKPIClick('dsmQueryHu')}
+            onClick={() => handleKPIClick('deptQueryHu')}
           />
           <KPICard
             title="Higher Up"
