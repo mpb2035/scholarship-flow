@@ -321,8 +321,15 @@ export function MatterDetail({ open, onOpenChange, matter, onEdit }: MatterDetai
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmExternalLink}>
-              Continue
+            <AlertDialogAction asChild>
+              <a 
+                href={matter.externalLink} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                onClick={() => setShowExternalLinkConfirm(false)}
+              >
+                Continue
+              </a>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
