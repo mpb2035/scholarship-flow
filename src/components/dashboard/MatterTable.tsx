@@ -16,8 +16,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Edit2, Trash2, MoreVertical, Eye, ArrowUpDown } from 'lucide-react';
+import { Edit2, Trash2, MoreVertical, Eye, ArrowUpDown, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface MatterTableProps {
   matters: Matter[];
@@ -32,6 +33,28 @@ type SortDirection = 'asc' | 'desc';
 export function MatterTable({ matters, onEdit, onDelete, onView }: MatterTableProps) {
   const [sortField, setSortField] = useState<SortField>('daysInProcess');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const { toast } = useToast();
+
+  const handleCopyRow = async (e: React.MouseEvent, matter: Matter) => {
+    e.stopPropagation();
+    const copyText = `${matter.caseId} - ${matter.caseTitle} - ${matter.caseType} - Priority: ${matter.priority} - Status: ${matter.overallStatus} - Days: ${matter.daysInProcess} - SLA: ${matter.slaStatus}`;
+    
+    try {
+      await navigator.clipboard.writeText(copyText);
+      toast({
+        title: "Copied!",
+        description: "Row details copied to clipboard",
+        duration: 2000,
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy to clipboard",
+        variant: "destructive",
+        duration: 2000,
+      });
+    }
+  };
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -143,8 +166,19 @@ export function MatterTable({ matters, onEdit, onDelete, onView }: MatterTablePr
                 style={{ animationDelay: `${index * 50}ms` }}
                 onClick={() => onView(matter)}
               >
-                <TableCell className="font-mono text-sm text-primary hover:underline">
-                  {matter.caseId}
+                <TableCell className="font-mono text-sm text-primary">
+                  <div className="flex items-center gap-1">
+                    <span className="hover:underline">{matter.caseId}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 opacity-50 hover:opacity-100 hover:bg-secondary/50"
+                      onClick={(e) => handleCopyRow(e, matter)}
+                      title="Copy row details"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </TableCell>
                 <TableCell className="max-w-[200px] truncate font-medium">
                   {matter.caseTitle}
