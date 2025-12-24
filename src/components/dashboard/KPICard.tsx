@@ -10,9 +10,11 @@ interface KPICardProps {
     value: number;
     isPositive: boolean;
   };
-  variant?: 'default' | 'success' | 'warning' | 'danger';
+  variant?: 'default' | 'success' | 'warning' | 'danger' | 'primary';
   delay?: number;
   onClick?: () => void;
+  overdueCount?: number;
+  isMain?: boolean;
 }
 
 export function KPICard({ 
@@ -22,7 +24,9 @@ export function KPICard({
   trend, 
   variant = 'default',
   delay = 0,
-  onClick
+  onClick,
+  overdueCount,
+  isMain = false,
 }: KPICardProps) {
   const [displayValue, setDisplayValue] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -55,6 +59,7 @@ export function KPICard({
 
   const variantStyles = {
     default: 'border-border/50 hover:border-primary/50',
+    primary: 'border-primary/50 hover:border-primary/80 bg-primary/5',
     success: 'border-success/30 hover:border-success/60',
     warning: 'border-warning/30 hover:border-warning/60',
     danger: 'border-destructive/30 hover:border-destructive/60',
@@ -62,6 +67,7 @@ export function KPICard({
 
   const iconStyles = {
     default: 'text-primary',
+    primary: 'text-primary',
     success: 'text-success',
     warning: 'text-warning',
     danger: 'text-destructive',
@@ -70,22 +76,34 @@ export function KPICard({
   return (
     <div
       className={cn(
-        'glass-card p-6 transition-all duration-500 hover:scale-[1.02]',
+        'glass-card p-4 transition-all duration-500 hover:scale-[1.02]',
         variantStyles[variant],
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4',
-        onClick && 'cursor-pointer'
+        onClick && 'cursor-pointer',
+        isMain && 'p-6'
       )}
       style={{ transitionDelay: `${delay}ms` }}
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+        <div className="space-y-1">
+          <p className={cn(
+            "font-medium text-muted-foreground uppercase tracking-wide",
+            isMain ? "text-sm" : "text-xs"
+          )}>
             {title}
           </p>
-          <p className="text-4xl font-display font-bold gold-text">
+          <p className={cn(
+            "font-display font-bold gold-text",
+            isMain ? "text-4xl" : "text-3xl"
+          )}>
             {displayValue}
           </p>
+          {overdueCount !== undefined && overdueCount > 0 && (
+            <p className="text-xs font-medium text-destructive">
+              {overdueCount} Overdue
+            </p>
+          )}
           {trend && (
             <p className={cn(
               'text-sm font-medium',
@@ -96,10 +114,11 @@ export function KPICard({
           )}
         </div>
         <div className={cn(
-          'p-3 rounded-xl bg-secondary/50',
-          iconStyles[variant]
+          'p-2 rounded-xl bg-secondary/50',
+          iconStyles[variant],
+          isMain && 'p-3'
         )}>
-          <Icon className="h-6 w-6" />
+          <Icon className={cn("h-5 w-5", isMain && "h-6 w-6")} />
         </div>
       </div>
     </div>

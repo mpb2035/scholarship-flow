@@ -18,16 +18,14 @@ import { Loader2 } from 'lucide-react';
 import { 
   FileText, 
   Clock, 
-  AlertTriangle, 
   CheckCircle, 
-  XCircle, 
   TrendingUp,
   MessageSquare,
   Send,
   RefreshCw
 } from 'lucide-react';
 
-type KPIType = 'totalActive' | 'inProcess' | 'pendingReview' | 'deptQuerySut' | 'deptQueryHu' | 'higherUp' | 'slaBreached' | 'atRisk' | 'approved30d';
+type KPIType = 'totalActive' | 'inProcess' | 'pendingReview' | 'deptQuerySut' | 'deptQueryHu' | 'higherUp' | 'approved30d';
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
@@ -72,11 +70,18 @@ const Index = () => {
       deptQuerySut: matters.filter(m => m.overallStatus === 'Dept to Respond – SUT HE Query'),
       deptQueryHu: matters.filter(m => m.overallStatus === 'Dept to Respond – Higher Up Query'),
       higherUp: matters.filter(m => m.overallStatus === 'Pending Higher Up Approval'),
-      slaBreached: matters.filter(m => m.slaStatus === 'Overdue'),
-      atRisk: matters.filter(m => m.slaStatus === 'At Risk' || m.slaStatus === 'Critical'),
       approved30d: matters.filter(m => m.overallStatus === 'Approved & Signed' && m.signedDate && new Date(m.signedDate) >= thirtyDaysAgo),
     };
   }, [matters]);
+
+  // Compute overdue counts for each status category
+  const overdueCounts = useMemo(() => ({
+    inProcess: kpiMatters.inProcess.filter(m => m.slaStatus === 'Overdue').length,
+    pendingReview: kpiMatters.pendingReview.filter(m => m.slaStatus === 'Overdue').length,
+    deptQuerySut: kpiMatters.deptQuerySut.filter(m => m.slaStatus === 'Overdue').length,
+    deptQueryHu: kpiMatters.deptQueryHu.filter(m => m.slaStatus === 'Overdue').length,
+    higherUp: kpiMatters.higherUp.filter(m => m.slaStatus === 'Overdue').length,
+  }), [kpiMatters]);
 
   const kpiTitles: Record<KPIType, string> = {
     totalActive: 'Total Active Matters',
@@ -85,8 +90,6 @@ const Index = () => {
     deptQuerySut: 'Dept to Respond – SUT HE Query',
     deptQueryHu: 'Dept to Respond – Higher Up Query',
     higherUp: 'Pending Higher Up Approval',
-    slaBreached: 'SLA Breached Matters',
-    atRisk: 'At Risk Matters',
     approved30d: 'Approved in Last 30 Days',
   };
 
@@ -191,12 +194,14 @@ const Index = () => {
       <div className="max-w-[1800px] mx-auto">
         <Header onAddNew={handleAddNew} onRefresh={handleRefresh} />
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 xl:grid-cols-9 gap-3 mb-6">
+        {/* KPI Cards - Total Active + 5 Sub-cards + Approved */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
           <KPICard
             title="Total Active"
             value={stats.totalActive}
             icon={FileText}
+            variant="primary"
+            isMain
             delay={0}
             onClick={() => handleKPIClick('totalActive')}
           />
@@ -205,30 +210,31 @@ const Index = () => {
             value={stats.inProcess}
             icon={RefreshCw}
             delay={50}
+            overdueCount={overdueCounts.inProcess}
             onClick={() => handleKPIClick('inProcess')}
           />
           <KPICard
             title="Pending Review"
             value={stats.pendingSutHe}
             icon={Clock}
-            variant="warning"
             delay={100}
+            overdueCount={overdueCounts.pendingReview}
             onClick={() => handleKPIClick('pendingReview')}
           />
           <KPICard
             title="Dept Query (SUT)"
             value={stats.deptToRespondSutHe}
             icon={MessageSquare}
-            variant="warning"
             delay={150}
+            overdueCount={overdueCounts.deptQuerySut}
             onClick={() => handleKPIClick('deptQuerySut')}
           />
           <KPICard
             title="Dept Query (HU)"
             value={stats.deptToRespondHigherUp}
             icon={Send}
-            variant="warning"
             delay={200}
+            overdueCount={overdueCounts.deptQueryHu}
             onClick={() => handleKPIClick('deptQueryHu')}
           />
           <KPICard
@@ -236,30 +242,15 @@ const Index = () => {
             value={stats.pendingHigherUp}
             icon={TrendingUp}
             delay={250}
+            overdueCount={overdueCounts.higherUp}
             onClick={() => handleKPIClick('higherUp')}
-          />
-          <KPICard
-            title="SLA Breached"
-            value={stats.slaBreached}
-            icon={XCircle}
-            variant="danger"
-            delay={300}
-            onClick={() => handleKPIClick('slaBreached')}
-          />
-          <KPICard
-            title="At Risk"
-            value={stats.atRisk}
-            icon={AlertTriangle}
-            variant="warning"
-            delay={350}
-            onClick={() => handleKPIClick('atRisk')}
           />
           <KPICard
             title="Approved (30d)"
             value={stats.approvedLast30Days}
             icon={CheckCircle}
             variant="success"
-            delay={400}
+            delay={300}
             onClick={() => handleKPIClick('approved30d')}
           />
         </div>
