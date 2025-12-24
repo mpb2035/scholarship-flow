@@ -137,12 +137,13 @@ export function MatterTable({ matters, onEdit, onDelete, onView }: MatterTablePr
               <TableRow 
                 key={matter.id}
                 className={cn(
-                  'border-border/30 hover:bg-secondary/30 transition-colors',
+                  'border-border/30 hover:bg-secondary/30 transition-colors cursor-pointer',
                   'animate-fade-in'
                 )}
                 style={{ animationDelay: `${index * 50}ms` }}
+                onClick={() => onView(matter)}
               >
-                <TableCell className="font-mono text-sm text-primary">
+                <TableCell className="font-mono text-sm text-primary hover:underline">
                   {matter.caseId}
                 </TableCell>
                 <TableCell className="max-w-[200px] truncate font-medium">
@@ -173,7 +174,7 @@ export function MatterTable({ matters, onEdit, onDelete, onView }: MatterTablePr
                     {matter.slaStatus}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-secondary">
