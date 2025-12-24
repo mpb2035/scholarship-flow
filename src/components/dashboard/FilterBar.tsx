@@ -1,4 +1,4 @@
-import { Search, Download } from 'lucide-react';
+import { Search, Download, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -91,6 +91,27 @@ export function FilterBar({ filters, onFiltersChange, filteredMatters }: FilterB
   const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
     onFiltersChange({ ...filters, [key]: value });
   };
+
+  const handleClearFilters = () => {
+    onFiltersChange({
+      status: 'all',
+      priority: 'all',
+      caseType: 'all',
+      slaStatus: 'all',
+      search: '',
+      month: 'all',
+      year: 'all',
+    });
+  };
+
+  const hasActiveFilters = 
+    filters.status !== 'all' ||
+    filters.priority !== 'all' ||
+    filters.caseType !== 'all' ||
+    filters.slaStatus !== 'all' ||
+    filters.search !== '' ||
+    filters.month !== 'all' ||
+    filters.year !== 'all';
 
   const handleDownloadExcel = () => {
     if (!filteredMatters || filteredMatters.length === 0) {
@@ -246,6 +267,17 @@ export function FilterBar({ filters, onFiltersChange, filteredMatters }: FilterB
           </SelectContent>
         </Select>
 
+        {hasActiveFilters && (
+          <Button
+            onClick={handleClearFilters}
+            variant="outline"
+            className="bg-destructive/10 border-destructive/30 hover:bg-destructive/20 text-destructive"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Clear Filters
+          </Button>
+        )}
+
         <Button
           onClick={handleDownloadExcel}
           variant="outline"
@@ -253,7 +285,7 @@ export function FilterBar({ filters, onFiltersChange, filteredMatters }: FilterB
           disabled={!filteredMatters || filteredMatters.length === 0}
         >
           <Download className="h-4 w-4 mr-2" />
-          Export Excel
+          Export Excel ({filteredMatters?.length || 0})
         </Button>
       </div>
     </div>
