@@ -55,6 +55,7 @@ export interface Matter {
   slaStatus: SLAStatus;
   remarks?: string;
   assignedTo?: string;
+  externalLink?: string;
 }
 
 export interface SLAConfig {

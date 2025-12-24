@@ -22,6 +22,7 @@ export type Database = {
           case_type: string
           created_at: string
           dsm_submitted_date: string
+          external_link: string | null
           id: string
           overall_sla_days: number
           overall_status: string
@@ -43,6 +44,7 @@ export type Database = {
           case_type: string
           created_at?: string
           dsm_submitted_date: string
+          external_link?: string | null
           id?: string
           overall_sla_days?: number
           overall_status?: string
@@ -64,6 +66,7 @@ export type Database = {
           case_type?: string
           created_at?: string
           dsm_submitted_date?: string
+          external_link?: string | null
           id?: string
           overall_sla_days?: number
           overall_status?: string

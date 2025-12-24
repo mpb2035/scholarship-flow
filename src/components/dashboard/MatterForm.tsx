@@ -28,6 +28,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { ExternalLink } from 'lucide-react';
 import { Matter, CaseType, Priority, OverallStatus, QueryStatus, SLAStatus } from '@/types/matter';
 
 const formSchema = z.object({
@@ -44,6 +45,7 @@ const formSchema = z.object({
   queryStatus: z.string(),
   overallStatus: z.string(),
   remarks: z.string().optional(),
+  externalLink: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -107,6 +109,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       queryStatus: 'No Query',
       overallStatus: 'Pending SUT HE Review',
       remarks: '',
+      externalLink: '',
     },
   });
 
@@ -126,6 +129,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
         queryStatus: matter.queryStatus,
         overallStatus: matter.overallStatus,
         remarks: matter.remarks,
+        externalLink: matter.externalLink || '',
       });
     } else {
       form.reset();
@@ -201,6 +205,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       overallSlaDays: slaDays,
       slaStatus,
       remarks: data.remarks,
+      externalLink: data.externalLink || undefined,
     });
 
     form.reset();
@@ -504,6 +509,28 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
                       {...field} 
                       className="bg-input border-border/50 min-h-[80px]"
                       placeholder="Any additional notes..."
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="externalLink"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <ExternalLink className="h-4 w-4" />
+                    External Link
+                  </FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      type="url"
+                      className="bg-input border-border/50"
+                      placeholder="https://example.com/document"
                     />
                   </FormControl>
                   <FormMessage />
