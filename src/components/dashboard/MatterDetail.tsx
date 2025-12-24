@@ -19,16 +19,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Matter } from '@/types/matter';
-import { Calendar, Clock, AlertTriangle, CheckCircle, FileText, ExternalLink } from 'lucide-react';
+import { Calendar, Clock, AlertTriangle, CheckCircle, FileText, ExternalLink, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MatterDetailProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   matter: Matter | null;
+  onEdit?: (matter: Matter) => void;
 }
 
-export function MatterDetail({ open, onOpenChange, matter }: MatterDetailProps) {
+export function MatterDetail({ open, onOpenChange, matter, onEdit }: MatterDetailProps) {
   const [showExternalLinkConfirm, setShowExternalLinkConfirm] = useState(false);
 
   if (!matter) return null;
@@ -42,6 +43,13 @@ export function MatterDetail({ open, onOpenChange, matter }: MatterDetailProps) 
       window.open(matter.externalLink, '_blank', 'noopener,noreferrer');
     }
     setShowExternalLinkConfirm(false);
+  };
+
+  const handleEditClick = () => {
+    if (onEdit) {
+      onEdit(matter);
+      onOpenChange(false);
+    }
   };
 
   const getSlaStatusStyle = (status: string) => {
@@ -84,11 +92,22 @@ export function MatterDetail({ open, onOpenChange, matter }: MatterDetailProps) 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl bg-card border-border">
-        <DialogHeader>
+        <DialogHeader className="flex flex-row items-center justify-between pr-8">
           <DialogTitle className="font-display text-xl gold-text flex items-center gap-3">
             <FileText className="h-5 w-5" />
             {matter.caseId}
           </DialogTitle>
+          {onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={handleEditClick}
+            >
+              <Pencil className="h-4 w-4" />
+              Edit
+            </Button>
+          )}
         </DialogHeader>
 
         <div className="space-y-6">

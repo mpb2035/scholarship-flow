@@ -297,6 +297,7 @@ const Index = () => {
           open={detailOpen}
           onOpenChange={setDetailOpen}
           matter={selectedMatter}
+          onEdit={handleEdit}
         />
 
         <KPIDetailDialog
