@@ -33,6 +33,7 @@ export type Database = {
           signed_date: string | null
           sla_status: string
           suthe_received_date: string
+          suthe_submitted_to_hu_date: string | null
           updated_at: string
         }
         Insert: {
@@ -53,6 +54,7 @@ export type Database = {
           signed_date?: string | null
           sla_status?: string
           suthe_received_date: string
+          suthe_submitted_to_hu_date?: string | null
           updated_at?: string
         }
         Update: {
@@ -73,6 +75,7 @@ export type Database = {
           signed_date?: string | null
           sla_status?: string
           suthe_received_date?: string
+          suthe_submitted_to_hu_date?: string | null
           updated_at?: string
         }
         Relationships: []

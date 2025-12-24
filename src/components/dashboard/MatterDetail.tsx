@@ -107,6 +107,16 @@ export function MatterDetail({ open, onOpenChange, matter }: MatterDetailProps) 
                   </div>
                 </div>
 
+                {matter.sutheSubmittedToHuDate && (
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">SUT HE Submitted to HU</p>
+                      <p className="font-medium">{formatDate(matter.sutheSubmittedToHuDate)}</p>
+                    </div>
+                  </div>
+                )}
+
                 {matter.queryIssuedDate && (
                   <div className="flex items-center gap-3">
                     <AlertTriangle className="h-4 w-4 text-warning" />
@@ -172,13 +182,37 @@ export function MatterDetail({ open, onOpenChange, matter }: MatterDetailProps) 
                   </div>
                 </div>
 
-                {matter.queryDaysPending > 0 && (
+                {matter.daysSutHeToHu > 0 && (
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Days SUT HE to HU</p>
+                      <p className="font-mono font-bold text-lg">
+                        {matter.daysSutHeToHu}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {matter.queryDaysPendingSutHe > 0 && (
                   <div className="flex items-center gap-3">
                     <AlertTriangle className="h-4 w-4 text-warning" />
                     <div>
-                      <p className="text-xs text-muted-foreground">Query Pending Days</p>
+                      <p className="text-xs text-muted-foreground">Query Pending (SUT HE)</p>
                       <p className="font-mono font-bold text-lg text-warning">
-                        {matter.queryDaysPending}
+                        {matter.queryDaysPendingSutHe} days
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {matter.queryDaysPendingHigherUp > 0 && (
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="h-4 w-4 text-orange-400" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Query Pending (Higher Up)</p>
+                      <p className="font-mono font-bold text-lg text-orange-400">
+                        {matter.queryDaysPendingHigherUp} days
                       </p>
                     </div>
                   </div>
