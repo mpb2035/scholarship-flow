@@ -1,8 +1,6 @@
-import { Plus, RefreshCw, LogOut, Shield } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Plus, RefreshCw, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { useUserRole } from '@/hooks/useUserRole';
 import { useToast } from '@/hooks/use-toast';
 
 interface HeaderProps {
@@ -12,9 +10,7 @@ interface HeaderProps {
 
 export function Header({ onAddNew, onRefresh }: HeaderProps) {
   const { user, signOut } = useAuth();
-  const { isAdmin } = useUserRole();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
@@ -41,17 +37,6 @@ export function Header({ onAddNew, onRefresh }: HeaderProps) {
             <span className="text-sm text-muted-foreground hidden sm:inline">
               {user.email}
             </span>
-          )}
-          {isAdmin && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => navigate('/admin')}
-              className="border-primary/50 hover:border-primary hover:bg-primary/10 text-primary"
-            >
-              <Shield className="h-4 w-4 mr-2" />
-              Admin
-            </Button>
           )}
           <Button 
             variant="outline" 
