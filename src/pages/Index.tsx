@@ -23,10 +23,11 @@ import {
   XCircle, 
   TrendingUp,
   MessageSquare,
-  Send
+  Send,
+  RefreshCw
 } from 'lucide-react';
 
-type KPIType = 'totalActive' | 'pendingReview' | 'dsmQuerySut' | 'dsmQueryHu' | 'higherUp' | 'slaBreached' | 'atRisk' | 'approved30d';
+type KPIType = 'totalActive' | 'inProcess' | 'pendingReview' | 'dsmQuerySut' | 'dsmQueryHu' | 'higherUp' | 'slaBreached' | 'atRisk' | 'approved30d';
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
@@ -66,6 +67,7 @@ const Index = () => {
 
     return {
       totalActive: matters.filter(m => !['Approved & Signed', 'Not Approved'].includes(m.overallStatus)),
+      inProcess: matters.filter(m => m.overallStatus === 'In Process'),
       pendingReview: matters.filter(m => m.overallStatus === 'Pending SUT HE Review'),
       dsmQuerySut: matters.filter(m => m.overallStatus === 'DSM to Respond – SUT HE Query'),
       dsmQueryHu: matters.filter(m => m.overallStatus === 'DSM to Respond – Higher Up Query'),
@@ -78,6 +80,7 @@ const Index = () => {
 
   const kpiTitles: Record<KPIType, string> = {
     totalActive: 'Total Active Matters',
+    inProcess: 'In Process Matters',
     pendingReview: 'Pending SUT HE Review',
     dsmQuerySut: 'DSM to Respond – SUT HE Query',
     dsmQueryHu: 'DSM to Respond – Higher Up Query',
@@ -176,7 +179,7 @@ const Index = () => {
         <Header onAddNew={handleAddNew} onRefresh={handleRefresh} />
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-8 gap-3 mb-6">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 xl:grid-cols-9 gap-3 mb-6">
           <KPICard
             title="Total Active"
             value={stats.totalActive}
@@ -185,11 +188,18 @@ const Index = () => {
             onClick={() => handleKPIClick('totalActive')}
           />
           <KPICard
+            title="In Process"
+            value={stats.inProcess}
+            icon={RefreshCw}
+            delay={50}
+            onClick={() => handleKPIClick('inProcess')}
+          />
+          <KPICard
             title="Pending Review"
             value={stats.pendingSutHe}
             icon={Clock}
             variant="warning"
-            delay={50}
+            delay={100}
             onClick={() => handleKPIClick('pendingReview')}
           />
           <KPICard
@@ -197,7 +207,7 @@ const Index = () => {
             value={stats.dsmToRespondSutHe}
             icon={MessageSquare}
             variant="warning"
-            delay={100}
+            delay={150}
             onClick={() => handleKPIClick('dsmQuerySut')}
           />
           <KPICard
@@ -205,14 +215,14 @@ const Index = () => {
             value={stats.dsmToRespondHigherUp}
             icon={Send}
             variant="warning"
-            delay={150}
+            delay={200}
             onClick={() => handleKPIClick('dsmQueryHu')}
           />
           <KPICard
             title="Higher Up"
             value={stats.pendingHigherUp}
             icon={TrendingUp}
-            delay={200}
+            delay={250}
             onClick={() => handleKPIClick('higherUp')}
           />
           <KPICard
@@ -220,7 +230,7 @@ const Index = () => {
             value={stats.slaBreached}
             icon={XCircle}
             variant="danger"
-            delay={250}
+            delay={300}
             onClick={() => handleKPIClick('slaBreached')}
           />
           <KPICard
@@ -228,7 +238,7 @@ const Index = () => {
             value={stats.atRisk}
             icon={AlertTriangle}
             variant="warning"
-            delay={300}
+            delay={350}
             onClick={() => handleKPIClick('atRisk')}
           />
           <KPICard
@@ -236,7 +246,7 @@ const Index = () => {
             value={stats.approvedLast30Days}
             icon={CheckCircle}
             variant="success"
-            delay={350}
+            delay={400}
             onClick={() => handleKPIClick('approved30d')}
           />
         </div>
