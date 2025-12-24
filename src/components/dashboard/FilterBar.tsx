@@ -1,5 +1,6 @@
-import { Search } from 'lucide-react';
+import { Search, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -8,11 +9,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Filters } from '@/hooks/useMatters';
-import { OverallStatus, Priority, CaseType, SLAStatus } from '@/types/matter';
+import { OverallStatus, Priority, CaseType, SLAStatus, Matter } from '@/types/matter';
+import * as XLSX from 'xlsx';
 
 interface FilterBarProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
+  filteredMatters: Matter[];
 }
 
 const statuses: (OverallStatus | 'all')[] = [
@@ -59,9 +62,79 @@ const slaStatuses: (SLAStatus | 'all')[] = [
   'Completed',
 ];
 
-export function FilterBar({ filters, onFiltersChange }: FilterBarProps) {
+const months = [
+  { value: 'all', label: 'All Months' },
+  { value: '1', label: 'January' },
+  { value: '2', label: 'February' },
+  { value: '3', label: 'March' },
+  { value: '4', label: 'April' },
+  { value: '5', label: 'May' },
+  { value: '6', label: 'June' },
+  { value: '7', label: 'July' },
+  { value: '8', label: 'August' },
+  { value: '9', label: 'September' },
+  { value: '10', label: 'October' },
+  { value: '11', label: 'November' },
+  { value: '12', label: 'December' },
+];
+
+const currentYear = new Date().getFullYear();
+const years = [
+  { value: 'all', label: 'All Years' },
+  ...Array.from({ length: 10 }, (_, i) => ({
+    value: (currentYear - i).toString(),
+    label: (currentYear - i).toString(),
+  })),
+];
+
+export function FilterBar({ filters, onFiltersChange, filteredMatters }: FilterBarProps) {
   const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
     onFiltersChange({ ...filters, [key]: value });
+  };
+
+  const handleDownloadExcel = () => {
+    if (filteredMatters.length === 0) {
+      return;
+    }
+
+    const excelData = filteredMatters.map((matter) => ({
+      'Case ID': matter.caseId,
+      'Case Title': matter.caseTitle,
+      'Case Type': matter.caseType,
+      'Priority': matter.priority,
+      'DSM Submitted Date': matter.dsmSubmittedDate,
+      'SUT HE Received Date': matter.sutheReceivedDate,
+      'SUT HE Submitted to HU Date': matter.sutheSubmittedToHuDate || '',
+      'Query Issued Date': matter.queryIssuedDate || '',
+      'Query Response Date': matter.queryResponseDate || '',
+      'Signed Date': matter.signedDate || '',
+      'Query Status': matter.queryStatus,
+      'Overall Status': matter.overallStatus,
+      'Days in Process': matter.daysInProcess,
+      'Days SUT HE to HU': matter.daysSutHeToHu,
+      'Query Days Pending (SUT HE)': matter.queryDaysPendingSutHe,
+      'Query Days Pending (Higher Up)': matter.queryDaysPendingHigherUp,
+      'SLA Days': matter.overallSlaDays,
+      'SLA Status': matter.slaStatus,
+      'Remarks': matter.remarks || '',
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Matters');
+
+    // Generate filename based on filters
+    let filename = 'matters';
+    if (filters.year !== 'all') {
+      filename += `_${filters.year}`;
+    }
+    if (filters.month !== 'all') {
+      const monthName = months.find(m => m.value === filters.month)?.label || filters.month;
+      filename += `_${monthName}`;
+    }
+    filename += '.xlsx';
+
+    XLSX.writeFile(workbook, filename);
   };
 
   return (
@@ -76,6 +149,38 @@ export function FilterBar({ filters, onFiltersChange }: FilterBarProps) {
             className="pl-10 bg-input border-border/50 focus:border-primary"
           />
         </div>
+
+        <Select
+          value={filters.month}
+          onValueChange={(value) => updateFilter('month', value)}
+        >
+          <SelectTrigger className="w-[140px] bg-input border-border/50">
+            <SelectValue placeholder="Month" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border">
+            {months.map((month) => (
+              <SelectItem key={month.value} value={month.value}>
+                {month.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={filters.year}
+          onValueChange={(value) => updateFilter('year', value)}
+        >
+          <SelectTrigger className="w-[120px] bg-input border-border/50">
+            <SelectValue placeholder="Year" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border">
+            {years.map((year) => (
+              <SelectItem key={year.value} value={year.value}>
+                {year.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         <Select
           value={filters.status}
@@ -140,6 +245,16 @@ export function FilterBar({ filters, onFiltersChange }: FilterBarProps) {
             ))}
           </SelectContent>
         </Select>
+
+        <Button
+          onClick={handleDownloadExcel}
+          variant="outline"
+          className="bg-primary/10 border-primary/30 hover:bg-primary/20 text-primary"
+          disabled={filteredMatters.length === 0}
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Export Excel
+        </Button>
       </div>
     </div>
   );
