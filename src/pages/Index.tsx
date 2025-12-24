@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMatters } from '@/hooks/useMatters';
 import { useAuth } from '@/hooks/useAuth';
 import { Header } from '@/components/dashboard/Header';
 import { KPICard } from '@/components/dashboard/KPICard';
+import { KPIDetailDialog } from '@/components/dashboard/KPIDetailDialog';
 import { StatusChart } from '@/components/dashboard/StatusChart';
 import { SLABarChart } from '@/components/dashboard/SLABarChart';
 import { MatterTable } from '@/components/dashboard/MatterTable';
@@ -24,6 +25,8 @@ import {
   MessageSquare,
   Send
 } from 'lucide-react';
+
+type KPIType = 'totalActive' | 'pendingReview' | 'dsmQuerySut' | 'dsmQueryHu' | 'higherUp' | 'slaBreached' | 'atRisk' | 'approved30d';
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
@@ -53,6 +56,41 @@ const Index = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedMatter, setSelectedMatter] = useState<Matter | null>(null);
   const [editingMatter, setEditingMatter] = useState<Matter | undefined>();
+  const [kpiDialogOpen, setKpiDialogOpen] = useState(false);
+  const [selectedKPI, setSelectedKPI] = useState<KPIType | null>(null);
+
+  // Compute matters for each KPI category
+  const kpiMatters = useMemo(() => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    return {
+      totalActive: matters.filter(m => !['Approved & Signed', 'Not Approved'].includes(m.overallStatus)),
+      pendingReview: matters.filter(m => m.overallStatus === 'Pending SUT HE Review'),
+      dsmQuerySut: matters.filter(m => m.overallStatus === 'DSM to Respond – SUT HE Query'),
+      dsmQueryHu: matters.filter(m => m.overallStatus === 'DSM to Respond – Higher Up Query'),
+      higherUp: matters.filter(m => m.overallStatus === 'Pending Higher Up Approval'),
+      slaBreached: matters.filter(m => m.slaStatus === 'Overdue'),
+      atRisk: matters.filter(m => m.slaStatus === 'At Risk' || m.slaStatus === 'Critical'),
+      approved30d: matters.filter(m => m.overallStatus === 'Approved & Signed' && m.signedDate && new Date(m.signedDate) >= thirtyDaysAgo),
+    };
+  }, [matters]);
+
+  const kpiTitles: Record<KPIType, string> = {
+    totalActive: 'Total Active Matters',
+    pendingReview: 'Pending SUT HE Review',
+    dsmQuerySut: 'DSM to Respond – SUT HE Query',
+    dsmQueryHu: 'DSM to Respond – Higher Up Query',
+    higherUp: 'Pending Higher Up Approval',
+    slaBreached: 'SLA Breached Matters',
+    atRisk: 'At Risk Matters',
+    approved30d: 'Approved in Last 30 Days',
+  };
+
+  const handleKPIClick = (kpiType: KPIType) => {
+    setSelectedKPI(kpiType);
+    setKpiDialogOpen(true);
+  };
 
   const handleAddNew = () => {
     setEditingMatter(undefined);
@@ -144,6 +182,7 @@ const Index = () => {
             value={stats.totalActive}
             icon={FileText}
             delay={0}
+            onClick={() => handleKPIClick('totalActive')}
           />
           <KPICard
             title="Pending Review"
@@ -151,6 +190,7 @@ const Index = () => {
             icon={Clock}
             variant="warning"
             delay={50}
+            onClick={() => handleKPIClick('pendingReview')}
           />
           <KPICard
             title="DSM Query (SUT)"
@@ -158,6 +198,7 @@ const Index = () => {
             icon={MessageSquare}
             variant="warning"
             delay={100}
+            onClick={() => handleKPIClick('dsmQuerySut')}
           />
           <KPICard
             title="DSM Query (HU)"
@@ -165,12 +206,14 @@ const Index = () => {
             icon={Send}
             variant="warning"
             delay={150}
+            onClick={() => handleKPIClick('dsmQueryHu')}
           />
           <KPICard
             title="Higher Up"
             value={stats.pendingHigherUp}
             icon={TrendingUp}
             delay={200}
+            onClick={() => handleKPIClick('higherUp')}
           />
           <KPICard
             title="SLA Breached"
@@ -178,6 +221,7 @@ const Index = () => {
             icon={XCircle}
             variant="danger"
             delay={250}
+            onClick={() => handleKPIClick('slaBreached')}
           />
           <KPICard
             title="At Risk"
@@ -185,6 +229,7 @@ const Index = () => {
             icon={AlertTriangle}
             variant="warning"
             delay={300}
+            onClick={() => handleKPIClick('atRisk')}
           />
           <KPICard
             title="Approved (30d)"
@@ -192,6 +237,7 @@ const Index = () => {
             icon={CheckCircle}
             variant="success"
             delay={350}
+            onClick={() => handleKPIClick('approved30d')}
           />
         </div>
 
@@ -228,6 +274,17 @@ const Index = () => {
           open={detailOpen}
           onOpenChange={setDetailOpen}
           matter={selectedMatter}
+        />
+
+        <KPIDetailDialog
+          open={kpiDialogOpen}
+          onOpenChange={setKpiDialogOpen}
+          title={selectedKPI ? kpiTitles[selectedKPI] : ''}
+          matters={selectedKPI ? kpiMatters[selectedKPI] : []}
+          onMatterClick={(matter) => {
+            setKpiDialogOpen(false);
+            handleView(matter);
+          }}
         />
       </div>
     </div>

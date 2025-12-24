@@ -12,6 +12,7 @@ interface KPICardProps {
   };
   variant?: 'default' | 'success' | 'warning' | 'danger';
   delay?: number;
+  onClick?: () => void;
 }
 
 export function KPICard({ 
@@ -20,7 +21,8 @@ export function KPICard({
   icon: Icon, 
   trend, 
   variant = 'default',
-  delay = 0 
+  delay = 0,
+  onClick
 }: KPICardProps) {
   const [displayValue, setDisplayValue] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -70,9 +72,11 @@ export function KPICard({
       className={cn(
         'glass-card p-6 transition-all duration-500 hover:scale-[1.02]',
         variantStyles[variant],
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4',
+        onClick && 'cursor-pointer'
       )}
       style={{ transitionDelay: `${delay}ms` }}
+      onClick={onClick}
     >
       <div className="flex items-start justify-between">
         <div className="space-y-2">
