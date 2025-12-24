@@ -203,7 +203,7 @@ const Index = () => {
         </div>
 
         {/* Filters */}
-        <FilterBar filters={filters} onFiltersChange={setFilters} />
+        <FilterBar filters={filters} onFiltersChange={setFilters} filteredMatters={filteredMatters} />
 
         {/* Table */}
         <div className="mt-6">

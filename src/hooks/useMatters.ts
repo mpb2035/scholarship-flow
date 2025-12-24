@@ -9,6 +9,8 @@ export interface Filters {
   caseType: CaseType | 'all';
   slaStatus: SLAStatus | 'all';
   search: string;
+  month: string;
+  year: string;
 }
 
 interface DbMatter {
@@ -99,6 +101,8 @@ export function useMatters() {
     caseType: 'all',
     slaStatus: 'all',
     search: '',
+    month: 'all',
+    year: 'all',
   });
 
   // Fetch matters from database
@@ -148,6 +152,18 @@ export function useMatters() {
       if (filters.priority !== 'all' && matter.priority !== filters.priority) return false;
       if (filters.caseType !== 'all' && matter.caseType !== filters.caseType) return false;
       if (filters.slaStatus !== 'all' && matter.slaStatus !== filters.slaStatus) return false;
+      
+      // Month and year filter based on DSM submitted date
+      if (filters.month !== 'all' || filters.year !== 'all') {
+        const submittedDate = new Date(matter.dsmSubmittedDate);
+        if (filters.year !== 'all' && submittedDate.getFullYear().toString() !== filters.year) {
+          return false;
+        }
+        if (filters.month !== 'all' && (submittedDate.getMonth() + 1).toString() !== filters.month) {
+          return false;
+        }
+      }
+      
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
         return (
