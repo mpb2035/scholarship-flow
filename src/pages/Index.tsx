@@ -12,7 +12,7 @@ import { FilterBar } from '@/components/dashboard/FilterBar';
 import { MatterForm } from '@/components/dashboard/MatterForm';
 import { MatterDetail } from '@/components/dashboard/MatterDetail';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
-import { Matter } from '@/types/matter';
+import { Matter, OverallStatus, SLAStatus } from '@/types/matter';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { 
@@ -158,6 +158,19 @@ const Index = () => {
     });
   };
 
+  const handleStatusChartClick = (status: string) => {
+    if (status === 'sla_breached') {
+      // Special case: filter by SLA status
+      setFilters({ ...filters, status: 'all', slaStatus: 'Overdue' });
+    } else {
+      setFilters({ ...filters, status: status as OverallStatus, slaStatus: 'all' });
+    }
+  };
+
+  const handleSLAChartClick = (slaStatus: string) => {
+    setFilters({ ...filters, slaStatus: slaStatus as SLAStatus, status: 'all' });
+  };
+
   if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -253,8 +266,8 @@ const Index = () => {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <StatusChart stats={stats} />
-          <SLABarChart matters={matters} />
+          <StatusChart stats={stats} onSegmentClick={handleStatusChartClick} />
+          <SLABarChart matters={matters} onBarClick={handleSLAChartClick} />
           <AlertsPanel matters={matters} onMatterClick={handleView} />
         </div>
 
