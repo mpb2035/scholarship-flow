@@ -1,13 +1,25 @@
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Matter } from '@/types/matter';
-import { Calendar, Clock, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
+import { Calendar, Clock, AlertTriangle, CheckCircle, FileText, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MatterDetailProps {
@@ -17,7 +29,20 @@ interface MatterDetailProps {
 }
 
 export function MatterDetail({ open, onOpenChange, matter }: MatterDetailProps) {
+  const [showExternalLinkConfirm, setShowExternalLinkConfirm] = useState(false);
+
   if (!matter) return null;
+
+  const handleExternalLinkClick = () => {
+    setShowExternalLinkConfirm(true);
+  };
+
+  const handleConfirmExternalLink = () => {
+    if (matter.externalLink) {
+      window.open(matter.externalLink, '_blank', 'noopener,noreferrer');
+    }
+    setShowExternalLinkConfirm(false);
+  };
 
   const getSlaStatusStyle = (status: string) => {
     switch (status) {
@@ -240,8 +265,49 @@ export function MatterDetail({ open, onOpenChange, matter }: MatterDetailProps) 
               </div>
             </>
           )}
+
+          {matter.externalLink && (
+            <>
+              <Separator className="bg-border/50" />
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                  External Link
+                </h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2"
+                  onClick={handleExternalLinkClick}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Open External Resource
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </DialogContent>
+
+      <AlertDialog open={showExternalLinkConfirm} onOpenChange={setShowExternalLinkConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>You are leaving this dashboard</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to navigate to an external website. This link will open in a new tab.
+              <br />
+              <span className="text-xs text-muted-foreground mt-2 block break-all">
+                {matter.externalLink}
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmExternalLink}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
