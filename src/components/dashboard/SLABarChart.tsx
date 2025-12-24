@@ -3,9 +3,19 @@ import { Matter } from '@/types/matter';
 
 interface SLABarChartProps {
   matters: Matter[];
+  onBarClick?: (slaStatus: string) => void;
 }
 
-export function SLABarChart({ matters }: SLABarChartProps) {
+// Map display names to filter values
+const SLA_FILTER_MAP: Record<string, string> = {
+  'Within SLA': 'Within SLA',
+  'At Risk': 'At Risk',
+  'Critical': 'Critical',
+  'Overdue': 'Overdue',
+  'Completed': 'Completed',
+};
+
+export function SLABarChart({ matters, onBarClick }: SLABarChartProps) {
   const grouped = matters.reduce((acc, matter) => {
     const status = matter.slaStatus;
     acc[status] = (acc[status] || 0) + 1;
@@ -20,13 +30,25 @@ export function SLABarChart({ matters }: SLABarChartProps) {
     { name: 'Completed', value: (grouped['Completed'] || 0) + (grouped['Completed Overdue'] || 0), color: 'hsl(200, 70%, 50%)' },
   ];
 
+  const handleClick = (entry: { name: string }) => {
+    if (onBarClick) {
+      const filterValue = SLA_FILTER_MAP[entry.name] || entry.name;
+      onBarClick(filterValue);
+    }
+  };
+
   return (
     <div className="glass-card p-6 h-[360px]">
       <h3 className="font-display text-lg font-semibold gold-text mb-4">
         SLA Compliance
       </h3>
       <ResponsiveContainer width="100%" height="85%">
-        <BarChart data={data} layout="vertical" margin={{ left: 20 }}>
+        <BarChart 
+          data={data} 
+          layout="vertical" 
+          margin={{ left: 20 }}
+          style={{ cursor: onBarClick ? 'pointer' : 'default' }}
+        >
           <XAxis type="number" stroke="hsl(45, 20%, 40%)" />
           <YAxis 
             type="category" 
@@ -43,7 +65,12 @@ export function SLABarChart({ matters }: SLABarChartProps) {
               color: 'hsl(45, 30%, 90%)',
             }}
           />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+          <Bar 
+            dataKey="value" 
+            radius={[0, 4, 4, 0]}
+            onClick={(_, index) => handleClick(data[index])}
+            style={{ cursor: 'pointer' }}
+          >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}

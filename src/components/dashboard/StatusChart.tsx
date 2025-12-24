@@ -3,6 +3,7 @@ import { DashboardStats } from '@/types/matter';
 
 interface StatusChartProps {
   stats: DashboardStats;
+  onSegmentClick?: (status: string) => void;
 }
 
 const COLORS = {
@@ -13,7 +14,16 @@ const COLORS = {
   overdue: 'hsl(0, 70%, 50%)',
 };
 
-export function StatusChart({ stats }: StatusChartProps) {
+// Map display names to filter values
+const STATUS_FILTER_MAP: Record<string, string> = {
+  'Pending SUT HE': 'Pending SUT HE Review',
+  'In Process': 'In Process',
+  'Query Response': 'Returned for Query',
+  'Pending Higher Up': 'Pending Higher Up Approval',
+  'SLA Breached': 'sla_breached', // Special case for SLA filter
+};
+
+export function StatusChart({ stats, onSegmentClick }: StatusChartProps) {
   const data = [
     { name: 'Pending SUT HE', value: stats.pendingSutHe, color: COLORS.pending },
     { name: 'In Process', value: stats.inProcess, color: COLORS.inProcess },
@@ -21,6 +31,13 @@ export function StatusChart({ stats }: StatusChartProps) {
     { name: 'Pending Higher Up', value: stats.pendingHigherUp, color: COLORS.approved },
     { name: 'SLA Breached', value: stats.slaBreached, color: COLORS.overdue },
   ].filter(d => d.value > 0);
+
+  const handleClick = (entry: { name: string }) => {
+    if (onSegmentClick) {
+      const filterValue = STATUS_FILTER_MAP[entry.name] || entry.name;
+      onSegmentClick(filterValue);
+    }
+  };
 
   return (
     <div className="glass-card p-6 h-[360px]">
@@ -38,6 +55,8 @@ export function StatusChart({ stats }: StatusChartProps) {
             paddingAngle={4}
             dataKey="value"
             stroke="transparent"
+            style={{ cursor: onSegmentClick ? 'pointer' : 'default' }}
+            onClick={(_, index) => handleClick(data[index])}
           >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
@@ -55,8 +74,9 @@ export function StatusChart({ stats }: StatusChartProps) {
             verticalAlign="bottom"
             height={36}
             formatter={(value) => (
-              <span style={{ color: 'hsl(45, 30%, 90%)' }}>{value}</span>
+              <span style={{ color: 'hsl(45, 30%, 90%)', cursor: 'pointer' }}>{value}</span>
             )}
+            onClick={(e) => handleClick({ name: e.value as string })}
           />
         </PieChart>
       </ResponsiveContainer>
