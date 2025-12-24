@@ -82,8 +82,8 @@ const Index = () => {
     totalActive: 'Total Active Matters',
     inProcess: 'In Process Matters',
     pendingReview: 'Pending SUT HE Review',
-    dsmQuerySut: 'DSM to Respond – SUT HE Query',
-    dsmQueryHu: 'DSM to Respond – Higher Up Query',
+    dsmQuerySut: 'Dept to Respond – SUT HE Query',
+    dsmQueryHu: 'Dept to Respond – Higher Up Query',
     higherUp: 'Pending Higher Up Approval',
     slaBreached: 'SLA Breached Matters',
     atRisk: 'At Risk Matters',
@@ -203,7 +203,7 @@ const Index = () => {
             onClick={() => handleKPIClick('pendingReview')}
           />
           <KPICard
-            title="DSM Query (SUT)"
+            title="Dept Query (SUT)"
             value={stats.dsmToRespondSutHe}
             icon={MessageSquare}
             variant="warning"
@@ -211,7 +211,7 @@ const Index = () => {
             onClick={() => handleKPIClick('dsmQuerySut')}
           />
           <KPICard
-            title="DSM Query (HU)"
+            title="Dept Query (HU)"
             value={stats.dsmToRespondHigherUp}
             icon={Send}
             variant="warning"
