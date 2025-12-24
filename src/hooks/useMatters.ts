@@ -4,7 +4,7 @@ import { Matter, DashboardStats, OverallStatus, Priority, CaseType, SLAStatus } 
 import { useToast } from '@/hooks/use-toast';
 
 export interface Filters {
-  status: OverallStatus | 'all';
+  status: OverallStatus | 'all' | 'Completed';
   priority: Priority | 'all';
   caseType: CaseType | 'all';
   slaStatus: SLAStatus | 'all';
@@ -148,7 +148,12 @@ export function useMatters() {
 
   const filteredMatters = useMemo(() => {
     return matters.filter((matter) => {
-      if (filters.status !== 'all' && matter.overallStatus !== filters.status) return false;
+      // Handle "Completed" filter - matches matters with signed date (approved)
+      if (filters.status === 'Completed') {
+        if (!matter.signedDate) return false;
+      } else if (filters.status !== 'all' && matter.overallStatus !== filters.status) {
+        return false;
+      }
       if (filters.priority !== 'all' && matter.priority !== filters.priority) return false;
       if (filters.caseType !== 'all' && matter.caseType !== filters.caseType) return false;
       if (filters.slaStatus !== 'all' && matter.slaStatus !== filters.slaStatus) return false;

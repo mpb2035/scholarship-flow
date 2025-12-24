@@ -18,8 +18,9 @@ interface FilterBarProps {
   filteredMatters: Matter[];
 }
 
-const statuses: (OverallStatus | 'all')[] = [
+const statuses: (OverallStatus | 'all' | 'Completed')[] = [
   'all',
+  'Completed',
   'Pending SUT HE Review',
   'In Process',
   'DSM to Respond – SUT HE Query',
