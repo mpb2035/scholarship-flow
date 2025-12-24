@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart3, Shield } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Shield, Bookmark } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
 import {
@@ -15,6 +15,7 @@ import {
 const navItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
   { title: 'Analytics', url: '/analytics', icon: BarChart3 },
+  { title: 'My Directory', url: '/directory', icon: Bookmark },
 ];
 
 export function AppSidebar() {
