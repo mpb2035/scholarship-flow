@@ -21,6 +21,7 @@ const statuses: (OverallStatus | 'all')[] = [
   'In Process',
   'DSM to Respond – SUT HE Query',
   'DSM to Respond – Higher Up Query',
+  'SUT HE Submitted to HU',
   'Pending Higher Up Approval',
   'Returned for Query',
   'Approved & Signed',
@@ -37,6 +38,15 @@ const caseTypes: (CaseType | 'all')[] = [
   'Budget Proposal',
   'Cross-Agency Project',
   'Scholarship Award',
+  'Extension Scholarship',
+  'Manpower Blueprint',
+  'Attachment Overseas',
+  'BPTV',
+  'TVET Scheme',
+  'HECAS',
+  'Greening Education Plan',
+  'SUSLR',
+  'MKPK',
   'Other',
 ];
 

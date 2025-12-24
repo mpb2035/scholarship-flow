@@ -37,6 +37,7 @@ const formSchema = z.object({
   priority: z.string().min(1, 'Priority is required'),
   dsmSubmittedDate: z.string().min(1, 'Submission date is required'),
   sutheReceivedDate: z.string().min(1, 'Received date is required'),
+  sutheSubmittedToHuDate: z.string().optional(),
   queryIssuedDate: z.string().optional(),
   queryResponseDate: z.string().optional(),
   signedDate: z.string().optional(),
@@ -83,6 +84,7 @@ const overallStatuses: OverallStatus[] = [
   'In Process',
   'DSM to Respond – SUT HE Query',
   'DSM to Respond – Higher Up Query',
+  'SUT HE Submitted to HU',
   'Pending Higher Up Approval',
   'Returned for Query',
   'Approved & Signed',
@@ -117,6 +119,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
         priority: matter.priority,
         dsmSubmittedDate: matter.dsmSubmittedDate,
         sutheReceivedDate: matter.sutheReceivedDate,
+        sutheSubmittedToHuDate: matter.sutheSubmittedToHuDate,
         queryIssuedDate: matter.queryIssuedDate,
         queryResponseDate: matter.queryResponseDate,
         signedDate: matter.signedDate,
@@ -159,9 +162,22 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       ? 'Completed' 
       : calculateSLAStatus(daysInProcess, data.priority as Priority);
 
-    const queryDaysPending = data.queryIssuedDate && !data.queryResponseDate
-      ? Math.floor((new Date().getTime() - new Date(data.queryIssuedDate).getTime()) / (1000 * 60 * 60 * 24))
+    // Calculate days from SUT HE received to submitted to HU
+    const daysSutHeToHu = data.sutheSubmittedToHuDate && data.sutheReceivedDate
+      ? Math.floor((new Date(data.sutheSubmittedToHuDate).getTime() - new Date(data.sutheReceivedDate).getTime()) / (1000 * 60 * 60 * 24))
       : 0;
+
+    // Calculate query days pending based on status
+    let queryDaysPendingSutHe = 0;
+    let queryDaysPendingHigherUp = 0;
+    if (data.queryIssuedDate && !data.queryResponseDate) {
+      const queryDays = Math.floor((new Date().getTime() - new Date(data.queryIssuedDate).getTime()) / (1000 * 60 * 60 * 24));
+      if (data.overallStatus === 'DSM to Respond – SUT HE Query') {
+        queryDaysPendingSutHe = queryDays;
+      } else if (data.overallStatus === 'DSM to Respond – Higher Up Query') {
+        queryDaysPendingHigherUp = queryDays;
+      }
+    }
 
     const slaDays = data.priority === 'Urgent' ? 3 : data.priority === 'High' ? 7 : data.priority === 'Medium' ? 14 : 21;
 
@@ -172,13 +188,16 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       priority: data.priority as Priority,
       dsmSubmittedDate: data.dsmSubmittedDate,
       sutheReceivedDate: data.sutheReceivedDate,
+      sutheSubmittedToHuDate: data.sutheSubmittedToHuDate,
       queryIssuedDate: data.queryIssuedDate,
       queryResponseDate: data.queryResponseDate,
       signedDate: data.signedDate,
       queryStatus: data.queryStatus as QueryStatus,
       overallStatus: data.overallStatus as OverallStatus,
       daysInProcess,
-      queryDaysPending,
+      daysSutHeToHu,
+      queryDaysPendingSutHe,
+      queryDaysPendingHigherUp,
       overallSlaDays: slaDays,
       slaStatus,
       remarks: data.remarks,
@@ -392,6 +411,20 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="sutheSubmittedToHuDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SUT HE Submitted to HU Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} value={field.value || ''} className="bg-input border-border/50" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="grid grid-cols-3 gap-4">
               <FormField

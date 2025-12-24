@@ -19,6 +19,7 @@ interface DbMatter {
   priority: string;
   dsm_submitted_date: string;
   suthe_received_date: string;
+  suthe_submitted_to_hu_date: string | null;
   query_issued_date: string | null;
   query_response_date: string | null;
   signed_date: string | null;
@@ -36,33 +37,57 @@ const calculateDaysInProcess = (submittedDate: string, signedDate?: string | nul
   return Math.floor((endDate.getTime() - submitted.getTime()) / (1000 * 60 * 60 * 24));
 };
 
-const calculateQueryDaysPending = (queryIssuedDate?: string | null, queryResponseDate?: string | null): number => {
-  if (!queryIssuedDate || queryResponseDate) return 0;
-  const issued = new Date(queryIssuedDate);
-  const today = new Date();
-  return Math.floor((today.getTime() - issued.getTime()) / (1000 * 60 * 60 * 24));
+const calculateDaysSutHeToHu = (sutheReceivedDate: string, sutheSubmittedToHuDate?: string | null): number => {
+  if (!sutheSubmittedToHuDate) return 0;
+  const received = new Date(sutheReceivedDate);
+  const submitted = new Date(sutheSubmittedToHuDate);
+  return Math.floor((submitted.getTime() - received.getTime()) / (1000 * 60 * 60 * 24));
 };
 
-const mapDbToMatter = (db: DbMatter): Matter => ({
-  id: db.id,
-  caseId: db.case_id,
-  caseTitle: db.case_title,
-  caseType: db.case_type as CaseType,
-  priority: db.priority as Priority,
-  dsmSubmittedDate: db.dsm_submitted_date,
-  sutheReceivedDate: db.suthe_received_date,
-  queryIssuedDate: db.query_issued_date || undefined,
-  queryResponseDate: db.query_response_date || undefined,
-  signedDate: db.signed_date || undefined,
-  queryStatus: db.query_status as Matter['queryStatus'],
-  overallStatus: db.overall_status as OverallStatus,
-  daysInProcess: calculateDaysInProcess(db.dsm_submitted_date, db.signed_date),
-  queryDaysPending: calculateQueryDaysPending(db.query_issued_date, db.query_response_date),
-  overallSlaDays: db.overall_sla_days,
-  slaStatus: db.sla_status as SLAStatus,
-  remarks: db.remarks || undefined,
-  assignedTo: db.assigned_to || undefined,
-});
+const calculateQueryDaysPending = (
+  queryIssuedDate?: string | null, 
+  queryResponseDate?: string | null, 
+  overallStatus?: string
+): { sutHe: number; higherUp: number } => {
+  if (!queryIssuedDate || queryResponseDate) return { sutHe: 0, higherUp: 0 };
+  const issued = new Date(queryIssuedDate);
+  const today = new Date();
+  const days = Math.floor((today.getTime() - issued.getTime()) / (1000 * 60 * 60 * 24));
+  
+  if (overallStatus === 'DSM to Respond – SUT HE Query') {
+    return { sutHe: days, higherUp: 0 };
+  } else if (overallStatus === 'DSM to Respond – Higher Up Query') {
+    return { sutHe: 0, higherUp: days };
+  }
+  return { sutHe: 0, higherUp: 0 };
+};
+
+const mapDbToMatter = (db: DbMatter): Matter => {
+  const queryDays = calculateQueryDaysPending(db.query_issued_date, db.query_response_date, db.overall_status);
+  return {
+    id: db.id,
+    caseId: db.case_id,
+    caseTitle: db.case_title,
+    caseType: db.case_type as CaseType,
+    priority: db.priority as Priority,
+    dsmSubmittedDate: db.dsm_submitted_date,
+    sutheReceivedDate: db.suthe_received_date,
+    sutheSubmittedToHuDate: db.suthe_submitted_to_hu_date || undefined,
+    queryIssuedDate: db.query_issued_date || undefined,
+    queryResponseDate: db.query_response_date || undefined,
+    signedDate: db.signed_date || undefined,
+    queryStatus: db.query_status as Matter['queryStatus'],
+    overallStatus: db.overall_status as OverallStatus,
+    daysInProcess: calculateDaysInProcess(db.dsm_submitted_date, db.signed_date),
+    daysSutHeToHu: calculateDaysSutHeToHu(db.suthe_received_date, db.suthe_submitted_to_hu_date),
+    queryDaysPendingSutHe: queryDays.sutHe,
+    queryDaysPendingHigherUp: queryDays.higherUp,
+    overallSlaDays: db.overall_sla_days,
+    slaStatus: db.sla_status as SLAStatus,
+    remarks: db.remarks || undefined,
+    assignedTo: db.assigned_to || undefined,
+  };
+};
 
 export function useMatters() {
   const [matters, setMatters] = useState<Matter[]>([]);
@@ -171,6 +196,7 @@ export function useMatters() {
         priority: matter.priority,
         dsm_submitted_date: matter.dsmSubmittedDate,
         suthe_received_date: matter.sutheReceivedDate,
+        suthe_submitted_to_hu_date: matter.sutheSubmittedToHuDate || null,
         query_issued_date: matter.queryIssuedDate || null,
         query_response_date: matter.queryResponseDate || null,
         signed_date: matter.signedDate || null,
@@ -199,6 +225,7 @@ export function useMatters() {
     if (updates.priority !== undefined) dbUpdates.priority = updates.priority;
     if (updates.dsmSubmittedDate !== undefined) dbUpdates.dsm_submitted_date = updates.dsmSubmittedDate;
     if (updates.sutheReceivedDate !== undefined) dbUpdates.suthe_received_date = updates.sutheReceivedDate;
+    if (updates.sutheSubmittedToHuDate !== undefined) dbUpdates.suthe_submitted_to_hu_date = updates.sutheSubmittedToHuDate || null;
     if (updates.queryIssuedDate !== undefined) dbUpdates.query_issued_date = updates.queryIssuedDate || null;
     if (updates.queryResponseDate !== undefined) dbUpdates.query_response_date = updates.queryResponseDate || null;
     if (updates.signedDate !== undefined) dbUpdates.signed_date = updates.signedDate || null;

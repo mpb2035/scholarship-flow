@@ -7,6 +7,7 @@ export type OverallStatus =
   | 'In Process'
   | 'DSM to Respond – SUT HE Query'
   | 'DSM to Respond – Higher Up Query'
+  | 'SUT HE Submitted to HU'
   | 'Pending Higher Up Approval'
   | 'Returned for Query'
   | 'Approved & Signed'
@@ -40,13 +41,16 @@ export interface Matter {
   priority: Priority;
   dsmSubmittedDate: string;
   sutheReceivedDate: string;
+  sutheSubmittedToHuDate?: string;
   queryIssuedDate?: string;
   queryResponseDate?: string;
   signedDate?: string;
   queryStatus: QueryStatus;
   overallStatus: OverallStatus;
   daysInProcess: number;
-  queryDaysPending: number;
+  daysSutHeToHu: number;
+  queryDaysPendingSutHe: number;
+  queryDaysPendingHigherUp: number;
   overallSlaDays: number;
   slaStatus: SLAStatus;
   remarks?: string;
