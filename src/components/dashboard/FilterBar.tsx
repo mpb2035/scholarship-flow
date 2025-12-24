@@ -93,7 +93,7 @@ export function FilterBar({ filters, onFiltersChange, filteredMatters }: FilterB
   };
 
   const handleDownloadExcel = () => {
-    if (filteredMatters.length === 0) {
+    if (!filteredMatters || filteredMatters.length === 0) {
       return;
     }
 
@@ -250,7 +250,7 @@ export function FilterBar({ filters, onFiltersChange, filteredMatters }: FilterB
           onClick={handleDownloadExcel}
           variant="outline"
           className="bg-primary/10 border-primary/30 hover:bg-primary/20 text-primary"
-          disabled={filteredMatters.length === 0}
+          disabled={!filteredMatters || filteredMatters.length === 0}
         >
           <Download className="h-4 w-4 mr-2" />
           Export Excel
