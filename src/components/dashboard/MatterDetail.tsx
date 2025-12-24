@@ -38,12 +38,6 @@ export function MatterDetail({ open, onOpenChange, matter, onEdit }: MatterDetai
     setShowExternalLinkConfirm(true);
   };
 
-  const handleConfirmExternalLink = () => {
-    if (matter.externalLink) {
-      window.open(matter.externalLink, '_blank', 'noopener,noreferrer');
-    }
-    setShowExternalLinkConfirm(false);
-  };
 
   const handleEditClick = () => {
     if (onEdit) {
@@ -323,7 +317,7 @@ export function MatterDetail({ open, onOpenChange, matter, onEdit }: MatterDetai
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction asChild>
               <a 
-                href={matter.externalLink} 
+                href={matter.externalLink!} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 onClick={() => setShowExternalLinkConfirm(false)}
