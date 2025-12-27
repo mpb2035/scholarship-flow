@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
 export type AppRole = 'admin' | 'user' | null;
 
 export function useUserRole() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [role, setRole] = useState<AppRole>(null);
   const [loading, setLoading] = useState(true);
 
@@ -13,19 +13,28 @@ export function useUserRole() {
     let cancelled = false;
 
     async function fetchRole() {
-      if (!user) {
-        setRole(null);
-        setLoading(false);
+      // Important: wait for auth to resolve before deciding the user has no role.
+      if (authLoading) {
+        if (!cancelled) setLoading(true);
         return;
       }
 
-      setLoading(true);
+      if (!user) {
+        if (!cancelled) {
+          setRole(null);
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (!cancelled) setLoading(true);
+
       try {
+        // Do not use .single(): schema allows multiple rows per user (unique is user_id+role).
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', user.id)
-          .single();
+          .eq('user_id', user.id);
 
         if (cancelled) return;
 
@@ -33,7 +42,9 @@ export function useUserRole() {
           console.error('Error fetching role:', error);
           setRole(null);
         } else {
-          setRole(data?.role as AppRole);
+          const roles = (data ?? []).map((r) => r.role as AppRole).filter(Boolean);
+          const nextRole: AppRole = roles.includes('admin') ? 'admin' : roles[0] ?? null;
+          setRole(nextRole);
         }
       } catch (err) {
         if (cancelled) return;
@@ -49,9 +60,10 @@ export function useUserRole() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id]);
+  }, [user?.id, authLoading]);
 
-  const isAdmin = role === 'admin';
+  const isAdmin = useMemo(() => role === 'admin', [role]);
 
   return { role, isAdmin, loading };
 }
+
