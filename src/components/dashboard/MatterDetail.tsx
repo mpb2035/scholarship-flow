@@ -19,8 +19,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Matter } from '@/types/matter';
-import { Calendar, Clock, AlertTriangle, CheckCircle, FileText, ExternalLink, Pencil } from 'lucide-react';
+import { Calendar, Clock, AlertTriangle, CheckCircle, FileText, ExternalLink, Pencil, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { TimelineModal } from './TimelineModal';
 
 interface MatterDetailProps {
   open: boolean;
@@ -31,13 +32,13 @@ interface MatterDetailProps {
 
 export function MatterDetail({ open, onOpenChange, matter, onEdit }: MatterDetailProps) {
   const [showExternalLinkConfirm, setShowExternalLinkConfirm] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
 
   if (!matter) return null;
 
   const handleExternalLinkClick = () => {
     setShowExternalLinkConfirm(true);
   };
-
 
   const handleEditClick = () => {
     if (onEdit) {
@@ -91,17 +92,28 @@ export function MatterDetail({ open, onOpenChange, matter, onEdit }: MatterDetai
             <FileText className="h-5 w-5" />
             {matter.caseId}
           </DialogTitle>
-          {onEdit && (
+          <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={handleEditClick}
+              onClick={() => setShowTimeline(true)}
             >
-              <Pencil className="h-4 w-4" />
-              Edit
+              <History className="h-4 w-4" />
+              Timeline
             </Button>
-          )}
+            {onEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={handleEditClick}
+              >
+                <Pencil className="h-4 w-4" />
+                Edit
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -329,6 +341,12 @@ export function MatterDetail({ open, onOpenChange, matter, onEdit }: MatterDetai
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <TimelineModal
+        open={showTimeline}
+        onOpenChange={setShowTimeline}
+        matter={matter}
+      />
     </Dialog>
   );
 }
