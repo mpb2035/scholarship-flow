@@ -206,7 +206,7 @@ const Index = () => {
             onClick={() => handleKPIClick('totalActive')}
           />
           <KPICard
-            title="In Process"
+            title="In Process (SFZN Tray)"
             value={stats.inProcess}
             icon={RefreshCw}
             delay={50}
@@ -214,7 +214,7 @@ const Index = () => {
             onClick={() => handleKPIClick('inProcess')}
           />
           <KPICard
-            title="Pending Review"
+            title="Pending SUT HE Signature"
             value={stats.pendingSutHe}
             icon={Clock}
             delay={100}
