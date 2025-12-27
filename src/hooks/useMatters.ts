@@ -149,10 +149,16 @@ export function useMatters() {
   }, [fetchMatters]);
 
   const filteredMatters = useMemo(() => {
+    // Query-related statuses for combined "Query Response" filter
+    const queryStatuses = ['Returned for Query', 'Dept to Respond – SUT HE Query', 'Dept to Respond – Higher Up Query'];
+    
     return matters.filter((matter) => {
       // Handle "Completed" filter - matches matters with signed date (approved)
       if (filters.status === 'Completed') {
         if (!matter.signedDate) return false;
+      } else if (filters.status === 'Returned for Query') {
+        // Special case: "Returned for Query" filter shows all query-related statuses
+        if (!queryStatuses.includes(matter.overallStatus)) return false;
       } else if (filters.status !== 'all' && matter.overallStatus !== filters.status) {
         return false;
       }

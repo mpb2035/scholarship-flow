@@ -14,11 +14,11 @@ const COLORS = {
   overdue: 'hsl(0, 70%, 50%)',
 };
 
-// Map display names to filter values
-const STATUS_FILTER_MAP: Record<string, string> = {
+// Map display names to filter values (Query Response maps to multiple statuses)
+const STATUS_FILTER_MAP: Record<string, string | string[]> = {
   'Pending SUT HE': 'Pending SUT HE Review',
   'In Process': 'In Process',
-  'Query Response': 'Returned for Query',
+  'Query Response': ['Returned for Query', 'Dept to Respond – SUT HE Query', 'Dept to Respond – Higher Up Query'],
   'Pending Higher Up': 'Pending Higher Up Approval',
   'SLA Breached': 'sla_breached', // Special case for SLA filter
 };
@@ -34,7 +34,8 @@ const data = [
   const handleClick = (entry: { name: string }) => {
     if (onSegmentClick) {
       const filterValue = STATUS_FILTER_MAP[entry.name] || entry.name;
-      onSegmentClick(filterValue);
+      // Pass filter value as JSON string if it's an array, otherwise as plain string
+      onSegmentClick(Array.isArray(filterValue) ? JSON.stringify(filterValue) : filterValue);
     }
   };
 

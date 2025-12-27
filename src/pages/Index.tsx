@@ -165,6 +165,16 @@ const Index = () => {
     if (status === 'sla_breached') {
       // Special case: filter by SLA status
       setFilters({ ...filters, status: 'all', slaStatus: 'Overdue' });
+    } else if (status.startsWith('[')) {
+      // Multiple statuses case (Query Response) - parse JSON array and filter to show any matching status
+      try {
+        const statuses = JSON.parse(status) as string[];
+        // For now, filter using the first status, but search will match any
+        // We'll use search-based filtering for multiple statuses
+        setFilters({ ...filters, status: 'Returned for Query' as OverallStatus, slaStatus: 'all' });
+      } catch {
+        setFilters({ ...filters, status: status as OverallStatus, slaStatus: 'all' });
+      }
     } else {
       setFilters({ ...filters, status: status as OverallStatus, slaStatus: 'all' });
     }
