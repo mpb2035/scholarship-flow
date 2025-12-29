@@ -9,7 +9,6 @@ import { PolicyCommentModal } from '@/components/playground/PolicyCommentModal';
 import { IndicatorDetailModal } from '@/components/playground/IndicatorDetailModal';
 import { BentoIndicator, initialNationalStats } from '@/data/playgroundData';
 import { usePlaygroundData } from '@/hooks/usePlaygroundData';
-
 export default function Playground() {
   const {
     title,
@@ -21,26 +20,22 @@ export default function Playground() {
     updateTitle,
     updateIndicators,
     save,
-    reset,
+    reset
   } = usePlaygroundData();
-
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [sortCriteria, setSortCriteria] = useState<SortCriteria>('default');
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [commentLabel, setCommentLabel] = useState('');
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedIndicator, setSelectedIndicator] = useState<BentoIndicator | null>(null);
-
   const handleUpdateIndicator = (index: number, updated: BentoIndicator) => {
     const newIndicators = indicators.map((item, i) => i === index ? updated : item);
     updateIndicators(newIndicators);
   };
-
   const handleDeleteIndicator = (index: number) => {
     const newIndicators = indicators.filter((_, i) => i !== index);
     updateIndicators(newIndicators);
   };
-
   const handleAddNew = () => {
     const newIndicator: BentoIndicator = {
       id: `NEW-${Date.now().toString(36).toUpperCase()}`,
@@ -65,17 +60,14 @@ export default function Playground() {
     };
     updateIndicators([...indicators, newIndicator]);
   };
-
   const handleCommentClick = (label: string) => {
     setCommentLabel(label);
     setCommentModalOpen(true);
   };
-
   const handleDetailClick = (indicator: BentoIndicator) => {
     setSelectedIndicator(indicator);
     setDetailModalOpen(true);
   };
-
   const handleUpdateSelectedIndicator = (updated: BentoIndicator) => {
     const index = indicators.findIndex(i => i.id === updated.id);
     if (index !== -1) {
@@ -83,7 +75,6 @@ export default function Playground() {
       setSelectedIndicator(updated);
     }
   };
-
   const sortedIndicators = useMemo(() => {
     const items = [...indicators];
     switch (sortCriteria) {
@@ -99,37 +90,18 @@ export default function Playground() {
         return items;
     }
   }, [indicators, sortCriteria]);
-
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+    return <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-slate-50 dark:bg-background p-6 md:p-8">
+  return <div className="min-h-screen p-6 md:p-8 bg-primary-foreground">
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {isEditingTitle ? (
-            <Input
-              value={title}
-              onChange={(e) => updateTitle(e.target.value)}
-              onBlur={() => setIsEditingTitle(false)}
-              onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
-              autoFocus
-              className="text-2xl md:text-3xl font-display font-bold h-auto py-2"
-            />
-          ) : (
-            <h1
-              onClick={() => setIsEditingTitle(true)}
-              className="text-2xl md:text-3xl font-display font-bold text-[hsl(210,80%,28%)] cursor-pointer hover:text-[hsl(210,80%,35%)] transition-colors"
-            >
+          {isEditingTitle ? <Input value={title} onChange={e => updateTitle(e.target.value)} onBlur={() => setIsEditingTitle(false)} onKeyDown={e => e.key === 'Enter' && setIsEditingTitle(false)} autoFocus className="text-2xl md:text-3xl font-display font-bold h-auto py-2" /> : <h1 onClick={() => setIsEditingTitle(true)} className="text-2xl md:text-3xl font-display font-bold text-[hsl(210,80%,28%)] cursor-pointer hover:text-[hsl(210,80%,35%)] transition-colors">
               🍱 {title}
-            </h1>
-          )}
+            </h1>}
           
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={reset} className="border-[hsl(210,80%,28%)] text-[hsl(210,80%,28%)]">
@@ -140,31 +112,15 @@ export default function Playground() {
               <Plus className="h-4 w-4 mr-1.5" />
               Add Card
             </Button>
-            {isAuthenticated && (
-              <Button 
-                size="sm" 
-                onClick={save} 
-                disabled={isSaving || !hasUnsavedChanges}
-                variant={hasUnsavedChanges ? 'default' : 'outline'}
-                className={hasUnsavedChanges ? 'bg-[hsl(210,80%,28%)] hover:bg-[hsl(210,80%,35%)]' : ''}
-              >
-                {isSaving ? (
-                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4 mr-1.5" />
-                )}
+            {isAuthenticated && <Button size="sm" onClick={save} disabled={isSaving || !hasUnsavedChanges} variant={hasUnsavedChanges ? 'default' : 'outline'} className={hasUnsavedChanges ? 'bg-[hsl(210,80%,28%)] hover:bg-[hsl(210,80%,35%)]' : ''}>
+                {isSaving ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Save className="h-4 w-4 mr-1.5" />}
                 {hasUnsavedChanges ? 'Save' : 'Saved'}
-              </Button>
-            )}
+              </Button>}
           </div>
         </div>
         <p className="text-muted-foreground mt-2">
           Click any card to view details and add policy recommendations. 
-          {isAuthenticated 
-            ? hasUnsavedChanges 
-              ? ' You have unsaved changes.' 
-              : ' All changes saved.'
-            : ' Sign in to save your changes.'}
+          {isAuthenticated ? hasUnsavedChanges ? ' You have unsaved changes.' : ' All changes saved.' : ' Sign in to save your changes.'}
         </p>
       </div>
 
@@ -179,43 +135,22 @@ export default function Playground() {
         <NationalSummaryCard stats={initialNationalStats} onCommentClick={handleCommentClick} />
 
         {/* Indicator Cards */}
-        {sortedIndicators.map((indicator, index) => (
-          <BentoCard
-            key={`${indicator.id}-${index}`}
-            indicator={indicator}
-            onUpdate={(updated) => handleUpdateIndicator(indicators.indexOf(indicator), updated)}
-            onDelete={() => handleDeleteIndicator(indicators.indexOf(indicator))}
-            onCommentClick={handleCommentClick}
-            onDetailClick={() => handleDetailClick(indicator)}
-          />
-        ))}
+        {sortedIndicators.map((indicator, index) => <BentoCard key={`${indicator.id}-${index}`} indicator={indicator} onUpdate={updated => handleUpdateIndicator(indicators.indexOf(indicator), updated)} onDelete={() => handleDeleteIndicator(indicators.indexOf(indicator))} onCommentClick={handleCommentClick} onDetailClick={() => handleDetailClick(indicator)} />)}
       </div>
 
       {/* Empty State */}
-      {indicators.length === 0 && (
-        <div className="max-w-7xl mx-auto text-center py-16">
+      {indicators.length === 0 && <div className="max-w-7xl mx-auto text-center py-16">
           <p className="text-muted-foreground mb-4">No scorecards yet. Add your first one!</p>
           <Button onClick={handleAddNew} className="bg-[hsl(210,80%,28%)] hover:bg-[hsl(210,80%,35%)]">
             <Plus className="h-4 w-4 mr-1.5" />
             Add Card
           </Button>
-        </div>
-      )}
+        </div>}
 
       {/* Policy Comment Modal */}
-      <PolicyCommentModal 
-        isOpen={commentModalOpen} 
-        onClose={() => setCommentModalOpen(false)} 
-        label={commentLabel} 
-      />
+      <PolicyCommentModal isOpen={commentModalOpen} onClose={() => setCommentModalOpen(false)} label={commentLabel} />
 
       {/* Indicator Detail Modal */}
-      <IndicatorDetailModal
-        isOpen={detailModalOpen}
-        onClose={() => setDetailModalOpen(false)}
-        indicator={selectedIndicator}
-        onUpdateIndicator={handleUpdateSelectedIndicator}
-      />
-    </div>
-  );
+      <IndicatorDetailModal isOpen={detailModalOpen} onClose={() => setDetailModalOpen(false)} indicator={selectedIndicator} onUpdateIndicator={handleUpdateSelectedIndicator} />
+    </div>;
 }
