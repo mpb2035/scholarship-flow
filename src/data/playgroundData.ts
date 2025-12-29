@@ -9,7 +9,27 @@ export interface BentoIndicator {
   action: string;
   quality_rating: number;
   category: string;
+  pillar?: string;
+  owner?: string;
 }
+
+export interface NationalStats {
+  rank_2023: number;
+  rank_2025: number;
+  score_2023: number;
+  score_2025: number;
+  rank_change: number;
+  score_change: number;
+}
+
+export const initialNationalStats: NationalStats = {
+  rank_2023: 41,
+  rank_2025: 43,
+  score_2023: 52.3,
+  score_2025: 51.48,
+  rank_change: -2,
+  score_change: -0.82
+};
 
 export const initialDashboardTitle = "GTCI 2025 Pillar 6: Global Knowledge Skills (Brunei)";
 

@@ -1,10 +1,13 @@
+import { useState, useMemo } from 'react';
 import { Plus, RotateCcw, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BentoCard } from '@/components/playground/BentoCard';
-import { BentoIndicator } from '@/data/playgroundData';
+import { NationalSummaryCard } from '@/components/playground/NationalSummaryCard';
+import { SortToolbar, SortCriteria } from '@/components/playground/SortToolbar';
+import { PolicyCommentModal } from '@/components/playground/PolicyCommentModal';
+import { BentoIndicator, initialNationalStats } from '@/data/playgroundData';
 import { usePlaygroundData } from '@/hooks/usePlaygroundData';
-import { useState } from 'react';
 
 export default function Playground() {
   const {
@@ -21,6 +24,9 @@ export default function Playground() {
   } = usePlaygroundData();
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [sortCriteria, setSortCriteria] = useState<SortCriteria>('default');
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const [commentLabel, setCommentLabel] = useState('');
 
   const handleUpdateIndicator = (index: number, updated: BentoIndicator) => {
     const newIndicators = indicators.map((item, i) => i === index ? updated : item);
@@ -43,10 +49,33 @@ export default function Playground() {
       insight: 'Click to edit this insight...',
       action: 'Click to add strategic action...',
       quality_rating: 3,
-      category: 'Custom'
+      category: 'Custom',
+      pillar: 'Custom Pillar',
+      owner: 'TBD'
     };
     updateIndicators([...indicators, newIndicator]);
   };
+
+  const handleCommentClick = (label: string) => {
+    setCommentLabel(label);
+    setCommentModalOpen(true);
+  };
+
+  const sortedIndicators = useMemo(() => {
+    const items = [...indicators];
+    switch (sortCriteria) {
+      case 'id':
+        return items.sort((a, b) => a.id.localeCompare(b.id));
+      case 'change':
+        return items.sort((a, b) => {
+          const changeA = typeof a.trend_value === 'string' ? parseFloat(a.trend_value) || 0 : a.trend_value;
+          const changeB = typeof b.trend_value === 'string' ? parseFloat(b.trend_value) || 0 : b.trend_value;
+          return changeA - changeB;
+        });
+      default:
+        return items;
+    }
+  }, [indicators, sortCriteria]);
 
   if (isLoading) {
     return (
@@ -57,7 +86,7 @@ export default function Playground() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6 md:p-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-background p-6 md:p-8">
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -73,18 +102,18 @@ export default function Playground() {
           ) : (
             <h1
               onClick={() => setIsEditingTitle(true)}
-              className="text-2xl md:text-3xl font-display font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
+              className="text-2xl md:text-3xl font-display font-bold text-[hsl(210,80%,28%)] cursor-pointer hover:text-[hsl(210,80%,35%)] transition-colors"
             >
               🍱 {title}
             </h1>
           )}
           
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={reset}>
+            <Button variant="outline" size="sm" onClick={reset} className="border-[hsl(210,80%,28%)] text-[hsl(210,80%,28%)]">
               <RotateCcw className="h-4 w-4 mr-1.5" />
               Reset
             </Button>
-            <Button size="sm" onClick={handleAddNew}>
+            <Button size="sm" onClick={handleAddNew} className="bg-[hsl(210,80%,28%)] hover:bg-[hsl(210,80%,35%)]">
               <Plus className="h-4 w-4 mr-1.5" />
               Add Card
             </Button>
@@ -94,6 +123,7 @@ export default function Playground() {
                 onClick={save} 
                 disabled={isSaving || !hasUnsavedChanges}
                 variant={hasUnsavedChanges ? 'default' : 'outline'}
+                className={hasUnsavedChanges ? 'bg-[hsl(210,80%,28%)] hover:bg-[hsl(210,80%,35%)]' : ''}
               >
                 {isSaving ? (
                   <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
@@ -115,14 +145,24 @@ export default function Playground() {
         </p>
       </div>
 
+      {/* Sort Toolbar */}
+      <div className="max-w-7xl mx-auto">
+        <SortToolbar activeCriteria={sortCriteria} onSort={setSortCriteria} />
+      </div>
+
       {/* Bento Grid */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {indicators.map((indicator, index) => (
+        {/* National Summary Card */}
+        <NationalSummaryCard stats={initialNationalStats} onCommentClick={handleCommentClick} />
+
+        {/* Indicator Cards */}
+        {sortedIndicators.map((indicator, index) => (
           <BentoCard
             key={`${indicator.id}-${index}`}
             indicator={indicator}
-            onUpdate={(updated) => handleUpdateIndicator(index, updated)}
-            onDelete={() => handleDeleteIndicator(index)}
+            onUpdate={(updated) => handleUpdateIndicator(indicators.indexOf(indicator), updated)}
+            onDelete={() => handleDeleteIndicator(indicators.indexOf(indicator))}
+            onCommentClick={handleCommentClick}
           />
         ))}
       </div>
@@ -131,12 +171,19 @@ export default function Playground() {
       {indicators.length === 0 && (
         <div className="max-w-7xl mx-auto text-center py-16">
           <p className="text-muted-foreground mb-4">No scorecards yet. Add your first one!</p>
-          <Button onClick={handleAddNew}>
+          <Button onClick={handleAddNew} className="bg-[hsl(210,80%,28%)] hover:bg-[hsl(210,80%,35%)]">
             <Plus className="h-4 w-4 mr-1.5" />
             Add Card
           </Button>
         </div>
       )}
+
+      {/* Policy Comment Modal */}
+      <PolicyCommentModal 
+        isOpen={commentModalOpen} 
+        onClose={() => setCommentModalOpen(false)} 
+        label={commentLabel} 
+      />
     </div>
   );
 }
