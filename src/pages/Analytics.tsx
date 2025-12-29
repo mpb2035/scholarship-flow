@@ -8,8 +8,11 @@ import { AnalyticsDetailModal } from '@/components/analytics/AnalyticsDetailModa
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, BarChart3, Search, Filter } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Loader2, BarChart3, Search, Filter, Clock, CheckCircle } from 'lucide-react';
 import { Matter, OverallStatus, CaseType } from '@/types/matter';
+
+type StatusToggle = 'all' | 'in-process' | 'completed';
 
 interface GroupedData {
   key: string;
@@ -46,6 +49,7 @@ const Analytics = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterYear, setFilterYear] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusToggle, setStatusToggle] = useState<StatusToggle>('all');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -108,6 +112,12 @@ const Analytics = () => {
           return false;
         }
       }
+      // Apply status toggle filter
+      if (statusToggle === 'completed') {
+        if (group.status !== 'Approved & Signed' && group.status !== 'Not Approved') return false;
+      } else if (statusToggle === 'in-process') {
+        if (group.status === 'Approved & Signed' || group.status === 'Not Approved') return false;
+      }
       return true;
     }).sort((a, b) => {
       // Sort by year desc, then month desc
@@ -115,7 +125,7 @@ const Analytics = () => {
       if (a.month !== b.month) return b.month - a.month;
       return a.caseType.localeCompare(b.caseType);
     });
-  }, [groupedData, filterCaseType, filterStatus, filterYear, searchTerm]);
+  }, [groupedData, filterCaseType, filterStatus, filterYear, searchTerm, statusToggle]);
 
   // Calculate summary stats
   const summaryStats = useMemo(() => {
@@ -184,7 +194,34 @@ const Analytics = () => {
             <Filter className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-muted-foreground">Filters</span>
           </div>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 items-center">
+            {/* Status Toggle Buttons */}
+            <ToggleGroup 
+              type="single" 
+              value={statusToggle} 
+              onValueChange={(value) => {
+                if (value) setStatusToggle(value as StatusToggle);
+              }}
+              className="border border-border/50 rounded-lg p-1 bg-input"
+            >
+              <ToggleGroupItem 
+                value="in-process" 
+                aria-label="In Process"
+                className="data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-400 px-3 py-1.5 text-sm"
+              >
+                <Clock className="h-4 w-4 mr-2" />
+                In Process
+              </ToggleGroupItem>
+              <ToggleGroupItem 
+                value="completed" 
+                aria-label="Completed"
+                className="data-[state=on]:bg-emerald-500/20 data-[state=on]:text-emerald-400 px-3 py-1.5 text-sm"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Completed
+              </ToggleGroupItem>
+            </ToggleGroup>
+
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input

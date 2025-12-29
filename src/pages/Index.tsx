@@ -8,7 +8,7 @@ import { KPIDetailDialog } from '@/components/dashboard/KPIDetailDialog';
 import { StatusChart } from '@/components/dashboard/StatusChart';
 import { SLABarChart } from '@/components/dashboard/SLABarChart';
 import { MatterTable } from '@/components/dashboard/MatterTable';
-import { FilterBar } from '@/components/dashboard/FilterBar';
+import { FilterBar, StatusToggle } from '@/components/dashboard/FilterBar';
 import { MatterForm } from '@/components/dashboard/MatterForm';
 import { MatterDetail } from '@/components/dashboard/MatterDetail';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
@@ -57,7 +57,17 @@ const Index = () => {
   const [editingMatter, setEditingMatter] = useState<Matter | undefined>();
   const [kpiDialogOpen, setKpiDialogOpen] = useState(false);
   const [selectedKPI, setSelectedKPI] = useState<KPIType | null>(null);
+  const [statusToggle, setStatusToggle] = useState<StatusToggle>('all');
 
+  // Apply status toggle filter to filteredMatters
+  const displayedMatters = useMemo(() => {
+    if (statusToggle === 'completed') {
+      return filteredMatters.filter(m => m.overallStatus === 'Approved & Signed' || m.overallStatus === 'Not Approved');
+    } else if (statusToggle === 'in-process') {
+      return filteredMatters.filter(m => m.overallStatus !== 'Approved & Signed' && m.overallStatus !== 'Not Approved');
+    }
+    return filteredMatters;
+  }, [filteredMatters, statusToggle]);
   // Compute matters for each KPI category
   const kpiMatters = useMemo(() => {
     const thirtyDaysAgo = new Date();
@@ -273,12 +283,18 @@ const Index = () => {
         </div>
 
         {/* Filters */}
-        <FilterBar filters={filters} onFiltersChange={setFilters} filteredMatters={filteredMatters} />
+        <FilterBar 
+          filters={filters} 
+          onFiltersChange={setFilters} 
+          filteredMatters={displayedMatters}
+          statusToggle={statusToggle}
+          onStatusToggleChange={setStatusToggle}
+        />
 
         {/* Table */}
         <div className="mt-6">
           <MatterTable
-            matters={filteredMatters}
+            matters={displayedMatters}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onView={handleView}
