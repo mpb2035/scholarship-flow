@@ -14,6 +14,7 @@ export interface BentoIndicator {
   owner?: string;
   definition?: string;
   dataSource?: string;
+  sourceUrls?: { name: string; url: string }[];
   dataAge?: string;
   reliabilityAssessment?: string;
   validationStatus?: string;
@@ -59,6 +60,10 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "AITI",
     definition: "GitHub commits/pushes received and sent per million population (15-69 years). Measures active open-source development engagement on publicly-available GitHub projects.",
     dataSource: "Global Innovation Index (WIPO), GitHub, UN Population Division",
+    sourceUrls: [
+      { name: "GitHub", url: "https://github.com" },
+      { name: "WIPO GII Indicators", url: "https://www.wipo.int/gii-ranking/en/indicators/732" }
+    ],
     dataAge: "2024 (Current)",
     reliabilityAssessment: "HIGH - Real-time GitHub data",
     validationStatus: "Methodology changed 2025, not directly comparable to 2023",
@@ -80,6 +85,11 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "Ministry of Finance",
     definition: "Telecommunications, computer and information services exports as % of total trade. Includes telecom, software development, IT consulting, data processing services.",
     dataSource: "WTO Trade in Commercial Services Database, OECD, UN Comtrade",
+    sourceUrls: [
+      { name: "WTO Trade Services", url: "https://stats.wto.org" },
+      { name: "OECD Data", url: "https://data.oecd.org" },
+      { name: "UN Comtrade", url: "https://comtrade.un.org" }
+    ],
     dataAge: "2023 (2-year lag)",
     reliabilityAssessment: "HIGH - WTO/OECD official data",
     validationStatus: "Reliable indicator of services sector weakness",
@@ -101,6 +111,10 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "AITI",
     definition: "Global downloads of mobile apps per billion PPP GDP (2-year average). Measures mobile app development capacity and global reach.",
     dataSource: "Global Innovation Index Database (WIPO), data.ia (Sensor Tower Company), IMF",
+    sourceUrls: [
+      { name: "WIPO GII", url: "https://www.wipo.int/global_innovation_index/en/" },
+      { name: "Data.ai", url: "https://www.data.ai" }
+    ],
     dataAge: "2024 (Current)",
     reliabilityAssessment: "MEDIUM - Data.ia proprietary model",
     validationStatus: "Reliability limited by app store data quality",
@@ -124,6 +138,9 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "MTIC",
     definition: "Individuals with advanced ICT skills (percentage of population). Definition: Population aged 15+ who wrote computer program using specialized programming language within last 3 months.",
     dataSource: "International Telecommunication Union (ITU DataHub)",
+    sourceUrls: [
+      { name: "ITU DataHub", url: "https://datahub.itu.int" }
+    ],
     dataAge: "2023 (2-year lag)",
     reliabilityAssessment: "LOW - Likely missing data",
     validationStatus: "CRITICAL: 100 score inconsistent with other digital indicators",
@@ -146,6 +163,9 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "DARe / BEBD",
     definition: "New corporate registrations per 1,000 working-age population per calendar year. Counts newly registered firms with limited liability.",
     dataSource: "World Bank Entrepreneurship Database",
+    sourceUrls: [
+      { name: "World Bank Entrepreneurship", url: "https://www.worldbank.org/en/programs/entrepreneurship" }
+    ],
     dataAge: "2022 (3-year lag)",
     reliabilityAssessment: "LOW - Missing data likely",
     validationStatus: "CRITICAL: Zero score contradicts actual business environment",
@@ -167,6 +187,10 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "AITI",
     definition: "AI talent concentration: Ratio of LinkedIn members with AI skills/AI job titles to total LinkedIn members. Reflects country's AI ecosystem maturity.",
     dataSource: "OECD.AI Policy Observatory, LinkedIn Data",
+    sourceUrls: [
+      { name: "OECD.AI", url: "https://oecd.ai" },
+      { name: "LinkedIn", url: "https://www.linkedin.com" }
+    ],
     dataAge: "2024 (Limited coverage)",
     reliabilityAssessment: "LOW - Brunei likely not in sample",
     validationStatus: "No data available; LinkedIn penetration limited",
@@ -190,6 +214,10 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "Ministry of Education",
     definition: "Professionals as percentage of total workforce. Includes science professionals, engineers, computing, architecture, life sciences, teaching, business/legal professionals.",
     dataSource: "International Labour Organization (ILOSTAT), World Bank Global Jobs Indicators Database",
+    sourceUrls: [
+      { name: "ILO ILOSTAT", url: "https://ilostat.ilo.org" },
+      { name: "World Bank DataHub", url: "https://datahub.worldbank.org" }
+    ],
     dataAge: "2024 (Current)",
     reliabilityAssessment: "HIGH - ILO standardized survey",
     validationStatus: "Slight decline indicates vulnerability",
@@ -212,6 +240,10 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "MMP",
     definition: "Legislators, senior officials, and managers as percentage of total employment. Classification: ISCO Revision 2008.",
     dataSource: "International Labour Organization (ILOSTAT), World Bank Global Jobs Indicators Database",
+    sourceUrls: [
+      { name: "ILO ILOSTAT", url: "https://ilostat.ilo.org" },
+      { name: "World Bank DataHub", url: "https://datahub.worldbank.org" }
+    ],
     dataAge: "2024 (Current)",
     reliabilityAssessment: "HIGH - ILO official data",
     validationStatus: "Brunei's strongest indicator; reliable",
@@ -233,6 +265,9 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "MoE",
     definition: "Labour force with tertiary education as percentage of total labour force. Definition: Highest educational attainment at tertiary level (ISCED 2011 levels 5-8).",
     dataSource: "International Labour Organization (ILOSTAT)",
+    sourceUrls: [
+      { name: "ILO ILOSTAT", url: "https://ilostat.ilo.org" }
+    ],
     dataAge: "2024 (Current)",
     reliabilityAssessment: "HIGH - ILO official data",
     validationStatus: "Reliable education statistics",
@@ -256,6 +291,10 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "UBD/UTB",
     definition: "Scientific and technical journal articles per 10,000 inhabitants. Covers physics, biology, chemistry, mathematics, clinical medicine, biomedical research, engineering, technology, earth & space sciences.",
     dataSource: "World Bank Development Indicators, National Science Foundation (NSF)",
+    sourceUrls: [
+      { name: "World Bank Data", url: "https://data.worldbank.org" },
+      { name: "NSF", url: "https://nsf.gov" }
+    ],
     dataAge: "2022 (3-year lag)",
     reliabilityAssessment: "HIGH - NSF/Scopus indexed data",
     validationStatus: "Positive trend confirmed; reliable measurement",
@@ -277,6 +316,10 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "UBD/UTB",
     definition: "Researchers (full-time equivalent) per million population. Definition: Professionals engaged in conception/creation of new knowledge.",
     dataSource: "Global Innovation Index (WIPO), UNESCO UIS, Eurostat, OECD MSTI",
+    sourceUrls: [
+      { name: "WIPO GII", url: "https://www.wipo.int/global_innovation_index/en/" },
+      { name: "UNESCO UIS", url: "https://uis.unesco.org" }
+    ],
     dataAge: "2023 (2-year lag)",
     reliabilityAssessment: "MEDIUM - UNESCO/ILO data",
     validationStatus: "Limited by small research base",
@@ -299,6 +342,11 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "Ministry of Finance",
     definition: "High-technology exports as percentage of manufactured exports. High-value = R&D-intensive products (computers, pharmaceuticals, scientific instruments, electrical machinery).",
     dataSource: "World Bank Development Indicators, UN Comtrade, WTO-OECD Trade Services Database",
+    sourceUrls: [
+      { name: "World Bank Data", url: "https://data.worldbank.org" },
+      { name: "UN Comtrade", url: "https://comtrade.un.org" },
+      { name: "WITS", url: "https://wits.worldbank.org" }
+    ],
     dataAge: "2023 (2-year lag)",
     reliabilityAssessment: "HIGH - UN Comtrade trade data",
     validationStatus: "Reliable but reveals commodity dependency",
@@ -321,6 +369,9 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "Ministry of Education",
     definition: "Survey-based assessment of workforce soft skills. Measures: Creativity & problem-solving, Management skills, Self-efficacy, Working with others (scale 1-7).",
     dataSource: "World Economic Forum Executive Opinion Survey (EOS)",
+    sourceUrls: [
+      { name: "WEF Reports", url: "https://reports.weforum.org" }
+    ],
     dataAge: "2024 (Current)",
     reliabilityAssessment: "MEDIUM - Survey-based perception",
     validationStatus: "Potential respondent bias toward large companies",
@@ -342,6 +393,10 @@ export const initialIndicators: BentoIndicator[] = [
     owner: "BruIPO",
     definition: "Charges for use of intellectual property (receipts as % of total trade, 3-year average). Includes IP licensing fees, patent royalties, trademark licensing income.",
     dataSource: "World Trade Organization (WTO), OECD, UN Comtrade, IMF Balance of Payments",
+    sourceUrls: [
+      { name: "WTO Stats", url: "https://stats.wto.org" },
+      { name: "UN Comtrade", url: "https://comtrade.un.org" }
+    ],
     dataAge: "2023 (2-year lag)",
     reliabilityAssessment: "HIGH - IMF/WTO trade data",
     validationStatus: "Accurate reflection of zero commercial IP value",

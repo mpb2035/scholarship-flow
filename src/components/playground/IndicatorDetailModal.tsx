@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   TrendingUp, TrendingDown, Minus, Star, Database, Clock, 
-  Shield, CheckCircle, Lightbulb, Plus, Send, Trash2 
+  Shield, CheckCircle, Lightbulb, Plus, Send, Trash2, ExternalLink 
 } from 'lucide-react';
 import { BentoIndicator } from '@/data/playgroundData';
 import { cn } from '@/lib/utils';
@@ -177,9 +177,25 @@ export function IndicatorDetailModal({ isOpen, onClose, indicator, onUpdateIndic
               {indicator.dataSource && (
                 <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
                   <Database className="h-5 w-5 text-primary mt-0.5" />
-                  <div>
+                  <div className="flex-1">
                     <h5 className="font-medium text-sm">Data Source</h5>
                     <p className="text-muted-foreground text-sm">{indicator.dataSource}</p>
+                    {indicator.sourceUrls && indicator.sourceUrls.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {indicator.sourceUrls.map((source, idx) => (
+                          <a
+                            key={idx}
+                            href={source.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline bg-primary/10 px-2 py-1 rounded-md"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            {source.name}
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
