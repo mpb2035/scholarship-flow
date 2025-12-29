@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trash2, GripVertical, TrendingUp, TrendingDown, Minus, Star, MessageSquare, FileText, Info } from 'lucide-react';
+import { Trash2, GripVertical, TrendingUp, TrendingDown, Minus, Star, MessageSquare, FileText, Info, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +18,55 @@ interface BentoCardProps {
 export function BentoCard({ indicator, onUpdate, onDelete, onCommentClick, onDetailClick }: BentoCardProps) {
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const overviewSection = `OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Title: ${indicator.title}
+ID: ${indicator.id}
+Pillar: ${indicator.pillar || indicator.category}
+Owner: ${indicator.owner || 'N/A'}
+Score (2025): ${indicator.score_2025}
+Change: ${indicator.trend_value}
+
+Definition:
+${indicator.definition || 'No definition available'}`;
+
+    const dataSourcesSection = `
+
+DATA SOURCES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Data Source: ${indicator.dataSource || 'N/A'}
+Data Age: ${indicator.dataAge || 'N/A'}
+Reliability Assessment: ${indicator.reliabilityAssessment || 'N/A'}
+Validation Status: ${indicator.validationStatus || 'N/A'}
+Quality Rating: ${indicator.quality_rating}/5 stars`;
+
+    const policyNotesSection = `
+
+POLICY NOTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${indicator.policyNotes && indicator.policyNotes.length > 0 
+  ? indicator.policyNotes.map((note, i) => `${i + 1}. ${note}`).join('\n')
+  : 'No policy notes added yet'}
+
+Strategic Recommendation:
+${indicator.strategicRecommendation || 'N/A'}`;
+
+    const fullContent = `${overviewSection}${dataSourcesSection}${policyNotesSection}`;
+
+    try {
+      await navigator.clipboard.writeText(fullContent);
+      setCopied(true);
+      toast.success('Indicator data copied to clipboard');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error('Failed to copy to clipboard');
+    }
+  };
 
   const startEdit = (field: string, value: string) => {
     setIsEditing(field);
@@ -116,8 +165,20 @@ export function BentoCard({ indicator, onUpdate, onDelete, onCommentClick, onDet
         onDetailClick();
       }}
     >
-      {/* Drag Handle & Delete */}
+      {/* Drag Handle, Copy & Delete */}
       <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "h-6 w-6 hover:bg-white/10",
+            copied ? "text-green-300" : "text-white/60 hover:text-white"
+          )}
+          onClick={handleCopy}
+          title="Copy indicator data"
+        >
+          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+        </Button>
         <GripVertical className="h-4 w-4 text-white/60 cursor-grab" />
         <Button
           variant="ghost"
