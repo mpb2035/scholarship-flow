@@ -1,4 +1,4 @@
-import { Search, Download, X } from 'lucide-react';
+import { Search, Download, X, Clock, CheckCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,14 +8,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Filters } from '@/hooks/useMatters';
 import { OverallStatus, Priority, CaseType, SLAStatus, Matter } from '@/types/matter';
 import * as XLSX from 'xlsx';
+
+export type StatusToggle = 'all' | 'in-process' | 'completed';
 
 interface FilterBarProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
   filteredMatters: Matter[];
+  statusToggle?: StatusToggle;
+  onStatusToggleChange?: (value: StatusToggle) => void;
 }
 
 const statuses: (OverallStatus | 'all' | 'Completed')[] = [
@@ -88,7 +93,13 @@ const years = [
   })),
 ];
 
-export function FilterBar({ filters, onFiltersChange, filteredMatters }: FilterBarProps) {
+export function FilterBar({ 
+  filters, 
+  onFiltersChange, 
+  filteredMatters,
+  statusToggle = 'all',
+  onStatusToggleChange 
+}: FilterBarProps) {
   const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
     onFiltersChange({ ...filters, [key]: value });
   };
@@ -103,6 +114,7 @@ export function FilterBar({ filters, onFiltersChange, filteredMatters }: FilterB
       month: 'all',
       year: 'all',
     });
+    onStatusToggleChange?.('all');
   };
 
   const hasActiveFilters = 
@@ -112,7 +124,8 @@ export function FilterBar({ filters, onFiltersChange, filteredMatters }: FilterB
     filters.slaStatus !== 'all' ||
     filters.search !== '' ||
     filters.month !== 'all' ||
-    filters.year !== 'all';
+    filters.year !== 'all' ||
+    statusToggle !== 'all';
 
   const handleDownloadExcel = () => {
     if (!filteredMatters || filteredMatters.length === 0) {
@@ -161,7 +174,34 @@ export function FilterBar({ filters, onFiltersChange, filteredMatters }: FilterB
 
   return (
     <div className="glass-card p-4">
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4 items-center">
+        {/* Status Toggle Buttons */}
+        <ToggleGroup 
+          type="single" 
+          value={statusToggle} 
+          onValueChange={(value) => {
+            if (value) onStatusToggleChange?.(value as StatusToggle);
+          }}
+          className="border border-border/50 rounded-lg p-1 bg-input"
+        >
+          <ToggleGroupItem 
+            value="in-process" 
+            aria-label="In Process"
+            className="data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-400 px-3 py-1.5 text-sm"
+          >
+            <Clock className="h-4 w-4 mr-2" />
+            In Process
+          </ToggleGroupItem>
+          <ToggleGroupItem 
+            value="completed" 
+            aria-label="Completed"
+            className="data-[state=on]:bg-emerald-500/20 data-[state=on]:text-emerald-400 px-3 py-1.5 text-sm"
+          >
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Completed
+          </ToggleGroupItem>
+        </ToggleGroup>
+
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
