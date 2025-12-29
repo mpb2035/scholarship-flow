@@ -6,6 +6,7 @@ import { BentoCard } from '@/components/playground/BentoCard';
 import { NationalSummaryCard } from '@/components/playground/NationalSummaryCard';
 import { SortToolbar, SortCriteria } from '@/components/playground/SortToolbar';
 import { PolicyCommentModal } from '@/components/playground/PolicyCommentModal';
+import { IndicatorDetailModal } from '@/components/playground/IndicatorDetailModal';
 import { BentoIndicator, initialNationalStats } from '@/data/playgroundData';
 import { usePlaygroundData } from '@/hooks/usePlaygroundData';
 
@@ -27,6 +28,8 @@ export default function Playground() {
   const [sortCriteria, setSortCriteria] = useState<SortCriteria>('default');
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [commentLabel, setCommentLabel] = useState('');
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedIndicator, setSelectedIndicator] = useState<BentoIndicator | null>(null);
 
   const handleUpdateIndicator = (index: number, updated: BentoIndicator) => {
     const newIndicators = indicators.map((item, i) => i === index ? updated : item);
@@ -51,7 +54,14 @@ export default function Playground() {
       quality_rating: 3,
       category: 'Custom',
       pillar: 'Custom Pillar',
-      owner: 'TBD'
+      owner: 'TBD',
+      definition: 'Click to add definition and methodology...',
+      dataSource: 'TBD',
+      dataAge: 'Current',
+      reliabilityAssessment: 'MEDIUM',
+      validationStatus: 'Pending validation',
+      strategicRecommendation: 'Click to add strategic recommendation...',
+      policyNotes: []
     };
     updateIndicators([...indicators, newIndicator]);
   };
@@ -59,6 +69,19 @@ export default function Playground() {
   const handleCommentClick = (label: string) => {
     setCommentLabel(label);
     setCommentModalOpen(true);
+  };
+
+  const handleDetailClick = (indicator: BentoIndicator) => {
+    setSelectedIndicator(indicator);
+    setDetailModalOpen(true);
+  };
+
+  const handleUpdateSelectedIndicator = (updated: BentoIndicator) => {
+    const index = indicators.findIndex(i => i.id === updated.id);
+    if (index !== -1) {
+      handleUpdateIndicator(index, updated);
+      setSelectedIndicator(updated);
+    }
   };
 
   const sortedIndicators = useMemo(() => {
@@ -136,7 +159,7 @@ export default function Playground() {
           </div>
         </div>
         <p className="text-muted-foreground mt-2">
-          Click any field to edit. 
+          Click any card to view details and add policy recommendations. 
           {isAuthenticated 
             ? hasUnsavedChanges 
               ? ' You have unsaved changes.' 
@@ -163,6 +186,7 @@ export default function Playground() {
             onUpdate={(updated) => handleUpdateIndicator(indicators.indexOf(indicator), updated)}
             onDelete={() => handleDeleteIndicator(indicators.indexOf(indicator))}
             onCommentClick={handleCommentClick}
+            onDetailClick={() => handleDetailClick(indicator)}
           />
         ))}
       </div>
@@ -183,6 +207,14 @@ export default function Playground() {
         isOpen={commentModalOpen} 
         onClose={() => setCommentModalOpen(false)} 
         label={commentLabel} 
+      />
+
+      {/* Indicator Detail Modal */}
+      <IndicatorDetailModal
+        isOpen={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        indicator={selectedIndicator}
+        onUpdateIndicator={handleUpdateSelectedIndicator}
       />
     </div>
   );
