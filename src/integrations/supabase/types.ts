@@ -83,6 +83,33 @@ export type Database = {
         }
         Relationships: []
       }
+      playground_scorecards: {
+        Row: {
+          created_at: string
+          dashboard_title: string
+          id: string
+          indicators: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dashboard_title?: string
+          id?: string
+          indicators?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dashboard_title?: string
+          id?: string
+          indicators?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

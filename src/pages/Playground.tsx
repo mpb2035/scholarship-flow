@@ -1,42 +1,35 @@
-import { useState, useEffect } from 'react';
-import { Plus, RotateCcw } from 'lucide-react';
+import { Plus, RotateCcw, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BentoCard } from '@/components/playground/BentoCard';
-import { BentoIndicator, initialIndicators, initialDashboardTitle } from '@/data/playgroundData';
-
-const STORAGE_KEY = 'playground_data';
+import { BentoIndicator } from '@/data/playgroundData';
+import { usePlaygroundData } from '@/hooks/usePlaygroundData';
+import { useState } from 'react';
 
 export default function Playground() {
-  const [title, setTitle] = useState(initialDashboardTitle);
-  const [indicators, setIndicators] = useState<BentoIndicator[]>(initialIndicators);
+  const {
+    title,
+    indicators,
+    isLoading,
+    isSaving,
+    hasUnsavedChanges,
+    isAuthenticated,
+    updateTitle,
+    updateIndicators,
+    save,
+    reset,
+  } = usePlaygroundData();
+
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
-  // Load from session storage on mount
-  useEffect(() => {
-    const saved = sessionStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setTitle(parsed.title || initialDashboardTitle);
-        setIndicators(parsed.indicators || initialIndicators);
-      } catch {
-        // Use defaults if parsing fails
-      }
-    }
-  }, []);
-
-  // Save to session storage on changes
-  useEffect(() => {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ title, indicators }));
-  }, [title, indicators]);
-
   const handleUpdateIndicator = (index: number, updated: BentoIndicator) => {
-    setIndicators(prev => prev.map((item, i) => i === index ? updated : item));
+    const newIndicators = indicators.map((item, i) => i === index ? updated : item);
+    updateIndicators(newIndicators);
   };
 
   const handleDeleteIndicator = (index: number) => {
-    setIndicators(prev => prev.filter((_, i) => i !== index));
+    const newIndicators = indicators.filter((_, i) => i !== index);
+    updateIndicators(newIndicators);
   };
 
   const handleAddNew = () => {
@@ -52,14 +45,16 @@ export default function Playground() {
       quality_rating: 3,
       category: 'Custom'
     };
-    setIndicators(prev => [...prev, newIndicator]);
+    updateIndicators([...indicators, newIndicator]);
   };
 
-  const handleReset = () => {
-    setTitle(initialDashboardTitle);
-    setIndicators(initialIndicators);
-    sessionStorage.removeItem(STORAGE_KEY);
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6 md:p-8">
@@ -69,7 +64,7 @@ export default function Playground() {
           {isEditingTitle ? (
             <Input
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => updateTitle(e.target.value)}
               onBlur={() => setIsEditingTitle(false)}
               onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
               autoFocus
@@ -85,7 +80,7 @@ export default function Playground() {
           )}
           
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleReset}>
+            <Button variant="outline" size="sm" onClick={reset}>
               <RotateCcw className="h-4 w-4 mr-1.5" />
               Reset
             </Button>
@@ -93,10 +88,30 @@ export default function Playground() {
               <Plus className="h-4 w-4 mr-1.5" />
               Add Card
             </Button>
+            {isAuthenticated && (
+              <Button 
+                size="sm" 
+                onClick={save} 
+                disabled={isSaving || !hasUnsavedChanges}
+                variant={hasUnsavedChanges ? 'default' : 'outline'}
+              >
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4 mr-1.5" />
+                )}
+                {hasUnsavedChanges ? 'Save' : 'Saved'}
+              </Button>
+            )}
           </div>
         </div>
         <p className="text-muted-foreground mt-2">
-          Click any field to edit. Changes are saved during your session.
+          Click any field to edit. 
+          {isAuthenticated 
+            ? hasUnsavedChanges 
+              ? ' You have unsaved changes.' 
+              : ' All changes saved.'
+            : ' Sign in to save your changes.'}
         </p>
       </div>
 
