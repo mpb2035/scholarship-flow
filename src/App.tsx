@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import Analytics from "./pages/Analytics";
 import Directory from "./pages/Directory";
+import Playground from "./pages/Playground";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ function AppRoutes() {
         <Route path="/" element={<Index />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/directory" element={<Directory />} />
+        <Route path="/playground" element={<Playground />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
