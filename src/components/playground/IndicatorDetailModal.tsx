@@ -5,11 +5,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   TrendingUp, TrendingDown, Minus, Star, Database, Clock, 
   Shield, CheckCircle, Lightbulb, Plus, Send, Trash2, ExternalLink, Pencil, Check, X 
 } from 'lucide-react';
-import { BentoIndicator } from '@/data/playgroundData';
+import { BentoIndicator, PILLAR_OPTIONS } from '@/data/playgroundData';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -303,6 +304,28 @@ export function IndicatorDetailModal({ isOpen, onClose, indicator, onUpdateIndic
               <div className="pt-4">
                 <h5 className="font-medium text-sm text-gray-900 mb-2">Category</h5>
                 <Badge variant="secondary" className="bg-gray-200 text-gray-800">{indicator.category}</Badge>
+              </div>
+
+              <div className="pt-4">
+                <h5 className="font-medium text-sm text-gray-900 mb-2">Pillar</h5>
+                <Select
+                  value={indicator.pillar || ''}
+                  onValueChange={(value) => {
+                    handleUpdateField('pillar', value);
+                    toast.success('Pillar updated and saved');
+                  }}
+                >
+                  <SelectTrigger className="w-full bg-white text-gray-900 border-gray-300">
+                    <SelectValue placeholder="Select a pillar..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-gray-200 z-50">
+                    {PILLAR_OPTIONS.map((pillar) => (
+                      <SelectItem key={pillar} value={pillar} className="text-gray-900 hover:bg-gray-100">
+                        {pillar}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </TabsContent>
 

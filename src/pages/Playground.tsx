@@ -1,14 +1,15 @@
 import { useState, useMemo } from 'react';
-import { Plus, RotateCcw, Save, Loader2 } from 'lucide-react';
+import { Plus, RotateCcw, Save, Loader2, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BentoCard } from '@/components/playground/BentoCard';
 import { NationalSummaryCard } from '@/components/playground/NationalSummaryCard';
 import { SortToolbar, SortCriteria } from '@/components/playground/SortToolbar';
 import { PolicyCommentModal } from '@/components/playground/PolicyCommentModal';
 import { IndicatorDetailModal } from '@/components/playground/IndicatorDetailModal';
 import { ExportButtons } from '@/components/playground/ExportButtons';
-import { BentoIndicator, initialNationalStats } from '@/data/playgroundData';
+import { BentoIndicator, initialNationalStats, PILLAR_OPTIONS } from '@/data/playgroundData';
 import { usePlaygroundData } from '@/hooks/usePlaygroundData';
 export default function Playground() {
   const {
@@ -25,6 +26,7 @@ export default function Playground() {
   } = usePlaygroundData();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [sortCriteria, setSortCriteria] = useState<SortCriteria>('default');
+  const [pillarFilter, setPillarFilter] = useState<string>('all');
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [commentLabel, setCommentLabel] = useState('');
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -76,8 +78,15 @@ export default function Playground() {
       setSelectedIndicator(updated);
     }
   };
-  const sortedIndicators = useMemo(() => {
-    const items = [...indicators];
+  const filteredAndSortedIndicators = useMemo(() => {
+    let items = [...indicators];
+    
+    // Apply pillar filter
+    if (pillarFilter !== 'all') {
+      items = items.filter(item => item.pillar === pillarFilter);
+    }
+    
+    // Apply sorting
     switch (sortCriteria) {
       case 'id':
         return items.sort((a, b) => a.id.localeCompare(b.id));
@@ -90,7 +99,16 @@ export default function Playground() {
       default:
         return items;
     }
-  }, [indicators, sortCriteria]);
+  }, [indicators, sortCriteria, pillarFilter]);
+  
+  // Get unique pillars that are actually assigned to scorecards
+  const availablePillars = useMemo(() => {
+    const pillars = new Set<string>();
+    indicators.forEach(ind => {
+      if (ind.pillar) pillars.add(ind.pillar);
+    });
+    return Array.from(pillars).sort();
+  }, [indicators]);
   if (isLoading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -126,9 +144,40 @@ export default function Playground() {
         </p>
       </div>
 
-      {/* Sort Toolbar */}
-      <div className="max-w-7xl mx-auto">
+      {/* Sort Toolbar & Pillar Filter */}
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center gap-4 mb-4">
         <SortToolbar activeCriteria={sortCriteria} onSort={setSortCriteria} />
+        
+        {availablePillars.length > 0 && (
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-gray-500" />
+            <Select value={pillarFilter} onValueChange={setPillarFilter}>
+              <SelectTrigger className="w-[220px] bg-white border-gray-300 text-gray-900">
+                <SelectValue placeholder="Filter by Pillar" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-gray-200 z-50">
+                <SelectItem value="all" className="text-gray-900 hover:bg-gray-100">
+                  All Pillars
+                </SelectItem>
+                {PILLAR_OPTIONS.filter(p => availablePillars.includes(p)).map((pillar) => (
+                  <SelectItem key={pillar} value={pillar} className="text-gray-900 hover:bg-gray-100">
+                    {pillar}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {pillarFilter !== 'all' && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setPillarFilter('all')}
+                className="h-8 w-8 text-gray-500 hover:text-gray-900"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Bento Grid */}
@@ -137,7 +186,7 @@ export default function Playground() {
         <NationalSummaryCard stats={initialNationalStats} onCommentClick={handleCommentClick} />
 
         {/* Indicator Cards */}
-        {sortedIndicators.map((indicator, index) => <BentoCard key={`${indicator.id}-${index}`} indicator={indicator} onUpdate={updated => handleUpdateIndicator(indicators.indexOf(indicator), updated)} onDelete={() => handleDeleteIndicator(indicators.indexOf(indicator))} onCommentClick={handleCommentClick} onDetailClick={() => handleDetailClick(indicator)} />)}
+        {filteredAndSortedIndicators.map((indicator, index) => <BentoCard key={`${indicator.id}-${index}`} indicator={indicator} onUpdate={updated => handleUpdateIndicator(indicators.indexOf(indicator), updated)} onDelete={() => handleDeleteIndicator(indicators.indexOf(indicator))} onCommentClick={handleCommentClick} onDetailClick={() => handleDetailClick(indicator)} />)}
       </div>
 
       {/* Empty State */}

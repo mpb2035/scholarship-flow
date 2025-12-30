@@ -1,3 +1,14 @@
+export const PILLAR_OPTIONS = [
+  'Enable',
+  'Attract',
+  'Grow',
+  'Retain',
+  'Vocational and Technical Skills',
+  'Generalist Adaptive Skills'
+] as const;
+
+export type PillarType = typeof PILLAR_OPTIONS[number];
+
 export interface BentoIndicator {
   id: string;
   title: string;
@@ -10,7 +21,7 @@ export interface BentoIndicator {
   action: string;
   quality_rating: number;
   category: string;
-  pillar?: string;
+  pillar?: PillarType | string;
   owner?: string;
   definition?: string;
   dataSource?: string;
