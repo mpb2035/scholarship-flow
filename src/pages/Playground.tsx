@@ -7,6 +7,7 @@ import { NationalSummaryCard } from '@/components/playground/NationalSummaryCard
 import { SortToolbar, SortCriteria } from '@/components/playground/SortToolbar';
 import { PolicyCommentModal } from '@/components/playground/PolicyCommentModal';
 import { IndicatorDetailModal } from '@/components/playground/IndicatorDetailModal';
+import { ExportButtons } from '@/components/playground/ExportButtons';
 import { BentoIndicator, initialNationalStats } from '@/data/playgroundData';
 import { usePlaygroundData } from '@/hooks/usePlaygroundData';
 export default function Playground() {
@@ -104,6 +105,7 @@ export default function Playground() {
             </h1>}
           
           <div className="flex items-center gap-2">
+            <ExportButtons indicators={indicators} title={title} />
             <Button variant="outline" size="sm" onClick={reset} className="border-[hsl(210,80%,28%)] text-[hsl(210,80%,28%)]">
               <RotateCcw className="h-4 w-4 mr-1.5" />
               Reset
