@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   TrendingUp, TrendingDown, Minus, Star, Database, Clock, 
-  Shield, CheckCircle, Lightbulb, Plus, Send, Trash2, ExternalLink 
+  Shield, CheckCircle, Lightbulb, Plus, Send, Trash2, ExternalLink, Pencil, Check, X 
 } from 'lucide-react';
 import { BentoIndicator } from '@/data/playgroundData';
 import { cn } from '@/lib/utils';
@@ -28,6 +28,85 @@ const statusColors: Record<string, string> = {
   star: 'bg-blue-500',
   neutral: 'bg-gray-500',
 };
+
+interface EditableFieldProps {
+  value: string;
+  onSave: (value: string) => void;
+  label: string;
+  icon?: React.ReactNode;
+  bgClass?: string;
+}
+
+function EditableField({ value, onSave, label, icon, bgClass = 'bg-muted/50' }: EditableFieldProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value);
+
+  useEffect(() => {
+    setEditValue(value);
+  }, [value]);
+
+  const handleSave = useCallback(() => {
+    if (editValue.trim() !== value) {
+      onSave(editValue.trim());
+      toast.success(`${label} updated and saved`);
+    }
+    setIsEditing(false);
+  }, [editValue, value, onSave, label]);
+
+  const handleCancel = () => {
+    setEditValue(value);
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div className="space-y-2">
+        <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+          {icon}
+          {label}
+        </h4>
+        <Textarea
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          className="min-h-[80px] text-sm"
+          autoFocus
+        />
+        <div className="flex gap-2">
+          <Button size="sm" onClick={handleSave} className="bg-green-600 hover:bg-green-700">
+            <Check className="h-3 w-3 mr-1" />
+            Save
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleCancel}>
+            <X className="h-3 w-3 mr-1" />
+            Cancel
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+        {icon}
+        {label}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 text-muted-foreground hover:text-foreground"
+          onClick={() => setIsEditing(true)}
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </Button>
+      </h4>
+      <p className={cn('text-muted-foreground text-sm leading-relaxed p-3 rounded-lg border border-dashed cursor-pointer hover:border-primary/50 transition-colors', bgClass)}
+         onClick={() => setIsEditing(true)}
+      >
+        {value || 'Click to add...'}
+      </p>
+    </div>
+  );
+}
 
 export function IndicatorDetailModal({ isOpen, onClose, indicator, onUpdateIndicator }: IndicatorDetailModalProps) {
   const [newPolicyNote, setNewPolicyNote] = useState('');
@@ -56,6 +135,10 @@ export function IndicatorDetailModal({ isOpen, onClose, indicator, onUpdateIndic
         )}
       />
     ));
+  };
+
+  const handleUpdateField = (field: keyof BentoIndicator, value: string) => {
+    onUpdateIndicator({ ...indicator, [field]: value });
   };
 
   const handleAddPolicyNote = () => {
@@ -137,34 +220,28 @@ export function IndicatorDetailModal({ isOpen, onClose, indicator, onUpdateIndic
                 </div>
               )}
 
-              <div>
-                <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4 text-amber-500" />
-                  Key Insight
-                </h4>
-                <p className="text-muted-foreground text-sm leading-relaxed bg-amber-50 dark:bg-amber-950/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
-                  {indicator.insight}
-                </p>
-              </div>
+              <EditableField
+                value={indicator.insight}
+                onSave={(value) => handleUpdateField('insight', value)}
+                label="Key Insight"
+                icon={<Lightbulb className="h-4 w-4 text-amber-500" />}
+                bgClass="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800"
+              />
 
-              <div>
-                <h4 className="font-semibold text-foreground mb-2">Recommended Action</h4>
-                <p className="text-muted-foreground text-sm leading-relaxed bg-muted/50 p-3 rounded-lg border border-dashed">
-                  {indicator.action}
-                </p>
-              </div>
+              <EditableField
+                value={indicator.action}
+                onSave={(value) => handleUpdateField('action', value)}
+                label="Recommended Action"
+                bgClass="bg-muted/50"
+              />
 
-              {indicator.strategicRecommendation && (
-                <div>
-                  <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    Strategic Recommendation
-                  </h4>
-                  <p className="text-muted-foreground text-sm leading-relaxed bg-green-50 dark:bg-green-950/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                    {indicator.strategicRecommendation}
-                  </p>
-                </div>
-              )}
+              <EditableField
+                value={indicator.strategicRecommendation || ''}
+                onSave={(value) => handleUpdateField('strategicRecommendation', value)}
+                label="Strategic Recommendation"
+                icon={<CheckCircle className="h-4 w-4 text-green-500" />}
+                bgClass="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
+              />
 
               <div className="flex items-center gap-1 pt-2">
                 <span className="text-sm text-muted-foreground mr-2">Data Quality:</span>
