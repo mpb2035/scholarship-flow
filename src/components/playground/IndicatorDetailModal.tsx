@@ -251,61 +251,54 @@ export function IndicatorDetailModal({ isOpen, onClose, indicator, onUpdateIndic
 
             {/* Data & Sources Tab */}
             <TabsContent value="data" className="p-6 space-y-4 mt-0">
-              {indicator.dataSource && (
-                <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
-                  <Database className="h-5 w-5 text-primary mt-0.5" />
-                  <div className="flex-1">
-                    <h5 className="font-medium text-sm">Data Source</h5>
-                    <p className="text-muted-foreground text-sm">{indicator.dataSource}</p>
-                    {indicator.sourceUrls && indicator.sourceUrls.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {indicator.sourceUrls.map((source, idx) => (
-                          <a
-                            key={idx}
-                            href={source.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline bg-primary/10 px-2 py-1 rounded-md"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            {source.name}
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+              <EditableField
+                value={indicator.dataSource || ''}
+                onSave={(value) => handleUpdateField('dataSource', value)}
+                label="Data Source"
+                icon={<Database className="h-4 w-4 text-primary" />}
+                bgClass="bg-muted/30"
+              />
+
+              {indicator.sourceUrls && indicator.sourceUrls.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {indicator.sourceUrls.map((source, idx) => (
+                    <a
+                      key={idx}
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-primary hover:underline bg-primary/10 px-2 py-1 rounded-md"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      {source.name}
+                    </a>
+                  ))}
                 </div>
               )}
 
-              {indicator.dataAge && (
-                <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
-                  <Clock className="h-5 w-5 text-primary mt-0.5" />
-                  <div>
-                    <h5 className="font-medium text-sm">Data Age</h5>
-                    <p className="text-muted-foreground text-sm">{indicator.dataAge}</p>
-                  </div>
-                </div>
-              )}
+              <EditableField
+                value={indicator.dataAge || ''}
+                onSave={(value) => handleUpdateField('dataAge', value)}
+                label="Data Age"
+                icon={<Clock className="h-4 w-4 text-primary" />}
+                bgClass="bg-muted/30"
+              />
 
-              {indicator.reliabilityAssessment && (
-                <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
-                  <Shield className="h-5 w-5 text-primary mt-0.5" />
-                  <div>
-                    <h5 className="font-medium text-sm">Reliability Assessment</h5>
-                    <p className="text-muted-foreground text-sm">{indicator.reliabilityAssessment}</p>
-                  </div>
-                </div>
-              )}
+              <EditableField
+                value={indicator.reliabilityAssessment || ''}
+                onSave={(value) => handleUpdateField('reliabilityAssessment', value)}
+                label="Reliability Assessment"
+                icon={<Shield className="h-4 w-4 text-primary" />}
+                bgClass="bg-muted/30"
+              />
 
-              {indicator.validationStatus && (
-                <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
-                  <div>
-                    <h5 className="font-medium text-sm">Validation Status</h5>
-                    <p className="text-muted-foreground text-sm">{indicator.validationStatus}</p>
-                  </div>
-                </div>
-              )}
+              <EditableField
+                value={indicator.validationStatus || ''}
+                onSave={(value) => handleUpdateField('validationStatus', value)}
+                label="Validation Status"
+                icon={<CheckCircle className="h-4 w-4 text-primary" />}
+                bgClass="bg-muted/30"
+              />
 
               <div className="pt-4">
                 <h5 className="font-medium text-sm mb-2">Category</h5>
