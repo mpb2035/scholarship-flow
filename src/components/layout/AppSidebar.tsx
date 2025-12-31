@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid, FolderKanban } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
 import {
@@ -17,6 +17,7 @@ const navItems = [
   { title: 'Analytics', url: '/analytics', icon: BarChart3 },
   { title: 'My Directory', url: '/directory', icon: Bookmark },
   { title: 'Playground', url: '/playground', icon: LayoutGrid },
+  { title: 'Project Workflow', url: '/project-workflow', icon: FolderKanban },
 ];
 
 export function AppSidebar() {
