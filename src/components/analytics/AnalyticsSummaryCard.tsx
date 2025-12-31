@@ -3,8 +3,8 @@ import { Badge } from '@/components/ui/badge';
 
 interface AnalyticsSummaryCardProps {
   caseType: string;
-  status: string;
-  monthYear: string;
+  statusBreakdown: Record<string, number>;
+  latestMonth: string;
   count: number;
   onClick: () => void;
 }
@@ -18,11 +18,16 @@ const getStatusVariant = (status: string) => {
 
 export function AnalyticsSummaryCard({ 
   caseType, 
-  status, 
-  monthYear, 
+  statusBreakdown, 
+  latestMonth, 
   count, 
   onClick 
 }: AnalyticsSummaryCardProps) {
+  // Get top 3 statuses by count
+  const topStatuses = Object.entries(statusBreakdown)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+
   return (
     <div
       onClick={onClick}
@@ -37,13 +42,22 @@ export function AnalyticsSummaryCard({
           {caseType}
         </h3>
         <span className="text-xs text-muted-foreground whitespace-nowrap">
-          {monthYear}
+          {latestMonth}
         </span>
       </div>
       
-      <Badge variant={getStatusVariant(status)} className="w-fit text-xs">
-        {status}
-      </Badge>
+      <div className="flex flex-wrap gap-1">
+        {topStatuses.map(([status, statusCount]) => (
+          <Badge key={status} variant={getStatusVariant(status)} className="text-xs">
+            {status.length > 15 ? status.substring(0, 15) + '...' : status} ({statusCount})
+          </Badge>
+        ))}
+        {Object.keys(statusBreakdown).length > 3 && (
+          <Badge variant="outline" className="text-xs">
+            +{Object.keys(statusBreakdown).length - 3} more
+          </Badge>
+        )}
+      </div>
       
       <div className="mt-auto pt-2 border-t border-border/30">
         <span className="text-2xl font-display font-bold gold-text">
