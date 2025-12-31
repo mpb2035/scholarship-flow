@@ -17,11 +17,10 @@ type StatusToggle = 'all' | 'in-process' | 'completed';
 interface GroupedData {
   key: string;
   caseType: string;
-  status: string;
-  monthYear: string;
-  month: number;
-  year: number;
   matters: Matter[];
+  statusBreakdown: Record<string, number>;
+  latestMonth: string;
+  latestYear: number;
 }
 
 const statusOptions: OverallStatus[] = [
@@ -69,31 +68,39 @@ const Analytics = () => {
     return Array.from(yearSet).sort((a, b) => b - a);
   }, [matters]);
 
-  // Group data by CaseType + Status + MonthYear
+  // Group data by CaseType (type of work) only
   const groupedData = useMemo(() => {
     const groups = new Map<string, GroupedData>();
 
     matters.forEach(matter => {
       const date = new Date(matter.dsmSubmittedDate);
-      const month = date.getMonth();
       const year = date.getFullYear();
       const monthYear = format(date, 'MMM yyyy');
       
-      const key = `${matter.caseType}|${matter.overallStatus}|${monthYear}`;
+      const key = matter.caseType;
       
       if (!groups.has(key)) {
         groups.set(key, {
           key,
           caseType: matter.caseType,
-          status: matter.overallStatus,
-          monthYear,
-          month,
-          year,
           matters: [],
+          statusBreakdown: {},
+          latestMonth: monthYear,
+          latestYear: year,
         });
       }
       
-      groups.get(key)!.matters.push(matter);
+      const group = groups.get(key)!;
+      group.matters.push(matter);
+      
+      // Track status breakdown
+      group.statusBreakdown[matter.overallStatus] = (group.statusBreakdown[matter.overallStatus] || 0) + 1;
+      
+      // Track latest date
+      if (year > group.latestYear || (year === group.latestYear && monthYear > group.latestMonth)) {
+        group.latestMonth = monthYear;
+        group.latestYear = year;
+      }
     });
 
     return Array.from(groups.values());
@@ -103,26 +110,39 @@ const Analytics = () => {
   const filteredGroups = useMemo(() => {
     return groupedData.filter(group => {
       if (filterCaseType !== 'all' && group.caseType !== filterCaseType) return false;
-      if (filterStatus !== 'all' && group.status !== filterStatus) return false;
-      if (filterYear !== 'all' && group.year.toString() !== filterYear) return false;
+      
+      // Filter by status - check if group has any matters with this status
+      if (filterStatus !== 'all' && !group.statusBreakdown[filterStatus]) return false;
+      
+      // Filter by year - check if group has any matters from this year
+      if (filterYear !== 'all') {
+        const hasYearMatch = group.matters.some(m => 
+          new Date(m.dsmSubmittedDate).getFullYear().toString() === filterYear
+        );
+        if (!hasYearMatch) return false;
+      }
+      
       if (searchTerm) {
         const search = searchTerm.toLowerCase();
-        if (!group.caseType.toLowerCase().includes(search) && 
-            !group.status.toLowerCase().includes(search)) {
+        if (!group.caseType.toLowerCase().includes(search)) {
           return false;
         }
       }
+      
       // Apply status toggle filter
       if (statusToggle === 'completed') {
-        if (group.status !== 'Approved & Signed' && group.status !== 'Not Approved') return false;
+        const hasCompleted = group.statusBreakdown['Approved & Signed'] || group.statusBreakdown['Not Approved'];
+        if (!hasCompleted) return false;
       } else if (statusToggle === 'in-process') {
-        if (group.status === 'Approved & Signed' || group.status === 'Not Approved') return false;
+        const hasInProcess = Object.keys(group.statusBreakdown).some(
+          s => s !== 'Approved & Signed' && s !== 'Not Approved'
+        );
+        if (!hasInProcess) return false;
       }
       return true;
     }).sort((a, b) => {
-      // Sort by year desc, then month desc
-      if (a.year !== b.year) return b.year - a.year;
-      if (a.month !== b.month) return b.month - a.month;
+      // Sort by latest year desc, then alphabetically by case type
+      if (a.latestYear !== b.latestYear) return b.latestYear - a.latestYear;
       return a.caseType.localeCompare(b.caseType);
     });
   }, [groupedData, filterCaseType, filterStatus, filterYear, searchTerm, statusToggle]);
@@ -132,7 +152,11 @@ const Analytics = () => {
     const totalCases = filteredGroups.reduce((sum, g) => sum + g.matters.length, 0);
     const totalGroups = filteredGroups.length;
     const uniqueTypes = new Set(filteredGroups.map(g => g.caseType)).size;
-    const uniqueStatuses = new Set(filteredGroups.map(g => g.status)).size;
+    const allStatuses = new Set<string>();
+    filteredGroups.forEach(g => {
+      Object.keys(g.statusBreakdown).forEach(s => allStatuses.add(s));
+    });
+    const uniqueStatuses = allStatuses.size;
     
     return { totalCases, totalGroups, uniqueTypes, uniqueStatuses };
   }, [filteredGroups]);
@@ -282,8 +306,8 @@ const Analytics = () => {
               <AnalyticsSummaryCard
                 key={group.key}
                 caseType={group.caseType}
-                status={group.status}
-                monthYear={group.monthYear}
+                statusBreakdown={group.statusBreakdown}
+                latestMonth={group.latestMonth}
                 count={group.matters.length}
                 onClick={() => handleCardClick(group)}
               />
@@ -295,7 +319,7 @@ const Analytics = () => {
         <AnalyticsDetailModal
           open={modalOpen}
           onOpenChange={setModalOpen}
-          title={selectedGroup ? `${selectedGroup.caseType} - ${selectedGroup.status} (${selectedGroup.monthYear})` : ''}
+          title={selectedGroup ? `${selectedGroup.caseType}` : ''}
           matters={selectedGroup?.matters || []}
         />
       </div>
