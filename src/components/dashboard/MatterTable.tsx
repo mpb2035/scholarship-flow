@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Edit2, Trash2, MoreVertical, Eye, ArrowUpDown, Copy } from 'lucide-react';
+import { Edit2, Trash2, MoreVertical, Eye, ArrowUpDown, Copy, FolderKanban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -25,12 +25,13 @@ interface MatterTableProps {
   onEdit: (matter: Matter) => void;
   onDelete: (id: string) => void;
   onView: (matter: Matter) => void;
+  onConvertToProject?: (matter: Matter) => void;
 }
 
 type SortField = 'caseId' | 'priority' | 'daysInProcess' | 'slaStatus';
 type SortDirection = 'asc' | 'desc';
 
-export function MatterTable({ matters, onEdit, onDelete, onView }: MatterTableProps) {
+export function MatterTable({ matters, onEdit, onDelete, onView, onConvertToProject }: MatterTableProps) {
   const [sortField, setSortField] = useState<SortField>('daysInProcess');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const { toast } = useToast();
@@ -231,6 +232,15 @@ export function MatterTable({ matters, onEdit, onDelete, onView }: MatterTablePr
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
                       </DropdownMenuItem>
+                      {onConvertToProject && (
+                        <DropdownMenuItem 
+                          onClick={() => onConvertToProject(matter)} 
+                          className="cursor-pointer text-primary focus:text-primary"
+                        >
+                          <FolderKanban className="mr-2 h-4 w-4" />
+                          Convert to Project
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

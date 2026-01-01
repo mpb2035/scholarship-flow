@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Project } from '@/types/project';
+import { Project } from '@/hooks/useProjects';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 interface CreateProjectDialogProps {
   open: boolean;
   onClose: () => void;
-  onCreate: (project: Project) => void;
+  onCreate: (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => void;
 }
 
 export function CreateProjectDialog({ open, onClose, onCreate }: CreateProjectDialogProps) {
@@ -25,16 +25,13 @@ export function CreateProjectDialog({ open, onClose, onCreate }: CreateProjectDi
   const handleCreate = () => {
     if (!title.trim()) return;
 
-    const newProject: Project = {
-      id: crypto.randomUUID(),
+    const newProject: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = {
       title: title.trim(),
       description: description.trim() || undefined,
       status: 'on-track',
       tasks: [],
       notes: [],
       blockers: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
 
     onCreate(newProject);

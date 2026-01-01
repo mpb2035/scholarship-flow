@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMatters } from '@/hooks/useMatters';
 import { useAuth } from '@/hooks/useAuth';
+import { useProjects } from '@/hooks/useProjects';
 import { Header } from '@/components/dashboard/Header';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { KPIDetailDialog } from '@/components/dashboard/KPIDetailDialog';
@@ -50,6 +51,7 @@ const Index = () => {
     matters
   } = useMatters();
 
+  const { createProjectFromMatter } = useProjects();
   const { toast } = useToast();
   const [formOpen, setFormOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -194,6 +196,29 @@ const Index = () => {
     setFilters({ ...filters, slaStatus: slaStatus as SLAStatus, status: 'all' });
   };
 
+  const handleConvertToProject = async (matter: Matter) => {
+    try {
+      await createProjectFromMatter({
+        id: matter.id,
+        caseId: matter.caseId,
+        caseTitle: matter.caseTitle,
+        caseType: matter.caseType,
+        priority: matter.priority,
+        overallStatus: matter.overallStatus,
+      });
+      toast({
+        title: 'Project Created',
+        description: `"${matter.caseId}" has been converted to a project.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to create project. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -298,6 +323,7 @@ const Index = () => {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onView={handleView}
+            onConvertToProject={handleConvertToProject}
           />
         </div>
 

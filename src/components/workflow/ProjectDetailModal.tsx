@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Project, ProjectTask, ProjectNote } from '@/types/project';
+import { Project, ProjectTask, ProjectNote } from '@/hooks/useProjects';
 import {
   Dialog,
   DialogContent,
