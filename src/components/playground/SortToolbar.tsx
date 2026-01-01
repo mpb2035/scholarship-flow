@@ -1,4 +1,6 @@
 import { cn } from '@/lib/utils';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { ArrowUpDown } from 'lucide-react';
 
 export type SortCriteria = 'default' | 'id' | 'change';
 
@@ -10,27 +12,32 @@ interface SortToolbarProps {
 export function SortToolbar({ activeCriteria, onSort }: SortToolbarProps) {
   const buttons: { value: SortCriteria; label: string }[] = [
     { value: 'default', label: 'Overview' },
-    { value: 'id', label: 'By Indicator Code' },
-    { value: 'change', label: 'By Priority (Decline)' },
+    { value: 'id', label: 'By Code' },
+    { value: 'change', label: 'By Priority' },
   ];
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
-      <span className="text-sm font-semibold text-foreground mr-2">Rearrange View:</span>
-      {buttons.map((btn) => (
-        <button
-          key={btn.value}
-          onClick={() => onSort(btn.value)}
-          className={cn(
-            'px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all duration-200',
-            activeCriteria === btn.value
-              ? 'bg-[hsl(210,80%,28%)] text-white border-[hsl(210,80%,28%)]'
-              : 'bg-background text-[hsl(210,80%,28%)] border-[hsl(210,80%,28%)] hover:bg-[hsl(210,80%,28%)]/10'
-          )}
-        >
-          {btn.label}
-        </button>
-      ))}
+    <div className="flex items-center gap-2">
+      <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+      <span className="text-sm font-medium text-muted-foreground">Sort:</span>
+      <ToggleGroup 
+        type="single" 
+        value={activeCriteria} 
+        onValueChange={(value) => {
+          if (value) onSort(value as SortCriteria);
+        }}
+        className="border border-border/50 rounded-lg p-1 bg-input"
+      >
+        {buttons.map((btn) => (
+          <ToggleGroupItem 
+            key={btn.value}
+            value={btn.value}
+            className="data-[state=on]:bg-primary/20 data-[state=on]:text-primary px-3 py-1.5 text-sm"
+          >
+            {btn.label}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
     </div>
   );
 }

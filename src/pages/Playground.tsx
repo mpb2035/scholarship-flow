@@ -114,25 +114,25 @@ export default function Playground() {
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>;
   }
-  return <div className="min-h-screen p-6 md:p-8 bg-primary-foreground">
+  return <div className="min-h-screen p-6 md:p-8 bg-background">
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {isEditingTitle ? <Input value={title} onChange={e => updateTitle(e.target.value)} onBlur={() => setIsEditingTitle(false)} onKeyDown={e => e.key === 'Enter' && setIsEditingTitle(false)} autoFocus className="text-2xl md:text-3xl font-display font-bold h-auto py-2" /> : <h1 onClick={() => setIsEditingTitle(true)} className="text-2xl md:text-3xl font-display font-bold text-[hsl(210,80%,28%)] cursor-pointer hover:text-[hsl(210,80%,35%)] transition-colors">
+          {isEditingTitle ? <Input value={title} onChange={e => updateTitle(e.target.value)} onBlur={() => setIsEditingTitle(false)} onKeyDown={e => e.key === 'Enter' && setIsEditingTitle(false)} autoFocus className="text-2xl md:text-3xl font-display font-bold h-auto py-2 bg-input border-border/50" /> : <h1 onClick={() => setIsEditingTitle(true)} className="text-2xl md:text-3xl font-display font-bold text-foreground cursor-pointer hover:text-primary transition-colors">
               🍱 {title}
             </h1>}
           
           <div className="flex items-center gap-2">
             <ExportButtons indicators={indicators} title={title} />
-            <Button variant="outline" size="sm" onClick={reset} className="border-[hsl(210,80%,28%)] text-[hsl(210,80%,28%)]">
+            <Button variant="outline" size="sm" onClick={reset}>
               <RotateCcw className="h-4 w-4 mr-1.5" />
               Reset
             </Button>
-            <Button size="sm" onClick={handleAddNew} className="bg-[hsl(210,80%,28%)] hover:bg-[hsl(210,80%,35%)]">
+            <Button size="sm" onClick={handleAddNew}>
               <Plus className="h-4 w-4 mr-1.5" />
               Add Card
             </Button>
-            {isAuthenticated && <Button size="sm" onClick={save} disabled={isSaving || !hasUnsavedChanges} variant={hasUnsavedChanges ? 'default' : 'outline'} className={hasUnsavedChanges ? 'bg-[hsl(210,80%,28%)] hover:bg-[hsl(210,80%,35%)]' : ''}>
+            {isAuthenticated && <Button size="sm" onClick={save} disabled={isSaving || !hasUnsavedChanges} variant={hasUnsavedChanges ? 'default' : 'outline'}>
                 {isSaving ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Save className="h-4 w-4 mr-1.5" />}
                 {hasUnsavedChanges ? 'Save' : 'Saved'}
               </Button>}
@@ -144,40 +144,47 @@ export default function Playground() {
         </p>
       </div>
 
-      {/* Sort Toolbar & Pillar Filter */}
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center gap-4 mb-4">
-        <SortToolbar activeCriteria={sortCriteria} onSort={setSortCriteria} />
-        
-        {availablePillars.length > 0 && (
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-gray-500" />
-            <Select value={pillarFilter} onValueChange={setPillarFilter}>
-              <SelectTrigger className="w-[220px] bg-white border-gray-300 text-gray-900">
-                <SelectValue placeholder="Filter by Pillar" />
-              </SelectTrigger>
-              <SelectContent className="bg-white border-gray-200 z-50">
-                <SelectItem value="all" className="text-gray-900 hover:bg-gray-100">
-                  All Pillars
-                </SelectItem>
-                {PILLAR_OPTIONS.filter(p => availablePillars.includes(p)).map((pillar) => (
-                  <SelectItem key={pillar} value={pillar} className="text-gray-900 hover:bg-gray-100">
-                    {pillar}
+      {/* Filter Bar - Harmonized with Dashboard */}
+      <div className="max-w-7xl mx-auto glass-card p-4 mb-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <SortToolbar activeCriteria={sortCriteria} onSort={setSortCriteria} />
+          
+          {availablePillars.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={pillarFilter} onValueChange={setPillarFilter}>
+                <SelectTrigger className="w-[220px] bg-input border-border/50">
+                  <SelectValue placeholder="Filter by Pillar" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="all">
+                    All Pillars
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {pillarFilter !== 'all' && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setPillarFilter('all')}
-                className="h-8 w-8 text-gray-500 hover:text-gray-900"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
+                  {PILLAR_OPTIONS.filter(p => availablePillars.includes(p)).map((pillar) => (
+                    <SelectItem key={pillar} value={pillar}>
+                      {pillar}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {pillarFilter !== 'all' && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setPillarFilter('all')}
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Results count */}
+          <div className="ml-auto text-sm text-muted-foreground">
+            Showing {filteredAndSortedIndicators.length} of {indicators.length} cards
           </div>
-        )}
+        </div>
       </div>
 
       {/* Bento Grid */}
@@ -192,7 +199,7 @@ export default function Playground() {
       {/* Empty State */}
       {indicators.length === 0 && <div className="max-w-7xl mx-auto text-center py-16">
           <p className="text-muted-foreground mb-4">No scorecards yet. Add your first one!</p>
-          <Button onClick={handleAddNew} className="bg-[hsl(210,80%,28%)] hover:bg-[hsl(210,80%,35%)]">
+          <Button onClick={handleAddNew}>
             <Plus className="h-4 w-4 mr-1.5" />
             Add Card
           </Button>
