@@ -110,6 +110,59 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          blockers: string[]
+          created_at: string
+          description: string | null
+          id: string
+          notes: Json
+          source_matter_id: string | null
+          status: string
+          tasks: Json
+          title: string
+          updated_at: string
+          user_id: string
+          weekly_score: number | null
+        }
+        Insert: {
+          blockers?: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: Json
+          source_matter_id?: string | null
+          status?: string
+          tasks?: Json
+          title: string
+          updated_at?: string
+          user_id: string
+          weekly_score?: number | null
+        }
+        Update: {
+          blockers?: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: Json
+          source_matter_id?: string | null
+          status?: string
+          tasks?: Json
+          title?: string
+          updated_at?: string
+          user_id?: string
+          weekly_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_source_matter_id_fkey"
+            columns: ["source_matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
