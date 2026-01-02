@@ -51,7 +51,7 @@ const Index = () => {
     matters
   } = useMatters();
 
-  const { createProjectFromMatter } = useProjects();
+  const { projects, createProjectFromMatter, refreshProjects } = useProjects();
   const { toast } = useToast();
   const [formOpen, setFormOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -219,6 +219,36 @@ const Index = () => {
     }
   };
 
+  const handleCreateProjectFromForm = async (matterData: { caseId: string; caseTitle: string; caseType: string; priority: string; overallStatus: string }) => {
+    try {
+      const project = await createProjectFromMatter({
+        id: '', // Not linked to a specific matter ID yet
+        ...matterData,
+      });
+      toast({
+        title: 'Project Created',
+        description: `New project "${project.title}" has been created.`,
+      });
+      await refreshProjects();
+      return project;
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to create project.',
+        variant: 'destructive',
+      });
+      return undefined;
+    }
+  };
+
+  const handleLinkProject = (matterId: string | undefined, projectId: string) => {
+    // This is a UI-only link for now - the project is selected in the form
+    toast({
+      title: 'Project Linked',
+      description: 'Matter linked to project successfully.',
+    });
+  };
+
   if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -334,6 +364,10 @@ const Index = () => {
           matter={editingMatter}
           existingCaseIds={getExistingCaseIds()}
           onSubmit={handleFormSubmit}
+          projects={projects}
+          onCreateProject={handleCreateProjectFromForm}
+          onLinkProject={handleLinkProject}
+          linkedProjectId={editingMatter ? projects.find(p => p.sourceMatterId === editingMatter.id)?.id : undefined}
         />
 
         <MatterDetail

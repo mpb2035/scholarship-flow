@@ -28,8 +28,10 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { ExternalLink } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ExternalLink, FolderKanban, Plus, Link2 } from 'lucide-react';
 import { Matter, CaseType, Priority, OverallStatus, QueryStatus, SLAStatus } from '@/types/matter';
+import { Project } from '@/hooks/useProjects';
 
 const formSchema = z.object({
   caseId: z.string().min(1, 'Case ID is required'),
@@ -56,6 +58,10 @@ interface MatterFormProps {
   matter?: Matter;
   existingCaseIds: { id: string; title: string }[];
   onSubmit: (data: Omit<Matter, 'id'>) => void;
+  projects?: Project[];
+  onLinkProject?: (matterId: string | undefined, projectId: string) => void;
+  onCreateProject?: (matterData: { caseId: string; caseTitle: string; caseType: string; priority: string; overallStatus: string }) => Promise<Project | undefined>;
+  linkedProjectId?: string;
 }
 
 const caseTypes: CaseType[] = [
@@ -93,9 +99,11 @@ const overallStatuses: OverallStatus[] = [
   'Not Approved',
 ];
 
-export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubmit }: MatterFormProps) {
+export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubmit, projects = [], onLinkProject, onCreateProject, linkedProjectId }: MatterFormProps) {
   const [useExisting, setUseExisting] = useState(false);
   const [selectedExisting, setSelectedExisting] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -135,6 +143,14 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       form.reset();
     }
   }, [matter, form]);
+
+  useEffect(() => {
+    if (linkedProjectId) {
+      setSelectedProjectId(linkedProjectId);
+    } else {
+      setSelectedProjectId('');
+    }
+  }, [linkedProjectId, open]);
 
   useEffect(() => {
     if (useExisting && selectedExisting) {
@@ -538,11 +554,109 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
               )}
             />
 
+            {/* Project Workflow Section */}
+            <div className="border-t border-border/50 pt-6 mt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <FolderKanban className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-foreground">Project Workflow</h3>
+              </div>
+              
+              {selectedProjectId && projects.find(p => p.id === selectedProjectId) ? (
+                <div className="p-4 bg-secondary/30 rounded-lg mb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Link2 className="h-4 w-4 text-primary" />
+                      <span className="font-medium">{projects.find(p => p.id === selectedProjectId)?.title}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {projects.find(p => p.id === selectedProjectId)?.status}
+                      </Badge>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedProjectId('')}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Unlink
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm text-muted-foreground mb-2 block">
+                        Link to Existing Project
+                      </Label>
+                      <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                        <SelectTrigger className="bg-input border-border/50">
+                          <SelectValue placeholder="Select a project..." />
+                        </SelectTrigger>
+                        <SelectContent className="bg-popover border-border max-h-[200px]">
+                          {projects.map((project) => (
+                            <SelectItem key={project.id} value={project.id}>
+                              <span className="font-medium">{project.title}</span>
+                              <span className="text-muted-foreground ml-2">({project.status})</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="flex flex-col justify-end">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={async () => {
+                          if (onCreateProject) {
+                            setIsCreatingProject(true);
+                            try {
+                              const formValues = form.getValues();
+                              const newProject = await onCreateProject({
+                                caseId: formValues.caseId,
+                                caseTitle: formValues.caseTitle,
+                                caseType: formValues.caseType,
+                                priority: formValues.priority,
+                                overallStatus: formValues.overallStatus,
+                              });
+                              if (newProject) {
+                                setSelectedProjectId(newProject.id);
+                              }
+                            } finally {
+                              setIsCreatingProject(false);
+                            }
+                          }
+                        }}
+                        disabled={isCreatingProject || !form.getValues().caseId}
+                        className="w-full"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        {isCreatingProject ? 'Creating...' : 'Create New Project'}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground">
+                    Link this matter to a project to track tasks, notes, and progress in the Project Workflow tab.
+                  </p>
+                </div>
+              )}
+            </div>
+
             <div className="flex justify-end gap-3 pt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button 
+                type="submit" 
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={() => {
+                  if (selectedProjectId && onLinkProject && matter?.id) {
+                    onLinkProject(matter.id, selectedProjectId);
+                  }
+                }}
+              >
                 {matter ? 'Update Matter' : 'Log Matter'}
               </Button>
             </div>
