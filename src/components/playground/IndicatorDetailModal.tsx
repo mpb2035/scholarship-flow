@@ -2,13 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   TrendingUp, TrendingDown, Minus, Star, Database, Clock, 
-  Shield, CheckCircle, Lightbulb, Plus, Send, Trash2, ExternalLink, Pencil, Check, X 
+  Shield, CheckCircle, Lightbulb, Plus, Send, Trash2, ExternalLink, Pencil, Check, X, User
 } from 'lucide-react';
 import { BentoIndicator, PILLAR_OPTIONS } from '@/data/playgroundData';
 import { cn } from '@/lib/utils';
@@ -111,6 +112,17 @@ function EditableField({ value, onSave, label, icon, bgClass = 'bg-muted/50' }: 
 
 export function IndicatorDetailModal({ isOpen, onClose, indicator, onUpdateIndicator }: IndicatorDetailModalProps) {
   const [newPolicyNote, setNewPolicyNote] = useState('');
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isEditingOwner, setIsEditingOwner] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editOwner, setEditOwner] = useState('');
+
+  useEffect(() => {
+    if (indicator) {
+      setEditTitle(indicator.title);
+      setEditOwner(indicator.owner || '');
+    }
+  }, [indicator]);
 
   if (!indicator) return null;
 
@@ -140,6 +152,22 @@ export function IndicatorDetailModal({ isOpen, onClose, indicator, onUpdateIndic
 
   const handleUpdateField = (field: keyof BentoIndicator, value: string) => {
     onUpdateIndicator({ ...indicator, [field]: value });
+  };
+
+  const handleSaveTitle = () => {
+    if (editTitle.trim() && editTitle.trim() !== indicator.title) {
+      onUpdateIndicator({ ...indicator, title: editTitle.trim() });
+      toast.success('Indicator name updated');
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleSaveOwner = () => {
+    if (editOwner.trim() !== (indicator.owner || '')) {
+      onUpdateIndicator({ ...indicator, owner: editOwner.trim() });
+      toast.success('Owner updated');
+    }
+    setIsEditingOwner(false);
   };
 
   const handleAddPolicyNote = () => {
@@ -176,11 +204,64 @@ export function IndicatorDetailModal({ isOpen, onClose, indicator, onUpdateIndic
                   )}
                   <div className={cn('w-3 h-3 rounded-full', statusColors[indicator.status])} />
                 </div>
-                <DialogTitle className="text-2xl font-bold text-white mb-2">
-                  {indicator.title}
-                </DialogTitle>
-                {indicator.owner && (
-                  <p className="text-white/70 text-sm">Owner: {indicator.owner}</p>
+                
+                {/* Editable Title */}
+                {isEditingTitle ? (
+                  <div className="flex items-center gap-2 mb-2">
+                    <Input
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      className="text-xl font-bold bg-white/20 text-white border-white/40 placeholder:text-white/50"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveTitle();
+                        if (e.key === 'Escape') { setEditTitle(indicator.title); setIsEditingTitle(false); }
+                      }}
+                    />
+                    <Button size="icon" variant="ghost" onClick={handleSaveTitle} className="text-white hover:bg-white/20 h-8 w-8">
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => { setEditTitle(indicator.title); setIsEditingTitle(false); }} className="text-white hover:bg-white/20 h-8 w-8">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <DialogTitle className="text-2xl font-bold text-white mb-2 flex items-center gap-2 cursor-pointer group" onClick={() => setIsEditingTitle(true)}>
+                    {indicator.title}
+                    <Pencil className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </DialogTitle>
+                )}
+                
+                {/* Editable Owner */}
+                {isEditingOwner ? (
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-white/70" />
+                    <Input
+                      value={editOwner}
+                      onChange={(e) => setEditOwner(e.target.value)}
+                      className="text-sm bg-white/20 text-white border-white/40 placeholder:text-white/50 h-8 w-48"
+                      placeholder="Enter owner name..."
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveOwner();
+                        if (e.key === 'Escape') { setEditOwner(indicator.owner || ''); setIsEditingOwner(false); }
+                      }}
+                    />
+                    <Button size="icon" variant="ghost" onClick={handleSaveOwner} className="text-white hover:bg-white/20 h-6 w-6">
+                      <Check className="h-3 w-3" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => { setEditOwner(indicator.owner || ''); setIsEditingOwner(false); }} className="text-white hover:bg-white/20 h-6 w-6">
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <p 
+                    className="text-white/70 text-sm cursor-pointer hover:text-white/90 transition-colors flex items-center gap-1 group"
+                    onClick={() => setIsEditingOwner(true)}
+                  >
+                    Owner: {indicator.owner || 'TBD'}
+                    <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </p>
                 )}
               </div>
               <div className="text-right">
