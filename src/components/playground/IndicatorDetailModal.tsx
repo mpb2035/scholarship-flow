@@ -290,17 +290,13 @@ export function IndicatorDetailModal({ isOpen, onClose, indicator, onUpdateIndic
           <ScrollArea className="h-[400px] bg-stone-50">
             {/* Overview Tab */}
             <TabsContent value="overview" className="p-6 space-y-6 mt-0 bg-stone-50">
-              {indicator.definition && (
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                    <Database className="h-4 w-4 text-blue-600" />
-                    Definition & Methodology
-                  </h4>
-                  <p className="text-gray-700 text-sm leading-relaxed">
-                    {indicator.definition}
-                  </p>
-                </div>
-              )}
+              <EditableField
+                value={indicator.definition || ''}
+                onSave={(value) => handleUpdateField('definition', value)}
+                label="Definition & Methodology"
+                icon={<Database className="h-4 w-4 text-blue-600" />}
+                bgClass="bg-blue-50 border-blue-300"
+              />
 
               <EditableField
                 value={indicator.insight}
