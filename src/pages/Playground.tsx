@@ -62,8 +62,8 @@ export default function Playground() {
       strategicRecommendation: 'Click to add strategic recommendation...',
       policyNotes: []
     };
-    // Auto-save when adding a new card (pass true as second argument)
-    updateIndicators([...indicators, newIndicator], true);
+    // Auto-save is now built-in to updateIndicators
+    updateIndicators([...indicators, newIndicator]);
   };
   const handleCommentClick = (label: string) => {
     setCommentLabel(label);
