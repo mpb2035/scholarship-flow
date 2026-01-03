@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid, FolderKanban } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid, FolderKanban, MessageSquareWarning } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
 import {
@@ -14,6 +14,7 @@ import {
 
 const navItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
+  { title: 'Pending Response', url: '/pending-response', icon: MessageSquareWarning },
   { title: 'Analytics', url: '/analytics', icon: BarChart3 },
   { title: 'My Directory', url: '/directory', icon: Bookmark },
   { title: 'Playground', url: '/playground', icon: LayoutGrid },

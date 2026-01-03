@@ -11,6 +11,7 @@ import Analytics from "./pages/Analytics";
 import Directory from "./pages/Directory";
 import Playground from "./pages/Playground";
 import ProjectWorkflow from "./pages/ProjectWorkflow";
+import PendingResponse from "./pages/PendingResponse";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ function AppRoutes() {
         <Route path="/directory" element={<Directory />} />
         <Route path="/playground" element={<Playground />} />
         <Route path="/project-workflow" element={<ProjectWorkflow />} />
+        <Route path="/pending-response" element={<PendingResponse />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
