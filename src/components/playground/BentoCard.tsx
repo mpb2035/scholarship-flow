@@ -118,7 +118,7 @@ ${indicator.strategicRecommendation || 'N/A'}`;
     isTextarea = false,
     className = ''
   }: { 
-    field: keyof BentoIndicator; 
+    field: string; 
     value: string; 
     isTextarea?: boolean;
     className?: string;
@@ -128,8 +128,8 @@ ${indicator.strategicRecommendation || 'N/A'}`;
         <Textarea
           value={tempValue}
           onChange={(e) => setTempValue(e.target.value)}
-          onBlur={() => saveEdit(field)}
-          onKeyDown={(e) => handleKeyDown(e, field)}
+          onBlur={() => saveEdit(field as keyof BentoIndicator)}
+          onKeyDown={(e) => handleKeyDown(e, field as keyof BentoIndicator)}
           autoFocus
           className="min-h-[60px] text-sm bg-white/20 border-white/30 text-white placeholder:text-white/50"
         />
@@ -137,8 +137,8 @@ ${indicator.strategicRecommendation || 'N/A'}`;
         <Input
           value={tempValue}
           onChange={(e) => setTempValue(e.target.value)}
-          onBlur={() => saveEdit(field)}
-          onKeyDown={(e) => handleKeyDown(e, field)}
+          onBlur={() => saveEdit(field as keyof BentoIndicator)}
+          onKeyDown={(e) => handleKeyDown(e, field as keyof BentoIndicator)}
           autoFocus
           className={cn("h-auto py-1 bg-white/20 border-white/30 text-white", className)}
         />
@@ -146,10 +146,10 @@ ${indicator.strategicRecommendation || 'N/A'}`;
     }
     return (
       <span
-        onClick={() => startEdit(field, value)}
+        onClick={(e) => { e.stopPropagation(); startEdit(field, value); }}
         className="cursor-pointer hover:bg-white/20 rounded px-1 -mx-1 transition-colors"
       >
-        {value}
+        {value || 'N/A'}
       </span>
     );
   };
@@ -190,12 +190,15 @@ ${indicator.strategicRecommendation || 'N/A'}`;
         </Button>
       </div>
 
-      {/* Pillar Pill */}
-      {indicator.pillar && (
-        <span className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full w-fit mb-3">
-          {indicator.pillar}
+      {/* ID & Pillar Pills */}
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <span className="bg-white/30 text-white text-xs font-medium px-3 py-1 rounded-full w-fit uppercase">
+          <EditableField field="id" value={indicator.id} className="text-xs" />
         </span>
-      )}
+        <span className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full w-fit">
+          <EditableField field="pillar" value={indicator.pillar || indicator.category || 'Custom Pillar'} className="text-xs" />
+        </span>
+      </div>
 
       {/* Header */}
       <div className="flex items-start justify-between mb-2">
@@ -203,14 +206,18 @@ ${indicator.strategicRecommendation || 'N/A'}`;
           <EditableField field="title" value={indicator.title} />
         </h3>
         <span className="text-xl font-bold flex-shrink-0">
-          {indicator.score_2025}
+          <EditableField field="score_2025" value={String(indicator.score_2025)} className="text-xl font-bold w-16 text-right" />
         </span>
       </div>
 
-      {/* ID & Owner */}
+      {/* Owner */}
+      <p className="text-xs text-white/70 mb-1">
+        Owner: <EditableField field="owner" value={indicator.owner || 'TBD'} className="text-xs" />
+      </p>
+      
+      {/* Score 2023 */}
       <p className="text-xs text-white/70 mb-3">
-        {indicator.id}
-        {indicator.owner && ` | Owner: ${indicator.owner}`}
+        2023 Score: <EditableField field="score_2023" value={String(indicator.score_2023 ?? 'N/A')} className="text-xs w-16" />
       </p>
 
       {/* Definition snippet */}
@@ -227,12 +234,6 @@ ${indicator.strategicRecommendation || 'N/A'}`;
         </span>
       </div>
 
-      {/* Category Badge */}
-      {!indicator.pillar && (
-        <span className="bg-white/20 text-white text-xs font-medium px-3 py-1 rounded-full w-fit mb-3">
-          {indicator.category}
-        </span>
-      )}
 
       {/* Actions */}
       <div className="mt-auto flex gap-2 pt-4">
