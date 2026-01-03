@@ -44,6 +44,7 @@ export default function Playground() {
       id: `NEW-${Date.now().toString(36).toUpperCase()}`,
       title: 'New Indicator',
       score_2025: 0,
+      score_2023: 0,
       trend_direction: 'neutral',
       trend_value: 'N/A',
       status: 'neutral',
@@ -61,7 +62,8 @@ export default function Playground() {
       strategicRecommendation: 'Click to add strategic recommendation...',
       policyNotes: []
     };
-    updateIndicators([...indicators, newIndicator]);
+    // Auto-save when adding a new card (pass true as second argument)
+    updateIndicators([...indicators, newIndicator], true);
   };
   const handleCommentClick = (label: string) => {
     setCommentLabel(label);

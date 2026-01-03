@@ -122,9 +122,15 @@ export function usePlaygroundData() {
     setHasUnsavedChanges(true);
   };
 
-  const updateIndicators = (indicators: BentoIndicator[]) => {
-    setLocalData(prev => ({ ...prev, indicators }));
+  const updateIndicators = (indicators: BentoIndicator[], autoSave = false) => {
+    const newData = { ...localData, indicators };
+    setLocalData(newData);
     setHasUnsavedChanges(true);
+    
+    // Auto-save if requested and authenticated
+    if (autoSave && user) {
+      saveMutation.mutate(newData);
+    }
   };
 
   const save = () => {
