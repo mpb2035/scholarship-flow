@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SLAConfigManager } from '@/components/admin/SLAConfigManager';
+import { WorkflowManager } from '@/components/admin/WorkflowManager';
 import { 
   ArrowLeft, 
   Users, 
@@ -19,7 +21,9 @@ import {
   Loader2,
   Shield,
   Trash2,
-  Plus
+  Plus,
+  Clock,
+  GitBranch
 } from 'lucide-react';
 
 interface UserWithRole {
@@ -215,7 +219,7 @@ const Admin = () => {
                 <Shield className="h-6 w-6" />
                 Admin Dashboard
               </h1>
-              <p className="text-muted-foreground">Manage users, data, and settings</p>
+              <p className="text-muted-foreground">Manage users, data, SLA settings, and workflows</p>
             </div>
           </div>
         </div>
@@ -266,6 +270,14 @@ const Admin = () => {
             <TabsTrigger value="matters" className="gap-2">
               <Database className="h-4 w-4" />
               Matters
+            </TabsTrigger>
+            <TabsTrigger value="sla" className="gap-2">
+              <Clock className="h-4 w-4" />
+              SLA Settings
+            </TabsTrigger>
+            <TabsTrigger value="workflows" className="gap-2">
+              <GitBranch className="h-4 w-4" />
+              Workflows
             </TabsTrigger>
           </TabsList>
 
@@ -396,6 +408,16 @@ const Admin = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* SLA Settings Tab */}
+          <TabsContent value="sla">
+            <SLAConfigManager />
+          </TabsContent>
+
+          {/* Workflows Tab */}
+          <TabsContent value="workflows">
+            <WorkflowManager />
           </TabsContent>
         </Tabs>
       </div>

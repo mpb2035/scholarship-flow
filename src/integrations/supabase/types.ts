@@ -163,6 +163,36 @@ export type Database = {
           },
         ]
       }
+      sla_configurations: {
+        Row: {
+          at_risk_days: number
+          case_type: string
+          created_at: string
+          critical_days: number
+          id: string
+          sla_days: number
+          updated_at: string
+        }
+        Insert: {
+          at_risk_days?: number
+          case_type: string
+          created_at?: string
+          critical_days?: number
+          id?: string
+          sla_days?: number
+          updated_at?: string
+        }
+        Update: {
+          at_risk_days?: number
+          case_type?: string
+          created_at?: string
+          critical_days?: number
+          id?: string
+          sla_days?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -208,6 +238,42 @@ export type Database = {
           updated_at?: string
           url?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      workflow_steps: {
+        Row: {
+          created_at: string
+          estimated_days: number | null
+          id: string
+          responsible_party: string | null
+          step_description: string | null
+          step_order: number
+          step_title: string
+          updated_at: string
+          workflow_name: string
+        }
+        Insert: {
+          created_at?: string
+          estimated_days?: number | null
+          id?: string
+          responsible_party?: string | null
+          step_description?: string | null
+          step_order: number
+          step_title: string
+          updated_at?: string
+          workflow_name: string
+        }
+        Update: {
+          created_at?: string
+          estimated_days?: number | null
+          id?: string
+          responsible_party?: string | null
+          step_description?: string | null
+          step_order?: number
+          step_title?: string
+          updated_at?: string
+          workflow_name?: string
         }
         Relationships: []
       }
