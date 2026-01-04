@@ -267,7 +267,7 @@ const Index = () => {
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <div className="max-w-[1800px] mx-auto">
-        <Header onAddNew={handleAddNew} onRefresh={handleRefresh} />
+        <Header onAddNew={handleAddNew} onRefresh={handleRefresh} matters={matters} />
 
         {/* KPI Cards - Total Active + 5 Sub-cards + Approved */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
