@@ -1,4 +1,10 @@
-// GTCI 2025 Data for Brunei Darussalam
+  {
+    indicator: "Corruption Perceptions Index (1.1.15)",
+    source: "Transparency International",
+    localOwner: "Ministry of Home Affairs",
+    action: "Obtain CPI score for Brunei",
+    deadline: "Q1 2026",
+  }// GTCI 2025 Data for Brunei Darussalam
 
 export interface Indicator {
   id: string;
