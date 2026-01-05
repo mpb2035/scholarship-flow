@@ -541,21 +541,16 @@ export const pillars: Pillar[] = [
     rank2023: 46,
     rank2025: 45,
     score2023: 44.35,
-    score2025: 30.27,
-    change: -14.08,
+    score2025: 39.88,
+    change: -4.47,
     rankChange: -9,
     status: "declined",
-    responsibleAgencies: [
-      "Ministry of Education (MOE)",
-      "MPEC (Manpower Planning)",
-      "Brunei University (UNN)",
-      "Institute for Islamic Studies",
-    ],
+    responsibleAgencies: ["Ministry of Education (MOE)", "MPEC (Manpower Planning)", "Higher Education Institutions"],
     subPillars: [
       {
         id: "formal",
         name: "Formal Education",
-        score2025: 39.88,
+        score2025: 30.27,
         indicators: [
           {
             id: "3.1.1",
