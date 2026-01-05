@@ -202,7 +202,7 @@ export const pillars: Pillar[] = [
             score2023: 5.0,
             score2025: 4.29,
             change: -0.71,
-            rank2025: null,
+            rank2025: 80,
             status: "declined",
           },
           {
