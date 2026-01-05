@@ -1,20 +1,20 @@
-import { TrendingUp, TrendingDown, Minus, Trophy, AlertTriangle, Globe, FileText } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { executiveSummary } from '@/data/gtciData';
+import { TrendingUp, TrendingDown, Minus, Trophy, AlertTriangle, Globe, FileText } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { executiveSummary } from "@/data/gtciData";
 
 export function GTCIExecutiveDashboard() {
-  const { 
-    overallRank2025, 
-    overallRank2023, 
+  const {
+    overallRank2025,
+    overallRank2023,
     totalCountries,
-    overallScore2025, 
-    overallScore2023, 
+    overallScore2025,
+    overallScore2023,
     scoreChange,
     rankChange,
     incomeGroupAvg,
-    topStrength, 
-    criticalWeakness, 
-    keyNarrative 
+    topStrength,
+    criticalWeakness,
+    keyNarrative,
   } = executiveSummary;
 
   const gapFromAvg = overallScore2025 - incomeGroupAvg;
@@ -33,24 +33,28 @@ export function GTCIExecutiveDashboard() {
             <span className="text-3xl font-bold">#{overallRank2025}</span>
             <span className="text-muted-foreground">/ {totalCountries}</span>
           </div>
-          <div className="mt-2 text-sm text-muted-foreground">
-            2023: #{overallRank2023}
+          <div className="mt-2 text-sm text-muted-foreground">2023: #{overallRank2023}</div>
+          <div
+            className={`flex items-center gap-1 mt-1 text-sm ${
+              rankChange > 0 ? "text-green-600" : rankChange < 0 ? "text-red-600" : "text-muted-foreground"
+            }`}
+          >
+            {rankChange > 0 ? (
+              <TrendingUp className="h-4 w-4" />
+            ) : rankChange < 0 ? (
+              <TrendingDown className="h-4 w-4" />
+            ) : (
+              <Minus className="h-4 w-4" />
+            )}
+            {rankChange > 0 ? "+" : ""}
+            {rankChange} positions (Minor slip)
           </div>
-          <div className={`flex items-center gap-1 mt-1 text-sm ${
-            rankChange > 0 ? 'text-green-600' : rankChange < 0 ? 'text-red-600' : 'text-muted-foreground'
-          }`}>
-            {rankChange > 0 ? <TrendingUp className="h-4 w-4" /> : 
-             rankChange < 0 ? <TrendingDown className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
-            {rankChange > 0 ? '+' : ''}{rankChange} positions (Minor slip)
-          </div>
-          <div className="mt-2 text-xs text-muted-foreground">
-            Status: HIGH INCOME GROUP
-          </div>
+          <div className="mt-2 text-xs text-muted-foreground">Status: HIGH INCOME GROUP</div>
         </CardContent>
       </Card>
 
       {/* Card 2: The Score */}
-      <Card className={`border-l-4 ${scoreChange >= 0 ? 'border-l-green-500' : 'border-l-red-500'}`}>
+      <Card className={`border-l-4 ${scoreChange >= 0 ? "border-l-green-500" : "border-l-red-500"}`}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <span className="text-lg">📊</span> Overall Score
@@ -61,14 +65,13 @@ export function GTCIExecutiveDashboard() {
             <span className="text-3xl font-bold">{overallScore2025}</span>
             <span className="text-muted-foreground">/ 100</span>
           </div>
-          <div className="mt-2 text-sm text-muted-foreground">
-            2023: {overallScore2023}
-          </div>
-          <div className={`flex items-center gap-1 mt-1 text-sm ${
-            scoreChange >= 0 ? 'text-green-600' : 'text-red-600'
-          }`}>
+          <div className="mt-2 text-sm text-muted-foreground">2023: {overallScore2023}</div>
+          <div
+            className={`flex items-center gap-1 mt-1 text-sm ${scoreChange >= 0 ? "text-green-600" : "text-red-600"}`}
+          >
             {scoreChange >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-            {scoreChange >= 0 ? '+' : ''}{scoreChange.toFixed(2)} points
+            {scoreChange >= 0 ? "+" : ""}
+            {scoreChange.toFixed(2)} points
           </div>
           <div className="mt-2 text-xs text-red-600">
             Income Avg: {incomeGroupAvg} (BELOW by {gapFromAvg.toFixed(2)}pts)
@@ -91,7 +94,9 @@ export function GTCIExecutiveDashboard() {
           </div>
           <div className="mt-3 space-y-1">
             {topStrength.highlights.map((h, i) => (
-              <div key={i} className="text-xs text-muted-foreground">• {h}</div>
+              <div key={i} className="text-xs text-muted-foreground">
+                • {h}
+              </div>
             ))}
           </div>
         </CardContent>
@@ -112,7 +117,9 @@ export function GTCIExecutiveDashboard() {
           </div>
           <div className="mt-3 space-y-1">
             {criticalWeakness.issues.map((issue, i) => (
-              <div key={i} className="text-xs text-red-600">• {issue}</div>
+              <div key={i} className="text-xs text-red-600">
+                • {issue}
+              </div>
             ))}
           </div>
         </CardContent>
@@ -127,14 +134,16 @@ export function GTCIExecutiveDashboard() {
         </CardHeader>
         <CardContent>
           <div className="text-lg font-semibold">ASEAN Rank Position: Tier 2</div>
-          <div className="text-sm text-muted-foreground">(Below Singapore, Malaysia)</div>
+          <div className="text-sm text-muted-foreground">(Below Singapore, Above Malaysia)</div>
           <div className="mt-3 space-y-2 text-sm">
-            <div className="text-red-600">High-Income Group: BELOW average by {Math.abs(gapFromAvg).toFixed(2)} pts</div>
+            <div className="text-red-600">
+              High-Income Group: BELOW average by {Math.abs(gapFromAvg).toFixed(2)} pts
+            </div>
             <div className="text-muted-foreground">Need: +8.5 pts to match income group median</div>
           </div>
           <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
-            <div>Benchmark: Singapore (GTCI #8, 72.05)</div>
-            <div>Malaysia (GTCI #24, 59.74)</div>
+            <div>Benchmark: Singapore (GTCI #1, 73.29)</div>
+            <div>Malaysia (GTCI #46, 50.20)</div>
           </div>
         </CardContent>
       </Card>
