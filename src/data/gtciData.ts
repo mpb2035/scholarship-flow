@@ -207,11 +207,11 @@ export const pillars: Pillar[] = [
           },
           {
             id: "1.2.5",
-            name: "3G Mobile Network Coverage",
+            name: "Population covered by at least a 3G mobile network",
             score2023: null,
             score2025: 93.09,
             change: null,
-            rank2025: null,
+            rank2025: 64,
             status: "new",
           },
           {
