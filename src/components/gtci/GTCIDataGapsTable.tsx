@@ -1,8 +1,8 @@
-import { AlertTriangle, Clock, Building2, FileText } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { allDataGaps, suspiciousDataMovements } from '@/data/gtciData';
+import { AlertTriangle, Clock, Building2, FileText } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { allDataGaps, suspiciousDataMovements } from "@/data/gtciData";
 
 export function GTCIDataGapsTable() {
   return (
@@ -12,7 +12,7 @@ export function GTCIDataGapsTable() {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-red-500" />
-            Missing Data That Hurts Ranking (12 Indicators)
+            Missing Data That Hurts Ranking (13 Indicators)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -35,9 +35,7 @@ export function GTCIDataGapsTable() {
                     <TableCell className="text-sm">{gap.localOwner}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{gap.action}</TableCell>
                     <TableCell>
-                      <Badge variant={gap.deadline.includes('Q1') ? 'destructive' : 'secondary'}>
-                        {gap.deadline}
-                      </Badge>
+                      <Badge variant={gap.deadline.includes("Q1") ? "destructive" : "secondary"}>{gap.deadline}</Badge>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -95,9 +93,11 @@ export function GTCIDataGapsTable() {
           <div className="bg-muted/50 rounded-lg p-4 font-mono text-sm">
             <div className="text-center mb-4 p-3 bg-primary/10 rounded-lg">
               <div className="font-bold">NATIONAL COMPETITIVENESS TASKFORCE (NCTF)</div>
-              <div className="text-xs text-muted-foreground">Established: Q1 2026 | Chair: MOE (in coordination with MPEC) | Secretariat: DEPS</div>
+              <div className="text-xs text-muted-foreground">
+                Established: Q1 2026 | Chair: MOE (in coordination with MPEC) | Secretariat: DEPS
+              </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-background rounded-lg p-3 border">
                 <div className="font-semibold text-xs mb-2">📊 WG-1: DATA COLLECTION</div>
@@ -129,18 +129,43 @@ export function GTCIDataGapsTable() {
             </h4>
             <div className="space-y-2">
               {[
-                { period: 'Q4 2025 (NOW)', tasks: ['Form National Competitiveness Taskforce', 'Assign data collection leads', 'Brief all agencies on GTCI methodology'] },
-                { period: 'Q1 2026', tasks: ['Submit: AI Skills Migration, WEF EOS surveys', 'Submit: Labour Productivity data', 'Validate: Tertiary Ed Expenditure with World Bank'] },
-                { period: 'Q2 2026', tasks: ['Submit: Internet Access in Schools', 'Submit: Firms with Website data', 'Final validation of all suspicious indicators'] },
-                { period: 'Q3-Q4 2026', tasks: ['GTCI processes and validates all submissions', 'Brunei achieves IMPROVED ranking for GTCI 2027'] }
+                {
+                  period: "Q4 2025 (NOW)",
+                  tasks: [
+                    "Form National Competitiveness Taskforce",
+                    "Assign data collection leads",
+                    "Brief all agencies on GTCI methodology",
+                  ],
+                },
+                {
+                  period: "Q1 2026",
+                  tasks: [
+                    "Submit: AI Skills Migration, WEF EOS surveys",
+                    "Submit: Labour Productivity data",
+                    "Validate: Tertiary Ed Expenditure with World Bank",
+                  ],
+                },
+                {
+                  period: "Q2 2026",
+                  tasks: [
+                    "Submit: Internet Access in Schools",
+                    "Submit: Firms with Website data",
+                    "Final validation of all suspicious indicators",
+                  ],
+                },
+                {
+                  period: "Q3-Q4 2026",
+                  tasks: [
+                    "GTCI processes and validates all submissions",
+                    "Brunei achieves IMPROVED ranking for GTCI 2027",
+                  ],
+                },
               ].map((item, idx) => (
                 <div key={idx} className="flex gap-3 text-sm">
-                  <Badge variant={idx === 0 ? 'default' : 'outline'} className="shrink-0">
+                  <Badge variant={idx === 0 ? "default" : "outline"} className="shrink-0">
                     {item.period}
                   </Badge>
-                  <div className="text-muted-foreground">
-                    {item.tasks.join(' | ')}
-                  </div>
+                  <div className="text-muted-foreground">{item.tasks.join(" | ")}</div>
                 </div>
               ))}
             </div>
