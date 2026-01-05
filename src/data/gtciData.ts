@@ -1,0 +1,612 @@
+// GTCI 2025 Data for Brunei Darussalam
+
+export interface Indicator {
+  id: string;
+  name: string;
+  score2023: number | null;
+  score2025: number | null;
+  change: number | null;
+  rank2025: number | null;
+  status: 'improved' | 'declined' | 'stable' | 'missing' | 'new';
+}
+
+export interface SubPillar {
+  id: string;
+  name: string;
+  score2025: number;
+  indicators: Indicator[];
+}
+
+export interface Pillar {
+  id: string;
+  name: string;
+  icon: string;
+  rank2023: number;
+  rank2025: number;
+  score2023: number;
+  score2025: number;
+  change: number;
+  rankChange: number;
+  status: 'improved' | 'declined' | 'stable';
+  responsibleAgencies: string[];
+  subPillars: SubPillar[];
+  priorities: Priority[];
+  dataGaps: DataGap[];
+}
+
+export interface Priority {
+  title: string;
+  indicator: string;
+  score: string;
+  rank: string;
+  decline: string;
+  actions: string[];
+  target: string;
+}
+
+export interface DataGap {
+  indicator: string;
+  source: string;
+  localOwner: string;
+  action: string;
+  deadline: string;
+}
+
+export interface ExecutiveSummary {
+  overallRank2025: number;
+  overallRank2023: number;
+  totalCountries: number;
+  overallScore2025: number;
+  overallScore2023: number;
+  scoreChange: number;
+  rankChange: number;
+  incomeGroupAvg: number;
+  topStrength: { name: string; rank: number; score: number; highlights: string[] };
+  criticalWeakness: { name: string; rank: number; score: number; issues: string[] };
+  keyNarrative: string[];
+}
+
+export const executiveSummary: ExecutiveSummary = {
+  overallRank2025: 43,
+  overallRank2023: 41,
+  totalCountries: 135,
+  overallScore2025: 51.48,
+  overallScore2023: 51.74,
+  scoreChange: -0.26,
+  rankChange: -2,
+  incomeGroupAvg: 59.47,
+  topStrength: {
+    name: 'RETAIN',
+    rank: 39,
+    score: 65.49,
+    highlights: ['Pension Coverage #1 Globally', 'Political Stability #29', 'Corruption Control #2']
+  },
+  criticalWeakness: {
+    name: 'Generalist Adaptive Skills',
+    rank: 50,
+    score: 28.98,
+    issues: ['Talent Impact at #106', 'New Business Density: #125', 'High-Value Exports: #115']
+  },
+  keyNarrative: [
+    'OVERALL SCORE DECLINE: New "Generalist Adaptive Skills" pillar (renamed from Global Knowledge Skills) revealed weak innovation & entrepreneurship ecosystem.',
+    'RETAIN PILLAR IMPROVED: Strong pension coverage & political stability are retention anchors, but offset by weak talent impact indicators (new business density = 0.00).'
+  ]
+};
+
+export const pillars: Pillar[] = [
+  {
+    id: 'enable',
+    name: 'ENABLE',
+    icon: '⚙️',
+    rank2023: 51,
+    rank2025: 43,
+    score2023: 49.43,
+    score2025: 56.30,
+    change: 6.87,
+    rankChange: 8,
+    status: 'improved',
+    responsibleAgencies: ['Ministry of Finance & Economy (MOFE)', 'Attorney General\'s Chambers (AGC)', 'Companies Registration Dept', 'Civil Service Dept'],
+    subPillars: [
+      {
+        id: 'regulatory',
+        name: 'Regulatory Landscape',
+        score2025: 57.41,
+        indicators: [
+          { id: '1.1.1', name: 'Government Effectiveness', score2023: 79.14, score2025: 80.43, change: 1.29, rank2025: null, status: 'improved' },
+          { id: '1.1.2', name: 'Rule of Law', score2023: 68.96, score2025: 80.06, change: 11.10, rank2025: null, status: 'improved' },
+          { id: '1.1.3', name: 'Political Stability', score2023: 91.56, score2025: 73.77, change: -17.79, rank2025: null, status: 'declined' },
+          { id: '1.1.4', name: 'Regulatory Quality', score2023: 67.88, score2025: 69.28, change: 1.40, rank2025: null, status: 'improved' },
+          { id: '1.1.5', name: 'Corruption Control', score2023: null, score2025: 98.60, change: null, rank2025: 2, status: 'new' },
+        ]
+      },
+      {
+        id: 'market',
+        name: 'Market Landscape',
+        score2025: 45.38,
+        indicators: [
+          { id: '1.2.1', name: 'Extent of Market Dominance', score2023: 30.71, score2025: 39.42, change: 8.71, rank2025: null, status: 'improved' },
+          { id: '1.2.2', name: 'Domestic Credit to Private Sector', score2023: 35.42, score2025: 15.42, change: -20.00, rank2025: 76, status: 'declined' },
+          { id: '1.2.3', name: 'Cluster Development', score2023: 44.47, score2025: 44.29, change: -0.18, rank2025: null, status: 'stable' },
+          { id: '1.2.4', name: 'R&D Expenditure', score2023: 5.00, score2025: 4.29, change: -0.71, rank2025: null, status: 'declined' },
+          { id: '1.2.5', name: '3G Mobile Network Coverage', score2023: null, score2025: 93.09, change: null, rank2025: null, status: 'new' },
+          { id: '1.2.6', name: 'Internet Access in Schools', score2023: null, score2025: null, change: null, rank2025: null, status: 'missing' },
+          { id: '1.2.7', name: 'Urbanisation', score2023: 74.28, score2025: 75.76, change: 1.48, rank2025: null, status: 'improved' },
+        ]
+      },
+      {
+        id: 'business',
+        name: 'Business & Labour Landscape',
+        score2025: 43.08,
+        indicators: [
+          { id: '1.3.1', name: 'Labour Rights', score2023: null, score2025: 74.20, change: null, rank2025: null, status: 'new' },
+          { id: '1.3.2', name: 'Labour-Employer Cooperation', score2023: 51.20, score2025: 60.53, change: 9.33, rank2025: null, status: 'improved' },
+          { id: '1.3.3', name: 'Professional Management', score2023: 42.44, score2025: 60.63, change: 18.19, rank2025: null, status: 'improved' },
+          { id: '1.3.4', name: 'Pay-to-Productivity Relationship', score2023: 55.17, score2025: 46.51, change: -8.66, rank2025: null, status: 'declined' },
+          { id: '1.3.5', name: 'Enterprise Software Adoption', score2023: 11.53, score2025: 11.86, change: 0.33, rank2025: 97, status: 'stable' },
+          { id: '1.3.6', name: 'Cloud Computing', score2023: 6.76, score2025: 4.79, change: -1.97, rank2025: 122, status: 'declined' },
+          { id: '1.3.7', name: 'Firms with Website', score2023: null, score2025: null, change: null, rank2025: null, status: 'missing' },
+        ]
+      }
+    ],
+    priorities: [
+      {
+        title: 'Domestic Credit to Private Sector',
+        indicator: '1.2.2',
+        score: '15.42/100',
+        rank: '#76/135',
+        decline: '-20.00 pts from 2023',
+        actions: ['MOFE to launch "SME Credit Accessibility Program"', 'Establish credit guarantee scheme with bank consortia'],
+        target: 'Increase domestic credit to 25% by GTCI 2026'
+      },
+      {
+        title: 'Enterprise Technology Adoption',
+        indicator: '1.3.5/1.3.6',
+        score: '11.86/100 & 4.79/100',
+        rank: '#97 & #122',
+        decline: '-15 pts below ASEAN average',
+        actions: ['MTIC to establish "Digital Transformation Fund"', 'Partner with tech vendors for discounted SME licensing'],
+        target: 'Increase enterprise software adoption to 20% by 2026'
+      }
+    ],
+    dataGaps: [
+      { indicator: 'Internet Access in Schools (1.2.6)', source: 'UNESCO Institute for Statistics', localOwner: 'MOE', action: 'Survey schools on broadband coverage', deadline: 'Q2 2026' },
+      { indicator: 'Firms with Website (1.3.7)', source: 'World Bank Enterprise Surveys', localOwner: 'MOFE Statistics Dept', action: 'Include in business census', deadline: 'Q2 2026' }
+    ]
+  },
+  {
+    id: 'attract',
+    name: 'ATTRACT',
+    icon: '🌐',
+    rank2023: 54,
+    rank2025: 46,
+    score2023: 53.71,
+    score2025: 56.08,
+    change: 2.37,
+    rankChange: 8,
+    status: 'improved',
+    responsibleAgencies: ['Ministry of Home Affairs (MOHA)', 'Ministry of Trade & Industry (MTIC)', 'Public Service Dept (JPA)', 'Immigration Dept'],
+    subPillars: [
+      {
+        id: 'external',
+        name: 'External Openness',
+        score2025: 53.04,
+        indicators: [
+          { id: '2.1.1', name: 'FDI Regulatory Restrictiveness', score2023: 61.62, score2025: 54.68, change: -6.94, rank2025: 77, status: 'declined' },
+          { id: '2.1.2', name: 'Financial Globalisation', score2023: 85.47, score2025: 78.93, change: -6.54, rank2025: null, status: 'declined' },
+          { id: '2.1.3', name: 'Migrant Stock', score2023: 78.84, score2025: 49.50, change: -29.34, rank2025: 14, status: 'declined' },
+          { id: '2.1.4', name: 'International Students', score2023: 13.39, score2025: 15.76, change: 2.37, rank2025: null, status: 'improved' },
+          { id: '2.1.5', name: 'Brain Gain (Attracting Expats)', score2023: null, score2025: 66.32, change: null, rank2025: null, status: 'new' },
+          { id: '2.1.6', name: 'AI Skills Migration', score2023: null, score2025: null, change: null, rank2025: null, status: 'missing' },
+        ]
+      },
+      {
+        id: 'internal',
+        name: 'Internal Openness',
+        score2025: 59.12,
+        indicators: [
+          { id: '2.2.1', name: 'Tolerance of Minorities', score2023: 30.85, score2025: 27.66, change: -3.19, rank2025: null, status: 'declined' },
+          { id: '2.2.2', name: 'Tolerance of Immigrants', score2023: null, score2025: null, change: null, rank2025: null, status: 'missing' },
+          { id: '2.2.3', name: 'Social Mobility', score2023: 36.36, score2025: 60.68, change: 24.32, rank2025: null, status: 'improved' },
+          { id: '2.2.4', name: 'Economic Empowerment of Women', score2023: 33.63, score2025: 53.12, change: 19.49, rank2025: null, status: 'improved' },
+          { id: '2.2.5', name: 'Gender Parity in High-Skilled Jobs', score2023: 83.85, score2025: 82.62, change: -1.23, rank2025: null, status: 'stable' },
+          { id: '2.2.6', name: 'Leadership Opportunities for Women', score2023: 53.24, score2025: 71.54, change: 18.30, rank2025: null, status: 'improved' },
+        ]
+      }
+    ],
+    priorities: [
+      {
+        title: 'Migrant Stock Decline',
+        indicator: '2.1.3',
+        score: '49.50/100',
+        rank: '#14/135',
+        decline: '-29.34 pts (WORST CHANGE IN ENTIRE GTCI)',
+        actions: ['Commission rapid policy review', 'Consider "Skilled Migrant Retention Program"', 'Streamline work permit processes'],
+        target: 'Stabilize migrant stock at 65+ by GTCI 2027'
+      },
+      {
+        title: 'FDI Regulatory Restrictiveness',
+        indicator: '2.1.1',
+        score: '54.68/100',
+        rank: '#77/135',
+        decline: '-6.94 pts',
+        actions: ['Review sector-specific FDI restrictions', 'Benchmark against Singapore/Malaysia FDI terms', 'Publish transparent FDI guidelines'],
+        target: 'Return to 62+ (matching 2023 level) by 2026'
+      }
+    ],
+    dataGaps: [
+      { indicator: 'Tolerance of Immigrants (2.2.2)', source: 'WEF EOS', localOwner: 'MOHA/Immigration', action: 'Ensure WEF survey participation', deadline: 'Q1 2026' },
+      { indicator: 'AI Skills Migration (2.1.6)', source: 'LinkedIn/GTCI Custom Analysis', localOwner: 'MTIC Digital Council', action: 'Partner with MTIC to track AI talent flows', deadline: 'Q1 2026' }
+    ]
+  },
+  {
+    id: 'grow',
+    name: 'GROW',
+    icon: '🎓',
+    rank2023: 46,
+    rank2025: 45,
+    score2023: 44.35,
+    score2025: 30.27,
+    change: -14.08,
+    rankChange: 1,
+    status: 'improved',
+    responsibleAgencies: ['Ministry of Education (MOE)', 'MPEC (Manpower Planning)', 'Brunei University (UNN)', 'Institute for Islamic Studies'],
+    subPillars: [
+      {
+        id: 'formal',
+        name: 'Formal Education',
+        score2025: 39.88,
+        indicators: [
+          { id: '3.1.1', name: 'Vocational Enrolment', score2023: 18.17, score2025: 20.87, change: 2.70, rank2025: null, status: 'improved' },
+          { id: '3.1.2', name: 'Tertiary Enrolment', score2023: 20.46, score2025: 20.56, change: 0.10, rank2025: null, status: 'stable' },
+          { id: '3.1.3', name: 'Tertiary Education Expenditure', score2023: 86.29, score2025: 50.31, change: -35.98, rank2025: 6, status: 'declined' },
+          { id: '3.1.4', name: 'Reading, Maths & Science', score2023: 36.31, score2025: 42.06, change: 5.75, rank2025: null, status: 'improved' },
+          { id: '3.1.5', name: 'University Ranking', score2023: 35.36, score2025: 17.53, change: -17.83, rank2025: 53, status: 'declined' },
+        ]
+      },
+      {
+        id: 'lifelong',
+        name: 'Lifelong Learning',
+        score2025: 31.12,
+        indicators: [
+          { id: '3.2.1', name: 'Business Masters Education', score2023: 0.00, score2025: 0.00, change: 0.00, rank2025: 57, status: 'stable' },
+          { id: '3.2.2', name: 'Prevalence of Training in Firms', score2023: null, score2025: null, change: null, rank2025: null, status: 'missing' },
+          { id: '3.2.3', name: 'Employee Development', score2023: 61.96, score2025: 62.24, change: 0.28, rank2025: null, status: 'stable' },
+        ]
+      },
+      {
+        id: 'access',
+        name: 'Access to Growth Opportunities',
+        score2025: 58.24,
+        indicators: [
+          { id: '3.3.1', name: 'Delegation of Authority', score2023: 63.34, score2025: 65.69, change: 2.35, rank2025: null, status: 'improved' },
+          { id: '3.3.2', name: 'Youth Inclusion (Low NEET Rate)', score2023: 62.04, score2025: 67.31, change: 5.27, rank2025: 66, status: 'improved' },
+          { id: '3.3.3', name: 'Use of Virtual Social Networks', score2023: 89.20, score2025: 63.50, change: -25.70, rank2025: null, status: 'declined' },
+          { id: '3.3.4', name: 'Use of Virtual Professional Networks', score2023: 36.47, score2025: 36.47, change: 0.00, rank2025: null, status: 'stable' },
+        ]
+      }
+    ],
+    priorities: [
+      {
+        title: 'Tertiary Education Expenditure',
+        indicator: '3.1.3',
+        score: '50.31/100',
+        rank: '#6/135',
+        decline: '-35.98 pts (SINGLE WORST DECLINE)',
+        actions: ['MOE to submit updated education budget documentation', 'Increase UNN research funding', 'Expand scholarship allocations'],
+        target: 'Restore to 70+ by GTCI 2026'
+      },
+      {
+        title: 'University Ranking Performance',
+        indicator: '3.1.5',
+        score: '17.53/100',
+        rank: '#53/135',
+        decline: '-17.83 pts',
+        actions: ['Commission 3-year university competitiveness improvement program', 'Hire world-class researchers', 'Establish research centers of excellence'],
+        target: 'Return to Rank 35+ by GTCI 2027'
+      },
+      {
+        title: 'Business Masters Education',
+        indicator: '3.2.1',
+        score: '0.00/100',
+        rank: '#57/135',
+        decline: 'NO MBA programs offered in Brunei',
+        actions: ['Launch UNN Graduate School of Business by 2027', 'Partner with UK/Australian universities for accreditation'],
+        target: 'Get MBA to 20+ by GTCI 2027'
+      }
+    ],
+    dataGaps: [
+      { indicator: 'Prevalence of Training in Firms (3.2.2)', source: 'WEF EOS Survey', localOwner: 'MPEC/HR Council', action: 'Coordinate firm survey participation for GTCI 2026', deadline: 'Q1 2026' }
+    ]
+  },
+  {
+    id: 'retain',
+    name: 'RETAIN',
+    icon: '❤️',
+    rank2023: 49,
+    rank2025: 39,
+    score2023: 65.15,
+    score2025: 65.49,
+    change: 0.34,
+    rankChange: 10,
+    status: 'improved',
+    responsibleAgencies: ['Ministry of Health (MOH)', 'JAPEM (Employment & Labour)', 'Ministry of Finance & Economy (MOFE - Tax/Pension)', 'Environmental Protection Dept'],
+    subPillars: [
+      {
+        id: 'sustainability',
+        name: 'Sustainability',
+        score2025: 68.30,
+        indicators: [
+          { id: '4.1.1', name: 'Pension Coverage', score2023: 100.00, score2025: 100.00, change: 0.00, rank2025: 1, status: 'stable' },
+          { id: '4.1.2', name: 'Social Protection', score2023: 55.97, score2025: 50.00, change: -5.97, rank2025: 59, status: 'declined' },
+          { id: '4.1.3', name: 'Brain Retention', score2023: 42.74, score2025: 48.17, change: 5.43, rank2025: null, status: 'improved' },
+          { id: '4.1.4', name: 'Environmental Performance', score2023: 45.42, score2025: 48.30, change: 2.88, rank2025: null, status: 'improved' },
+          { id: '4.1.5', name: 'Vulnerable Employment', score2023: 92.87, score2025: 95.02, change: 2.15, rank2025: 10, status: 'improved' },
+          { id: '4.1.6', name: 'Protect Against Future Disasters', score2023: null, score2025: null, change: null, rank2025: null, status: 'missing' },
+          { id: '4.1.7', name: 'Household Financial Resilience', score2023: null, score2025: null, change: null, rank2025: null, status: 'missing' },
+        ]
+      },
+      {
+        id: 'lifestyle',
+        name: 'Lifestyle',
+        score2025: 62.69,
+        indicators: [
+          { id: '4.2.1', name: 'Personal Rights', score2023: null, score2025: null, change: null, rank2025: null, status: 'missing' },
+          { id: '4.2.2', name: 'Personal Safety', score2023: null, score2025: null, change: null, rank2025: null, status: 'missing' },
+          { id: '4.2.3', name: 'Physician Density', score2023: 29.78, score2025: 27.37, change: -2.41, rank2025: 77, status: 'declined' },
+          { id: '4.2.4', name: 'Sanitation', score2023: 95.99, score2025: 98.00, change: 2.01, rank2025: 43, status: 'improved' },
+          { id: '4.2.5', name: 'Employee Wellbeing', score2023: null, score2025: null, change: null, rank2025: null, status: 'missing' },
+        ]
+      }
+    ],
+    priorities: [
+      {
+        title: 'Social Protection Decline',
+        indicator: '4.1.2',
+        score: '50.00/100',
+        rank: '#59/135',
+        decline: '-5.97 pts',
+        actions: ['Review MPEC retraining program accessibility', 'Audit unemployment support post-COVID', 'Expand vocational retraining budget'],
+        target: 'Restore to 55+ by GTCI 2026'
+      },
+      {
+        title: 'Physician Density Concern',
+        indicator: '4.2.3',
+        score: '27.37/100',
+        rank: '#77/135',
+        decline: '-2.41 pts',
+        actions: ['Increase medical school intake (UNN)', 'Offer physician retention bonuses', 'Improve hospital working conditions'],
+        target: 'Increase physicians per capita to 30+ by 2026'
+      }
+    ],
+    dataGaps: [
+      { indicator: 'Protect Against Future Disasters (4.1.6)', source: 'UN UNDRR Global Risk Assessment', localOwner: 'Ministry of Home Affairs (Disaster Mgmt)', action: 'Submit DRM preparedness metrics', deadline: 'Q2 2026' },
+      { indicator: 'Household Financial Resilience (4.1.7)', source: 'World Bank Financial Inclusion Surveys', localOwner: 'MOFE/Central Bank', action: 'Submit household savings/asset data', deadline: 'Q2 2026' },
+      { indicator: 'Personal Rights (4.2.1)', source: 'WEF/Amnesty', localOwner: 'MOHA/MOH', action: 'Clarify human rights index participation', deadline: 'Q1 2026' },
+      { indicator: 'Personal Safety (4.2.2)', source: 'WEF EOS', localOwner: 'MOHA/Police', action: 'Ensure WEF survey participation', deadline: 'Q1 2026' },
+      { indicator: 'Employee Wellbeing (4.2.5)', source: 'Gallup/World Happiness Index', localOwner: 'JAPEM/MOH', action: 'Commission national employee wellbeing survey', deadline: 'Q2 2026' }
+    ]
+  },
+  {
+    id: 'vt-skills',
+    name: 'VT SKILLS',
+    icon: '🔧',
+    rank2023: 26,
+    rank2025: 33,
+    score2023: 63.32,
+    score2025: 62.18,
+    change: -1.14,
+    rankChange: -7,
+    status: 'declined',
+    responsibleAgencies: ['IBTE (Institute of Brunei Technical Education)', 'MPEC (Manpower Planning)', 'Ministry of Education (MOE)', 'Private Sector Training Partners'],
+    subPillars: [
+      {
+        id: 'mid-level',
+        name: 'Mid-Level Skills',
+        score2025: 61.21,
+        indicators: [
+          { id: '5.1.1', name: 'Workforce with Secondary Education', score2023: 73.23, score2025: 62.63, change: -10.60, rank2025: 28, status: 'declined' },
+          { id: '5.1.2', name: 'Population with Secondary Education', score2023: null, score2025: 63.94, change: null, rank2025: 27, status: 'new' },
+          { id: '5.1.3', name: 'Technicians & Associate Professionals', score2023: 50.12, score2025: 57.06, change: 6.94, rank2025: 36, status: 'improved' },
+          { id: '5.1.4', name: 'Labour Productivity per Employee', score2023: null, score2025: null, change: null, rank2025: null, status: 'missing' },
+        ]
+      },
+      {
+        id: 'employability',
+        name: 'Employability',
+        score2025: 63.14,
+        indicators: [
+          { id: '5.2.1', name: 'Ease of Finding Skilled Employees', score2023: 44.76, score2025: 42.88, change: -1.88, rank2025: 119, status: 'declined' },
+          { id: '5.2.2', name: 'Relevance of Education to Economy', score2023: 63.96, score2025: 60.78, change: -3.18, rank2025: 26, status: 'declined' },
+          { id: '5.2.3', name: 'Skills Matching (Supply/Demand Fit)', score2023: 66.81, score2025: 65.70, change: -1.11, rank2025: 59, status: 'stable' },
+          { id: '5.2.4', name: 'Highly Educated Unemployment', score2023: 84.32, score2025: 83.21, change: -1.11, rank2025: 48, status: 'stable' },
+        ]
+      }
+    ],
+    priorities: [
+      {
+        title: 'Skills Shortage Crisis',
+        indicator: '5.2.1',
+        score: '42.88/100',
+        rank: '#119/135 (SECOND-LOWEST GLOBALLY)',
+        decline: '-1.88 pts',
+        actions: ['Commission employer skills audit', 'Revamp IBTE curriculum for digital, renewable energy, tourism', 'Establish "Fast-Track Skills Recognition" for foreign credentials', 'Increase IBTE instructor salaries'],
+        target: 'Improve to 55+ by GTCI 2026'
+      },
+      {
+        title: 'Education-Economy Relevance',
+        indicator: '5.2.2',
+        score: '60.78/100',
+        rank: '#26/135',
+        decline: '-3.18 pts',
+        actions: ['Establish MOE-IBTE-Private Sector Curriculum Council', 'Embed real-world projects in VT programs', 'Increase work-integrated learning (apprenticeships)'],
+        target: 'Improve to 63+ by GTCI 2026'
+      }
+    ],
+    dataGaps: [
+      { indicator: 'Labour Productivity per Employee (5.1.4)', source: 'ILO/World Bank', localOwner: 'MOFE/Statistics Dept', action: 'Submit productivity data from national accounts', deadline: 'Q1 2026' }
+    ]
+  },
+  {
+    id: 'ga-skills',
+    name: 'GA SKILLS',
+    icon: '🧠',
+    rank2023: 45,
+    rank2025: 50,
+    score2023: 34.47,
+    score2025: 28.98,
+    change: -5.49,
+    rankChange: -5,
+    status: 'declined',
+    responsibleAgencies: ['MTIC (Ministry of Technology & Innovation)', 'Digital Economy Council', 'UNN (Innovation & Research)', 'SME Council', 'Private Tech Sector'],
+    subPillars: [
+      {
+        id: 'high-level',
+        name: 'High-Level Skills',
+        score2025: 46.07,
+        indicators: [
+          { id: '6.1.1', name: 'Workforce with Tertiary Education', score2023: 27.70, score2025: 35.56, change: 7.86, rank2025: 62, status: 'improved' },
+          { id: '6.1.2', name: 'Soft Skills (NEW)', score2023: null, score2025: 57.13, change: null, rank2025: 60, status: 'new' },
+          { id: '6.1.3', name: 'Professionals', score2023: 34.51, score2025: 33.81, change: -0.70, rank2025: 45, status: 'stable' },
+          { id: '6.1.4', name: 'Researchers', score2023: null, score2025: 4.82, change: null, rank2025: 73, status: 'new' },
+          { id: '6.1.5', name: 'Senior Officials & Managers', score2023: 38.10, score2025: 45.11, change: 7.01, rank2025: 14, status: 'improved' },
+          { id: '6.1.6', name: 'Digital Skills', score2023: 100.00, score2025: 100.00, change: 0.00, rank2025: 1, status: 'stable' },
+          { id: '6.1.7', name: 'AI Talent Concentration (NEW)', score2023: null, score2025: null, change: null, rank2025: null, status: 'missing' },
+        ]
+      },
+      {
+        id: 'talent-impact',
+        name: 'Talent Impact (Innovation & Entrepreneurship)',
+        score2025: 11.88,
+        indicators: [
+          { id: '6.2.1', name: 'ICT Services Exports', score2023: 18.87, score2025: 2.44, change: -16.43, rank2025: 112, status: 'declined' },
+          { id: '6.2.2', name: 'Mobile Apps Development (NEW)', score2023: null, score2025: 43.27, change: null, rank2025: 112, status: 'new' },
+          { id: '6.2.3', name: 'IP Receipts % of Trade', score2023: 3.30, score2025: 0.00, change: -3.30, rank2025: 121, status: 'declined' },
+          { id: '6.2.4', name: 'High-Value Exports', score2023: null, score2025: 1.53, change: null, rank2025: 115, status: 'new' },
+          { id: '6.2.5', name: 'Software Development', score2023: 59.20, score2025: 3.02, change: -56.18, rank2025: 96, status: 'declined' },
+          { id: '6.2.6', name: 'New Business Density (NEW)', score2023: 5.33, score2025: 0.00, change: -5.33, rank2025: 125, status: 'declined' },
+          { id: '6.2.7', name: 'Scientific Journal Articles', score2023: 24.29, score2025: 32.91, change: 8.62, rank2025: 37, status: 'improved' },
+        ]
+      }
+    ],
+    priorities: [
+      {
+        title: 'Digital Entrepreneurship Task Force',
+        indicator: 'Multiple',
+        score: 'Multiple at ZERO',
+        rank: '#125, #121, #96, #112',
+        decline: 'SYSTEMIC COLLAPSE',
+        actions: ['"Startup Brunei" Initiative with tax incentives', 'Government-backed VC fund ($10-20M)', 'Embed entrepreneurship in secondary curriculum', 'Eliminate restrictions on software/IP exports'],
+        target: '50 new tech startups by 2027'
+      },
+      {
+        title: 'Research & Innovation Crisis',
+        indicator: '6.1.4',
+        score: '4.82/100',
+        rank: '#73/135',
+        decline: 'Very few PhD researchers in Brunei',
+        actions: ['Research Excellence Initiative', 'Hire 50 global researchers (3-yr contracts)', 'Establish 3 research centers of excellence', 'Fund PhD scholarships (100+ per year)'],
+        target: 'Researcher availability to 15+ by 2026'
+      }
+    ],
+    dataGaps: [
+      { indicator: 'AI Talent Concentration (6.1.7)', source: 'LinkedIn/GTCI AI Talent Analysis', localOwner: 'MTIC Digital Council', action: 'Compile AI talent availability for GTCI 2026', deadline: 'Q1 2026' }
+    ]
+  }
+];
+
+export const policyPriorities = [
+  {
+    id: 1,
+    title: 'Digital Entrepreneurship Ecosystem',
+    pillar: 'Generalist Adaptive Skills (GA SKILLS)',
+    currentRank: 50,
+    issue: 'ZERO new business density, ZERO IP receipts',
+    wawasan2035Link: 'Economic Diversification from Oil/Gas to Digital Economy',
+    actions: [
+      'Establish "Startup Brunei" initiative (Q2 2026)',
+      'Create $15M Venture Capital Fund',
+      'Fast-track work permits for tech talent',
+      'Tax incentives for software/IP companies',
+      'Entrepreneurship curriculum in schools'
+    ],
+    expectedImpact: '+10 positions in GA Skills by 2027',
+    targetRank: 40
+  },
+  {
+    id: 2,
+    title: 'Workforce Skills Alignment Crisis',
+    pillar: 'Vocational & Technical Skills (VT SKILLS)',
+    currentRank: 33,
+    issue: 'Employers CANNOT find skilled workers (Ease of Finding Skilled Employees = #119)',
+    wawasan2035Link: 'Full Employment & Wage Growth',
+    actions: [
+      'Urgent IBTE curriculum review (aligned with renewable energy, digital, tourism sectors)',
+      'Increase IBTE instructor salaries (retain talent)',
+      'Embed work-integrated learning (apprenticeships)',
+      'Establish MOE-IBTE-Employer Curriculum Council',
+      'Loosen work permit rules for skilled migrants'
+    ],
+    expectedImpact: 'Improve skills-matching by 15 pts',
+    targetRank: 26
+  },
+  {
+    id: 3,
+    title: 'Higher Education Quality & Research',
+    pillar: 'GROW (Education)',
+    currentRank: 45,
+    issue: 'Education spending declined 35.98 pts, UNN ranking slipped, ZERO MBA programs',
+    wawasan2035Link: 'Build research & innovation capacity; attract global talent',
+    actions: [
+      'Restore tertiary education budget to 70+ pts',
+      'Launch UNN Graduate School of Business (MBA)',
+      'Hire 50 international researchers (3-yr terms)',
+      'Establish 3 Centers of Excellence: Islamic Finance, Renewable Energy, Tropical Biodiversity',
+      'Fund 100+ PhD scholarships annually'
+    ],
+    expectedImpact: '+8 positions in GROW pillar',
+    targetRank: 37
+  }
+];
+
+export const rankTargets = {
+  target2027: {
+    overallRank: 35,
+    overallScore: 55.5,
+    pillars: [
+      { name: 'ENABLE', current: 43, target: 38 },
+      { name: 'ATTRACT', current: 46, target: 40 },
+      { name: 'GROW', current: 45, target: 37 },
+      { name: 'RETAIN', current: 39, target: 38 },
+      { name: 'VT SKILLS', current: 33, target: 30 },
+      { name: 'GA SKILLS', current: 50, target: 40 }
+    ]
+  },
+  target2030: {
+    overallRank: 25,
+    overallScore: 62,
+    description: 'Singapore-adjacent, above Malaysia'
+  }
+};
+
+export const allDataGaps: DataGap[] = [
+  { indicator: 'Internet Access in Schools (1.2.6)', source: 'UNESCO', localOwner: 'MOE', action: 'Survey schools on broadband coverage', deadline: 'Q2 2026' },
+  { indicator: 'Firms with Website (1.3.7)', source: 'World Bank Enterprise Surveys', localOwner: 'MOFE Statistics', action: 'Include in business census', deadline: 'Q2 2026' },
+  { indicator: 'AI Skills Migration (2.1.6)', source: 'LinkedIn/GTCI', localOwner: 'MTIC Digital Council', action: 'Track AI talent flows', deadline: 'Q1 2026' },
+  { indicator: 'Tolerance of Immigrants (2.2.2)', source: 'WEF EOS', localOwner: 'MOHA/Immigration', action: 'Ensure MOHA\'s WEF survey participation', deadline: 'Q1 2026' },
+  { indicator: 'Prevalence of Training in Firms (3.2.2)', source: 'WEF EOS', localOwner: 'MPEC', action: 'Coordinate WEF survey with employers', deadline: 'Q1 2026' },
+  { indicator: 'Labour Productivity/Employee (5.1.4)', source: 'ILO/World Bank', localOwner: 'MOFE/Statistics', action: 'Submit national accounts productivity', deadline: 'Q1 2026' },
+  { indicator: 'Protect Against Future Disasters (4.1.6)', source: 'UN UNDRR', localOwner: 'Ministry Home Affairs', action: 'Submit DRM metrics', deadline: 'Q2 2026' },
+  { indicator: 'Household Financial Resilience (4.1.7)', source: 'World Bank', localOwner: 'MOFE/Central Bank', action: 'Household savings survey', deadline: 'Q2 2026' },
+  { indicator: 'Personal Rights (4.2.1)', source: 'WEF/Amnesty', localOwner: 'MOHA/MOH', action: 'Clarify human rights index participation', deadline: 'Q1 2026' },
+  { indicator: 'Personal Safety (4.2.2)', source: 'WEF EOS', localOwner: 'MOHA/Police', action: 'Ensure WEF survey participation', deadline: 'Q1 2026' },
+  { indicator: 'Employee Wellbeing (4.2.5)', source: 'Gallup/World Happiness', localOwner: 'JAPEM/MOH', action: 'Commission national survey', deadline: 'Q2 2026' },
+  { indicator: 'AI Talent Concentration (6.1.7)', source: 'LinkedIn', localOwner: 'MTIC', action: 'Track AI specialist concentration', deadline: 'Q1 2026' }
+];
+
+export const suspiciousDataMovements = [
+  { indicator: 'Tertiary Ed Expenditure (3.1.3)', change: '86.29 → 50.31 (-35.98)', status: 'COLLAPSE', investigation: 'MOE to review spending figures; verify with World Bank education data' },
+  { indicator: 'ICT Services Exports (6.2.1)', change: '18.87 → 2.44 (-16.43)', status: 'FREEFALL', investigation: 'MTIC to audit; likely methodology change in GTCI framework' },
+  { indicator: 'Software Development (6.2.5)', change: '59.20 → 3.02 (-56.18)', status: 'CATASTROPHIC', investigation: 'MTIC to audit; verify data source (World Bank Enterprise Surveys)' },
+  { indicator: 'Migrant Stock (2.1.3)', change: '78.84 → 49.50 (-29.34)', status: 'CRITICAL', investigation: 'MOHA to review; check ILO labor statistics against immigration data' },
+  { indicator: 'Virtual Social Networks (3.3.3)', change: '89.20 → 63.50 (-25.70)', status: 'SIGNIFICANT', investigation: 'Methodology change? Survey participation? Verify with We Are Social data' }
+];
