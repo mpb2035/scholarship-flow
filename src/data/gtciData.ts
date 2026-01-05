@@ -155,7 +155,7 @@ export const pillars: Pillar[] = [
           },
           {
             id: "1.1.5",
-            name: "Corruption Control",
+            name: "Corruption",
             score2023: null,
             score2025: null,
             change: null,
