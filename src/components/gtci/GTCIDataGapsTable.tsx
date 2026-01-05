@@ -12,7 +12,7 @@ export function GTCIDataGapsTable() {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-red-500" />
-            Missing Data That Hurts Ranking ({allDataGaps.length} Indicators)
+            Missing Data That Hurts Ranking ({allDataGaps} Indicators)
           </CardTitle>
         </CardHeader>
         <CardContent>
