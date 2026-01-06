@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Project, ProjectTask, ProjectNote } from '@/hooks/useProjects';
+import { WorkflowTask } from '@/types/workflowTask';
+import { WorkflowTasksView } from './WorkflowTasksView';
 import {
   Dialog,
   DialogContent,
@@ -30,8 +32,10 @@ import {
   X,
   Pencil,
   Save,
+  GitBranch,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProjectDetailModalProps {
   project: Project | null;
@@ -60,11 +64,24 @@ const taskStatusIcons = {
 };
 
 export function ProjectDetailModal({ project, open, onClose, onUpdate }: ProjectDetailModalProps) {
+  const { toast } = useToast();
   const [editingTitle, setEditingTitle] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newBlocker, setNewBlocker] = useState('');
   const [newNote, setNewNote] = useState('');
+  
+  // Workflow tasks state for tracking unsaved changes
+  const [localWorkflowTasks, setLocalWorkflowTasks] = useState<WorkflowTask[]>([]);
+  const [hasWorkflowChanges, setHasWorkflowChanges] = useState(false);
+
+  // Sync local workflow tasks with project
+  useEffect(() => {
+    if (project) {
+      setLocalWorkflowTasks(project.workflowTasks || []);
+      setHasWorkflowChanges(false);
+    }
+  }, [project]);
 
   if (!project) return null;
 
@@ -150,13 +167,33 @@ export function ProjectDetailModal({ project, open, onClose, onUpdate }: Project
     });
   };
 
+  const handleWorkflowTasksChange = (tasks: WorkflowTask[]) => {
+    setLocalWorkflowTasks(tasks);
+    setHasWorkflowChanges(true);
+  };
+
+  const handleSaveWorkflowTasks = () => {
+    onUpdate({
+      ...project,
+      workflowTasks: localWorkflowTasks,
+      updatedAt: new Date().toISOString(),
+    });
+    setHasWorkflowChanges(false);
+    toast({
+      title: 'Saved',
+      description: 'Workflow tasks have been saved.',
+    });
+  };
+
   const completedTasks = project.tasks.filter(t => t.status === 'done').length;
   const totalTasks = project.tasks.length;
   const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
+  const hasWorkflowTemplate = project.workflowTemplateName && project.workflowTasks.length > 0;
+
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] bg-stone-50 text-gray-900 p-0 overflow-hidden">
+      <DialogContent className="max-w-5xl max-h-[90vh] bg-stone-50 text-gray-900 p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-0">
           <div className="flex items-center gap-3">
             {editingTitle ? (
@@ -198,11 +235,28 @@ export function ProjectDetailModal({ project, open, onClose, onUpdate }: Project
               </SelectContent>
             </Select>
           </div>
+          {hasWorkflowTemplate && (
+            <div className="flex items-center gap-2 mt-2">
+              <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 border-emerald-300">
+                <GitBranch className="h-3 w-3 mr-1" />
+                {project.workflowTemplateName}
+              </Badge>
+            </div>
+          )}
         </DialogHeader>
 
-        <Tabs defaultValue="overview" className="flex-1">
+        <Tabs defaultValue={hasWorkflowTemplate ? 'workflow' : 'overview'} className="flex-1">
           <TabsList className="mx-6 bg-stone-200">
             <TabsTrigger value="overview" className="data-[state=active]:bg-white text-gray-700">Overview</TabsTrigger>
+            {hasWorkflowTemplate && (
+              <TabsTrigger value="workflow" className="data-[state=active]:bg-white text-gray-700 gap-1">
+                <GitBranch className="h-3 w-3" />
+                Workflow
+                {hasWorkflowChanges && (
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                )}
+              </TabsTrigger>
+            )}
             <TabsTrigger value="tasks" className="data-[state=active]:bg-white text-gray-700">Tasks</TabsTrigger>
             <TabsTrigger value="notes" className="data-[state=active]:bg-white text-gray-700">Notes & Insights</TabsTrigger>
           </TabsList>
@@ -277,6 +331,42 @@ export function ProjectDetailModal({ project, open, onClose, onUpdate }: Project
                 </Card>
               </div>
 
+              {/* Workflow Summary (if present) */}
+              {hasWorkflowTemplate && (
+                <Card className="bg-white border-gray-200">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                      <GitBranch className="h-4 w-4" />
+                      Workflow Progress
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-4">
+                      <div className="text-3xl font-bold text-gray-900">
+                        {localWorkflowTasks.filter(t => t.isDone).length} / {localWorkflowTasks.length}
+                      </div>
+                      <div className="flex-1">
+                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-emerald-500 rounded-full transition-all"
+                            style={{ 
+                              width: `${localWorkflowTasks.length > 0 
+                                ? (localWorkflowTasks.filter(t => t.isDone).length / localWorkflowTasks.length) * 100 
+                                : 0}%` 
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-emerald-700 border-emerald-300">
+                        {localWorkflowTasks.length > 0 
+                          ? Math.round((localWorkflowTasks.filter(t => t.isDone).length / localWorkflowTasks.length) * 100)
+                          : 0}% complete
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Recent Activity */}
               <Card className="bg-white border-gray-200">
                 <CardHeader>
@@ -312,6 +402,18 @@ export function ProjectDetailModal({ project, open, onClose, onUpdate }: Project
                 </CardContent>
               </Card>
             </TabsContent>
+
+            {/* Workflow Tab */}
+            {hasWorkflowTemplate && (
+              <TabsContent value="workflow" className="mt-0">
+                <WorkflowTasksView
+                  tasks={localWorkflowTasks}
+                  onTasksChange={handleWorkflowTasksChange}
+                  onSave={handleSaveWorkflowTasks}
+                  hasUnsavedChanges={hasWorkflowChanges}
+                />
+              </TabsContent>
+            )}
 
             <TabsContent value="tasks" className="mt-0 space-y-4">
               {/* Add Task */}

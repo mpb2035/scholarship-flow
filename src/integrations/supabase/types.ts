@@ -124,6 +124,8 @@ export type Database = {
           updated_at: string
           user_id: string
           weekly_score: number | null
+          workflow_tasks: Json
+          workflow_template_name: string | null
         }
         Insert: {
           blockers?: string[]
@@ -138,6 +140,8 @@ export type Database = {
           updated_at?: string
           user_id: string
           weekly_score?: number | null
+          workflow_tasks?: Json
+          workflow_template_name?: string | null
         }
         Update: {
           blockers?: string[]
@@ -152,6 +156,8 @@ export type Database = {
           updated_at?: string
           user_id?: string
           weekly_score?: number | null
+          workflow_tasks?: Json
+          workflow_template_name?: string | null
         }
         Relationships: [
           {
