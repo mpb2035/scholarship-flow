@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 import { Json } from '@/integrations/supabase/types';
+import { WorkflowTask } from '@/types/workflowTask';
 
 export interface ProjectTask {
   id: string;
@@ -30,6 +31,8 @@ export interface Project {
   weeklyScore?: number;
   blockers: string[];
   sourceMatterId?: string;
+  workflowTemplateName?: string;
+  workflowTasks: WorkflowTask[];
   createdAt: string;
   updatedAt: string;
 }
@@ -45,6 +48,8 @@ interface DBProject {
   blockers: string[];
   weekly_score: number | null;
   source_matter_id: string | null;
+  workflow_template_name: string | null;
+  workflow_tasks: unknown;
   created_at: string;
   updated_at: string;
 }
@@ -59,6 +64,8 @@ const mapDBToProject = (db: DBProject): Project => ({
   blockers: db.blockers || [],
   weeklyScore: db.weekly_score || undefined,
   sourceMatterId: db.source_matter_id || undefined,
+  workflowTemplateName: db.workflow_template_name || undefined,
+  workflowTasks: (db.workflow_tasks as WorkflowTask[]) || [],
   createdAt: db.created_at,
   updatedAt: db.updated_at,
 });
@@ -116,6 +123,8 @@ export function useProjects() {
         blockers: project.blockers,
         weekly_score: project.weeklyScore || null,
         source_matter_id: project.sourceMatterId || null,
+        workflow_template_name: project.workflowTemplateName || null,
+        workflow_tasks: JSON.parse(JSON.stringify(project.workflowTasks)) as Json,
       }])
       .select()
       .single();
@@ -138,6 +147,7 @@ export function useProjects() {
     if (updates.notes !== undefined) dbUpdates.notes = JSON.parse(JSON.stringify(updates.notes)) as Json;
     if (updates.blockers !== undefined) dbUpdates.blockers = updates.blockers;
     if (updates.weeklyScore !== undefined) dbUpdates.weekly_score = updates.weeklyScore;
+    if (updates.workflowTasks !== undefined) dbUpdates.workflow_tasks = JSON.parse(JSON.stringify(updates.workflowTasks)) as Json;
 
     const { data, error } = await supabase
       .from('projects')
@@ -182,6 +192,7 @@ export function useProjects() {
       tasks: [],
       notes: [],
       blockers: [],
+      workflowTasks: [],
       sourceMatterId: matter.id,
     };
 
