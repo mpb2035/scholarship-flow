@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Project, ProjectTask, ProjectNote } from '@/hooks/useProjects';
 import { WorkflowTask } from '@/types/workflowTask';
 import { WorkflowTasksView } from './WorkflowTasksView';
+import { differenceInDays, parseISO } from 'date-fns';
 import {
   Dialog,
   DialogContent,
@@ -167,21 +168,55 @@ export function ProjectDetailModal({ project, open, onClose, onUpdate }: Project
     });
   };
 
+  // Calculate project status based on workflow tasks
+  const calculateProjectStatus = (tasks: WorkflowTask[]): Project['status'] => {
+    if (tasks.length === 0) return project.status;
+    
+    const today = new Date();
+    const allDone = tasks.every(t => t.isDone);
+    const hasOverdue = tasks.some(t => {
+      if (t.isDone) return false;
+      if (!t.startDate) return false;
+      const daysElapsed = Math.max(0, differenceInDays(today, parseISO(t.startDate)));
+      return daysElapsed > t.slaTarget;
+    });
+    
+    if (allDone) return 'completed';
+    if (hasOverdue) return 'delayed';
+    
+    // Check if approaching risk (any task at 80%+ of SLA)
+    const atRisk = tasks.some(t => {
+      if (t.isDone) return false;
+      if (!t.startDate) return false;
+      const daysElapsed = Math.max(0, differenceInDays(today, parseISO(t.startDate)));
+      return daysElapsed >= t.slaTarget * 0.8;
+    });
+    
+    if (atRisk) return 'at-risk';
+    return 'on-track';
+  };
+
   const handleWorkflowTasksChange = (tasks: WorkflowTask[]) => {
     setLocalWorkflowTasks(tasks);
     setHasWorkflowChanges(true);
   };
 
   const handleSaveWorkflowTasks = () => {
+    const newStatus = calculateProjectStatus(localWorkflowTasks);
+    const statusChanged = newStatus !== project.status;
+    
     onUpdate({
       ...project,
       workflowTasks: localWorkflowTasks,
+      status: newStatus,
       updatedAt: new Date().toISOString(),
     });
     setHasWorkflowChanges(false);
     toast({
       title: 'Saved',
-      description: 'Workflow tasks have been saved.',
+      description: statusChanged 
+        ? `Workflow tasks saved. Project status updated to "${newStatus.replace('-', ' ')}".`
+        : 'Workflow tasks have been saved.',
     });
   };
 
