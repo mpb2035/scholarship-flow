@@ -2,7 +2,7 @@ import { Target, TrendingUp, CheckCircle, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { policyPriorities, rankTargets } from '@/data/gtciData';
+import { policyPriorities, rankTargets, executiveSummary } from '@/data/gtciData';
 
 export function GTCIPolicyPriorities() {
   return (
@@ -73,7 +73,7 @@ export function GTCIPolicyPriorities() {
             <div className="text-center mb-4">
               <div className="text-4xl font-bold text-primary">#{rankTargets.target2027.overallRank}</div>
               <div className="text-sm text-muted-foreground">
-                from #43 (improving by 8 positions)
+                from #{executiveSummary.overallRank2025} (improving by {executiveSummary.overallRank2025 - rankTargets.target2027.overallRank} positions)
               </div>
               <div className="mt-2 text-lg">
                 Expected Score: <span className="font-bold">{rankTargets.target2027.overallScore}</span> / 100

@@ -73,8 +73,8 @@ export function GTCIExecutiveDashboard() {
             {scoreChange >= 0 ? "+" : ""}
             {scoreChange.toFixed(2)} points
           </div>
-          <div className="mt-2 text-xs text-red-600">
-            Income Avg: {incomeGroupAvg} (BELOW by {gapFromAvg.toFixed(2)}pts)
+          <div className={`mt-2 text-xs ${gapFromAvg < 0 ? "text-red-600" : "text-green-600"}`}>
+            Income Avg: {incomeGroupAvg} ({gapFromAvg < 0 ? "BELOW" : "ABOVE"} by {Math.abs(gapFromAvg).toFixed(2)} pts)
           </div>
         </CardContent>
       </Card>
@@ -136,10 +136,18 @@ export function GTCIExecutiveDashboard() {
           <div className="text-lg font-semibold">ASEAN Rank Position: Tier 2</div>
           <div className="text-sm text-muted-foreground">(Below Singapore, Above Malaysia)</div>
           <div className="mt-3 space-y-2 text-sm">
-            <div className="text-red-600">
-              High-Income Group: BELOW average by {Math.abs(gapFromAvg).toFixed(2)} pts
+            {gapFromAvg < 0 ? (
+              <div className="text-red-600">
+                High-Income Group: BELOW average by {Math.abs(gapFromAvg).toFixed(2)} pts
+              </div>
+            ) : (
+              <div className="text-green-600">
+                High-Income Group: ABOVE average by {gapFromAvg.toFixed(2)} pts
+              </div>
+            )}
+            <div className="text-muted-foreground">
+              Need: +{Math.max(0, incomeGroupAvg - overallScore2025 + 0.5).toFixed(1)} pts to exceed income group average
             </div>
-            <div className="text-muted-foreground">Need: +8.5 pts to match income group median</div>
           </div>
           <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
             <div>Benchmark: Singapore (GTCI #1, 73.29)</div>
