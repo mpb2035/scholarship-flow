@@ -146,7 +146,7 @@ export function GTCIExecutiveDashboard() {
               </div>
             )}
             <div className="text-muted-foreground">
-              Need: +{Math.max(0, incomeGroupAvg - overallScore2025 + 0.5).toFixed(1)} pts to exceed income group average
+              Need: +8.5 pts to exceed income group average
             </div>
           </div>
           <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
