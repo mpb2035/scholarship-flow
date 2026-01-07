@@ -543,7 +543,7 @@ export const pillars: Pillar[] = [
     score2023: 44.35,
     score2025: 39.88,
     change: -4.47,
-    rankChange: +9,
+    rankChange: -9,
     status: "declined",
     responsibleAgencies: ["Ministry of Education (MOE)", "MPEC (Manpower Planning)", "Higher Education Institutions"],
     subPillars: [
