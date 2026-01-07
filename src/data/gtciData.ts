@@ -79,7 +79,7 @@ export const executiveSummary: ExecutiveSummary = {
     name: "RETAIN",
     rank: 39,
     score: 65.49,
-    highlights: ["Pension Coverage #1 Globally", "Political Stability #29", "Corruption Control #2"],
+    highlights: ["Pension Coverage #1 Globally", "Political Stability #2", "Vulnerable Employment #10"],
   },
   criticalWeakness: {
     name: "Generalist Adaptive Skills",
