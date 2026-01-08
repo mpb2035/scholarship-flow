@@ -10,6 +10,7 @@ import Admin from "./pages/Admin";
 import Analytics from "./pages/Analytics";
 import Directory from "./pages/Directory";
 import Playground from "./pages/Playground";
+import GTCIUpload from "./pages/GTCIUpload";
 import ProjectWorkflow from "./pages/ProjectWorkflow";
 import PendingResponse from "./pages/PendingResponse";
 import GTCIDashboard from "./pages/GTCIDashboard";
@@ -38,6 +39,7 @@ function AppRoutes() {
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/directory" element={<Directory />} />
         <Route path="/playground" element={<Playground />} />
+        <Route path="/gtci-upload" element={<GTCIUpload />} />
         <Route path="/project-workflow" element={<ProjectWorkflow />} />
         <Route path="/pending-response" element={<PendingResponse />} />
         <Route path="/gtci" element={<GTCIDashboard />} />

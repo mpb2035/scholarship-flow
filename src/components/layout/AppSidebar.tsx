@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid, FolderKanban, MessageSquareWarning, Globe, Users } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid, FolderKanban, MessageSquareWarning, Globe, Users, FileUp } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
 import {
@@ -23,6 +23,7 @@ const mainNavItems = [
 
 const manpowerBlueprintItems = [
   { title: 'GTCI Analysis', url: '/gtci', icon: Globe },
+  { title: 'GTCI Upload', url: '/gtci-upload', icon: FileUp },
   { title: 'Playground', url: '/playground', icon: LayoutGrid },
 ];
 
