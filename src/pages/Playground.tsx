@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BentoCard } from '@/components/playground/BentoCard';
 import { NationalSummaryCard } from '@/components/playground/NationalSummaryCard';
+import { CountryComparisonCard } from '@/components/playground/CountryComparisonCard';
 import { SortToolbar, SortCriteria } from '@/components/playground/SortToolbar';
 import { PolicyCommentModal } from '@/components/playground/PolicyCommentModal';
 import { IndicatorDetailModal } from '@/components/playground/IndicatorDetailModal';
@@ -187,6 +188,11 @@ export default function Playground() {
             Showing {filteredAndSortedIndicators.length} of {indicators.length} cards
           </div>
         </div>
+      </div>
+
+      {/* Country Comparison Card */}
+      <div className="max-w-7xl mx-auto mb-6">
+        <CountryComparisonCard />
       </div>
 
       {/* Bento Grid */}
