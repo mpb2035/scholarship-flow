@@ -1,16 +1,19 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area, BarChart, Bar } from 'recharts';
 import { RunningLog } from '@/hooks/useRunningLogs';
 import { trainingPlan, goalInfo } from '@/data/trainingPlanData';
-import { format, parseISO, differenceInDays } from 'date-fns';
-import { TrendingUp, Target, Calendar } from 'lucide-react';
+import { format, parseISO, differenceInDays, isBefore } from 'date-fns';
+import { TrendingUp, Target, Calendar, CheckCircle2, XCircle } from 'lucide-react';
 
 interface PerformanceChartProps {
   logs: RunningLog[];
+  completedTrainingDates?: Set<string>;
 }
 
-export function PerformanceChart({ logs }: PerformanceChartProps) {
+export function PerformanceChart({ logs, completedTrainingDates = new Set() }: PerformanceChartProps) {
   const chartData = useMemo(() => {
     // Combine actual runs with planned runs from training plan
     const actualByDate = new Map<string, RunningLog>();
@@ -82,10 +85,33 @@ export function PerformanceChart({ logs }: PerformanceChartProps) {
 
   const daysToRace = differenceInDays(parseISO(goalInfo.raceDate), new Date());
 
+  // Calculate training plan adherence
+  const trainingStats = useMemo(() => {
+    const today = new Date();
+    const pastWorkouts = trainingPlan.filter(day => {
+      const date = parseISO(day.date);
+      return isBefore(date, today) && day.type !== 'rest';
+    });
+    const completedCount = pastWorkouts.filter(day => completedTrainingDates.has(day.date)).length;
+    const missedCount = pastWorkouts.length - completedCount;
+    const completionRate = pastWorkouts.length > 0 
+      ? Math.round((completedCount / pastWorkouts.length) * 100) 
+      : 0;
+    
+    // Upcoming workouts this week
+    const upcomingThisWeek = trainingPlan.filter(day => {
+      const date = parseISO(day.date);
+      const daysAhead = differenceInDays(date, today);
+      return daysAhead >= 0 && daysAhead <= 7 && day.type !== 'rest';
+    }).length;
+
+    return { completedCount, missedCount, completionRate, upcomingThisWeek, totalPast: pastWorkouts.length };
+  }, [completedTrainingDates]);
+
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
@@ -117,6 +143,40 @@ export function PerformanceChart({ logs }: PerformanceChartProps) {
               <div>
                 <p className="text-sm text-muted-foreground">Race Date</p>
                 <p className="text-2xl font-bold text-green-500">Nov 1, 2026</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Training Plan Adherence Card */}
+        <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20">
+          <CardContent className="pt-6">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Plan Adherence</p>
+                <Badge 
+                  variant="outline" 
+                  className={
+                    trainingStats.completionRate >= 80 
+                      ? "bg-green-500/10 text-green-600 border-green-500/30" 
+                      : trainingStats.completionRate >= 50 
+                        ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/30"
+                        : "bg-red-500/10 text-red-600 border-red-500/30"
+                  }
+                >
+                  {trainingStats.completionRate}%
+                </Badge>
+              </div>
+              <Progress value={trainingStats.completionRate} className="h-2" />
+              <div className="flex items-center justify-between text-xs">
+                <span className="flex items-center gap-1 text-green-600">
+                  <CheckCircle2 className="h-3 w-3" />
+                  {trainingStats.completedCount} completed
+                </span>
+                <span className="flex items-center gap-1 text-red-500">
+                  <XCircle className="h-3 w-3" />
+                  {trainingStats.missedCount} missed
+                </span>
               </div>
             </div>
           </CardContent>

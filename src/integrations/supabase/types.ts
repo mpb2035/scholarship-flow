@@ -178,6 +178,7 @@ export type Database = {
           environment: string
           id: string
           is_planned: boolean
+          linked_training_date: string | null
           notes: string | null
           pace_per_km: number | null
           run_type: string
@@ -192,6 +193,7 @@ export type Database = {
           environment?: string
           id?: string
           is_planned?: boolean
+          linked_training_date?: string | null
           notes?: string | null
           pace_per_km?: number | null
           run_type?: string
@@ -206,6 +208,7 @@ export type Database = {
           environment?: string
           id?: string
           is_planned?: boolean
+          linked_training_date?: string | null
           notes?: string | null
           pace_per_km?: number | null
           run_type?: string

@@ -14,7 +14,7 @@ import { goalInfo } from '@/data/trainingPlanData';
 import { differenceInDays, parseISO } from 'date-fns';
 
 export default function TriathleteGoal() {
-  const { logs, isLoading, addLog, deleteLog, stats } = useRunningLogs();
+  const { logs, isLoading, addLog, deleteLog, stats, completedTrainingDates } = useRunningLogs();
   const [activeTab, setActiveTab] = useState('dashboard');
   
   const daysToRace = differenceInDays(parseISO(goalInfo.raceDate), new Date());
@@ -79,12 +79,12 @@ export default function TriathleteGoal() {
         </TabsList>
 
         <TabsContent value="dashboard" className="space-y-6">
-          <PerformanceChart logs={logs} />
+          <PerformanceChart logs={logs} completedTrainingDates={completedTrainingDates} />
         </TabsContent>
 
         <TabsContent value="log" className="space-y-6">
           <div className="grid lg:grid-cols-2 gap-6">
-            <RunLogForm onSubmit={addLog} />
+            <RunLogForm onSubmit={addLog} completedTrainingDates={completedTrainingDates} />
             
             <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
               <CardHeader>
@@ -126,7 +126,7 @@ export default function TriathleteGoal() {
         </TabsContent>
 
         <TabsContent value="plan">
-          <TrainingPlanView />
+          <TrainingPlanView completedTrainingDates={completedTrainingDates} />
         </TabsContent>
       </Tabs>
     </div>

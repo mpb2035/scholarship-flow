@@ -14,6 +14,7 @@ export interface RunningLog {
   run_type: 'easy_run' | 'tempo' | 'fartlek' | 'interval' | 'long_run' | 'race';
   notes: string | null;
   is_planned: boolean;
+  linked_training_date: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -27,6 +28,7 @@ export interface RunningLogInput {
   run_type: 'easy_run' | 'tempo' | 'fartlek' | 'interval' | 'long_run' | 'race';
   notes?: string;
   is_planned?: boolean;
+  linked_training_date?: string | null;
 }
 
 export function useRunningLogs() {
@@ -64,6 +66,7 @@ export function useRunningLogs() {
         pace_per_km: log.pace_per_km ? Number(log.pace_per_km) : null,
         environment: log.environment as 'indoor' | 'outdoor',
         run_type: log.run_type as 'easy_run' | 'tempo' | 'fartlek' | 'interval' | 'long_run' | 'race',
+        linked_training_date: log.linked_training_date as string | null,
       }));
       
       setLogs(typedData);
@@ -105,6 +108,7 @@ export function useRunningLogs() {
           run_type: input.run_type,
           notes: input.notes || null,
           is_planned: input.is_planned || false,
+          linked_training_date: input.linked_training_date || null,
         })
         .select()
         .single();
@@ -117,6 +121,7 @@ export function useRunningLogs() {
         pace_per_km: data.pace_per_km ? Number(data.pace_per_km) : null,
         environment: data.environment as 'indoor' | 'outdoor',
         run_type: data.run_type as 'easy_run' | 'tempo' | 'fartlek' | 'interval' | 'long_run' | 'race',
+        linked_training_date: data.linked_training_date as string | null,
       };
 
       setLogs(prev => [typedData, ...prev]);
@@ -164,6 +169,7 @@ export function useRunningLogs() {
         pace_per_km: data.pace_per_km ? Number(data.pace_per_km) : null,
         environment: data.environment as 'indoor' | 'outdoor',
         run_type: data.run_type as 'easy_run' | 'tempo' | 'fartlek' | 'interval' | 'long_run' | 'race',
+        linked_training_date: data.linked_training_date as string | null,
       };
 
       setLogs(prev => prev.map(log => log.id === id ? typedData : log));
@@ -226,6 +232,13 @@ export function useRunningLogs() {
     ? Math.max(...logs.map(log => log.distance)) 
     : 0;
 
+  // Get completed training dates
+  const completedTrainingDates = new Set(
+    logs
+      .filter(log => log.linked_training_date)
+      .map(log => log.linked_training_date as string)
+  );
+
   return {
     logs,
     isLoading,
@@ -233,6 +246,7 @@ export function useRunningLogs() {
     updateLog,
     deleteLog,
     refetch: fetchLogs,
+    completedTrainingDates,
     stats: {
       totalDistance,
       totalRuns,
