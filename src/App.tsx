@@ -14,6 +14,7 @@ import GTCIUpload from "./pages/GTCIUpload";
 import ProjectWorkflow from "./pages/ProjectWorkflow";
 import PendingResponse from "./pages/PendingResponse";
 import GTCIDashboard from "./pages/GTCIDashboard";
+import TriathleteGoal from "./pages/TriathleteGoal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ function AppRoutes() {
         <Route path="/project-workflow" element={<ProjectWorkflow />} />
         <Route path="/pending-response" element={<PendingResponse />} />
         <Route path="/gtci" element={<GTCIDashboard />} />
+        <Route path="/triathlete-goal" element={<TriathleteGoal />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
