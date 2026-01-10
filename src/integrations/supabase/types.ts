@@ -169,6 +169,51 @@ export type Database = {
           },
         ]
       }
+      running_logs: {
+        Row: {
+          created_at: string
+          date: string
+          distance: number
+          duration_minutes: number
+          environment: string
+          id: string
+          is_planned: boolean
+          notes: string | null
+          pace_per_km: number | null
+          run_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          distance: number
+          duration_minutes: number
+          environment?: string
+          id?: string
+          is_planned?: boolean
+          notes?: string | null
+          pace_per_km?: number | null
+          run_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          distance?: number
+          duration_minutes?: number
+          environment?: string
+          id?: string
+          is_planned?: boolean
+          notes?: string | null
+          pace_per_km?: number | null
+          run_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sla_configurations: {
         Row: {
           at_risk_days: number
