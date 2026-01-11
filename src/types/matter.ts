@@ -56,6 +56,7 @@ export interface Matter {
   remarks?: string;
   assignedTo?: string;
   externalLink?: string;
+  deadline?: string;
 }
 
 export interface SLAConfig {

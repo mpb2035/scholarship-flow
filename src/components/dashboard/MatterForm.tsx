@@ -29,7 +29,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, FolderKanban, Plus, Link2 } from 'lucide-react';
+import { ExternalLink, FolderKanban, Plus, Link2, CalendarClock } from 'lucide-react';
 import { Matter, CaseType, Priority, OverallStatus, QueryStatus, SLAStatus } from '@/types/matter';
 import { Project } from '@/hooks/useProjects';
 
@@ -44,6 +44,7 @@ const formSchema = z.object({
   queryIssuedDate: z.string().optional(),
   queryResponseDate: z.string().optional(),
   signedDate: z.string().optional(),
+  deadline: z.string().optional(),
   queryStatus: z.string(),
   overallStatus: z.string(),
   remarks: z.string().optional(),
@@ -118,6 +119,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       overallStatus: 'Pending SUT HE Review',
       remarks: '',
       externalLink: '',
+      deadline: '',
     },
   });
 
@@ -134,6 +136,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
         queryIssuedDate: matter.queryIssuedDate,
         queryResponseDate: matter.queryResponseDate,
         signedDate: matter.signedDate,
+        deadline: matter.deadline || '',
         queryStatus: matter.queryStatus,
         overallStatus: matter.overallStatus,
         remarks: matter.remarks,
@@ -222,6 +225,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       slaStatus,
       remarks: data.remarks,
       externalLink: data.externalLink || undefined,
+      deadline: data.deadline || undefined,
     });
 
     form.reset();
@@ -500,19 +504,38 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="signedDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Signed Date (if approved)</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} className="bg-input border-border/50" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="signedDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Signed Date (if approved)</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} className="bg-input border-border/50" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="deadline"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <CalendarClock className="h-4 w-4 text-warning" />
+                      Deadline
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value || ''} className="bg-input border-border/50" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
