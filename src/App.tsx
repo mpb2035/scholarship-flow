@@ -15,6 +15,7 @@ import ProjectWorkflow from "./pages/ProjectWorkflow";
 import PendingResponse from "./pages/PendingResponse";
 import GTCIDashboard from "./pages/GTCIDashboard";
 import TriathleteGoal from "./pages/TriathleteGoal";
+import TodoPage from "./pages/TodoPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ function AppRoutes() {
         <Route path="/pending-response" element={<PendingResponse />} />
         <Route path="/gtci" element={<GTCIDashboard />} />
         <Route path="/triathlete-goal" element={<TriathleteGoal />} />
+        <Route path="/todo" element={<TodoPage />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

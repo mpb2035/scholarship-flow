@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid, FolderKanban, MessageSquareWarning, Globe, Users, FileUp, Target, Footprints } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid, FolderKanban, MessageSquareWarning, Globe, Users, FileUp, Target, Footprints, ListTodo } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
 import {
@@ -19,6 +19,7 @@ const mainNavItems = [
   { title: 'Analytics', url: '/analytics', icon: BarChart3 },
   { title: 'My Directory', url: '/directory', icon: Bookmark },
   { title: 'Project Workflow', url: '/project-workflow', icon: FolderKanban },
+  { title: 'To Do', url: '/todo', icon: ListTodo },
 ];
 
 const manpowerBlueprintItems = [
