@@ -250,6 +250,80 @@ export type Database = {
         }
         Relationships: []
       }
+      sub_todos: {
+        Row: {
+          created_at: string
+          id: string
+          is_done: boolean
+          is_timer_running: boolean
+          step_order: number
+          timer_elapsed_seconds: number
+          title: string
+          todo_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_done?: boolean
+          is_timer_running?: boolean
+          step_order?: number
+          timer_elapsed_seconds?: number
+          title: string
+          todo_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_done?: boolean
+          is_timer_running?: boolean
+          step_order?: number
+          timer_elapsed_seconds?: number
+          title?: string
+          todo_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sub_todos_todo_id_fkey"
+            columns: ["todo_id"]
+            isOneToOne: false
+            referencedRelation: "todos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      todos: {
+        Row: {
+          created_at: string
+          id: string
+          is_main_timer_running: boolean
+          main_timer_elapsed_seconds: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_main_timer_running?: boolean
+          main_timer_elapsed_seconds?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_main_timer_running?: boolean
+          main_timer_elapsed_seconds?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
