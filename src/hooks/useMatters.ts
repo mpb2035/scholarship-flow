@@ -32,6 +32,7 @@ interface DbMatter {
   remarks: string | null;
   assigned_to: string | null;
   external_link: string | null;
+  deadline: string | null;
 }
 
 const calculateDaysInProcess = (submittedDate: string, signedDate?: string | null): number => {
@@ -90,6 +91,7 @@ const mapDbToMatter = (db: DbMatter): Matter => {
     remarks: db.remarks || undefined,
     assignedTo: db.assigned_to || undefined,
     externalLink: db.external_link || undefined,
+    deadline: db.deadline || undefined,
   };
 };
 
@@ -236,6 +238,7 @@ export function useMatters() {
         remarks: matter.remarks || null,
         assigned_to: matter.assignedTo || null,
         external_link: matter.externalLink || null,
+        deadline: matter.deadline || null,
       })
       .select()
       .single();
@@ -265,6 +268,7 @@ export function useMatters() {
     if (updates.slaStatus !== undefined) dbUpdates.sla_status = updates.slaStatus;
     if (updates.remarks !== undefined) dbUpdates.remarks = updates.remarks || null;
     if (updates.externalLink !== undefined) dbUpdates.external_link = updates.externalLink || null;
+    if (updates.deadline !== undefined) dbUpdates.deadline = updates.deadline || null;
 
     const { error } = await supabase
       .from('matters')

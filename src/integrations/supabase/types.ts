@@ -21,6 +21,7 @@ export type Database = {
           case_title: string
           case_type: string
           created_at: string
+          deadline: string | null
           dsm_submitted_date: string
           external_link: string | null
           id: string
@@ -43,6 +44,7 @@ export type Database = {
           case_title: string
           case_type: string
           created_at?: string
+          deadline?: string | null
           dsm_submitted_date: string
           external_link?: string | null
           id?: string
@@ -65,6 +67,7 @@ export type Database = {
           case_title?: string
           case_type?: string
           created_at?: string
+          deadline?: string | null
           dsm_submitted_date?: string
           external_link?: string | null
           id?: string

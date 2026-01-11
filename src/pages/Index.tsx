@@ -13,6 +13,8 @@ import { FilterBar, StatusToggle } from '@/components/dashboard/FilterBar';
 import { MatterForm } from '@/components/dashboard/MatterForm';
 import { MatterDetail } from '@/components/dashboard/MatterDetail';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
+import { DeadlineCounterCard } from '@/components/dashboard/DeadlineCounterCard';
+import { DeadlineDetailDialog } from '@/components/dashboard/DeadlineDetailDialog';
 import { Matter, OverallStatus, SLAStatus } from '@/types/matter';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
@@ -25,6 +27,7 @@ import {
   Send,
   RefreshCw
 } from 'lucide-react';
+import { parseISO } from 'date-fns';
 
 type KPIType = 'totalActive' | 'inProcess' | 'pendingReview' | 'deptQuerySut' | 'deptQueryHu' | 'higherUp' | 'approved30d';
 
@@ -60,6 +63,8 @@ const Index = () => {
   const [kpiDialogOpen, setKpiDialogOpen] = useState(false);
   const [selectedKPI, setSelectedKPI] = useState<KPIType | null>(null);
   const [statusToggle, setStatusToggle] = useState<StatusToggle>('all');
+  const [deadlineDialogOpen, setDeadlineDialogOpen] = useState(false);
+  const [selectedDeadlineCategory, setSelectedDeadlineCategory] = useState<'overdue' | 'thisWeek' | 'upcoming' | 'noDeadline' | null>(null);
 
   // Apply status toggle filter to filteredMatters
   const displayedMatters = useMemo(() => {
@@ -95,6 +100,36 @@ const Index = () => {
     higherUp: kpiMatters.higherUp.filter(m => m.slaStatus === 'Overdue').length,
   }), [kpiMatters]);
 
+  // Compute deadline matters for dialog
+  const deadlineMatters = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const weekFromNow = new Date(today);
+    weekFromNow.setDate(weekFromNow.getDate() + 7);
+
+    const activeMatters = matters.filter(m => 
+      !['Approved & Signed', 'Not Approved'].includes(m.overallStatus)
+    );
+    
+    const mattersWithDeadline = activeMatters.filter(m => m.deadline);
+
+    return {
+      overdue: mattersWithDeadline.filter(m => {
+        const deadline = parseISO(m.deadline!);
+        return deadline < today;
+      }),
+      thisWeek: mattersWithDeadline.filter(m => {
+        const deadline = parseISO(m.deadline!);
+        return deadline >= today && deadline <= weekFromNow;
+      }),
+      upcoming: mattersWithDeadline.filter(m => {
+        const deadline = parseISO(m.deadline!);
+        return deadline > weekFromNow;
+      }),
+      noDeadline: activeMatters.filter(m => !m.deadline),
+    };
+  }, [matters]);
+
   const kpiTitles: Record<KPIType, string> = {
     totalActive: 'Total Active Matters',
     inProcess: 'In Process Matters',
@@ -108,6 +143,11 @@ const Index = () => {
   const handleKPIClick = (kpiType: KPIType) => {
     setSelectedKPI(kpiType);
     setKpiDialogOpen(true);
+  };
+
+  const handleDeadlineClick = (category: 'overdue' | 'thisWeek' | 'upcoming' | 'noDeadline') => {
+    setSelectedDeadlineCategory(category);
+    setDeadlineDialogOpen(true);
   };
 
   const handleAddNew = () => {
@@ -330,11 +370,12 @@ const Index = () => {
           />
         </div>
 
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        {/* Charts Row + Deadline Tracker */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
           <StatusChart stats={stats} onSegmentClick={handleStatusChartClick} />
           <SLABarChart matters={matters} onBarClick={handleSLAChartClick} />
           <AlertsPanel matters={matters} onMatterClick={handleView} />
+          <DeadlineCounterCard matters={matters} onClick={handleDeadlineClick} />
         </div>
 
         {/* Filters */}
@@ -384,6 +425,17 @@ const Index = () => {
           matters={selectedKPI ? kpiMatters[selectedKPI] : []}
           onMatterClick={(matter) => {
             setKpiDialogOpen(false);
+            handleView(matter);
+          }}
+        />
+
+        <DeadlineDetailDialog
+          open={deadlineDialogOpen}
+          onOpenChange={setDeadlineDialogOpen}
+          category={selectedDeadlineCategory}
+          matters={selectedDeadlineCategory ? deadlineMatters[selectedDeadlineCategory] : []}
+          onMatterClick={(matter) => {
+            setDeadlineDialogOpen(false);
             handleView(matter);
           }}
         />
