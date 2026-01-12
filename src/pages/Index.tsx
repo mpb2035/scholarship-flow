@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMatters } from '@/hooks/useMatters';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects } from '@/hooks/useProjects';
+import { useMeetings } from '@/hooks/useMeetings';
 import { Header } from '@/components/dashboard/Header';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { KPIDetailDialog } from '@/components/dashboard/KPIDetailDialog';
@@ -15,6 +16,7 @@ import { MatterDetail } from '@/components/dashboard/MatterDetail';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { DeadlineCounterCard } from '@/components/dashboard/DeadlineCounterCard';
 import { DeadlineDetailDialog } from '@/components/dashboard/DeadlineDetailDialog';
+import { UpcomingEventsCard } from '@/components/dashboard/UpcomingEventsCard';
 import { Matter, OverallStatus, SLAStatus } from '@/types/matter';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
@@ -55,6 +57,7 @@ const Index = () => {
   } = useMatters();
 
   const { projects, createProjectFromMatter, refreshProjects } = useProjects();
+  const { upcomingMeetings, addMeeting, updateMeeting, deleteMeeting } = useMeetings();
   const { toast } = useToast();
   const [formOpen, setFormOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -370,12 +373,22 @@ const Index = () => {
           />
         </div>
 
-        {/* Charts Row + Deadline Tracker */}
+        {/* Charts Row + Deadline Tracker + Events */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
           <StatusChart stats={stats} onSegmentClick={handleStatusChartClick} />
           <SLABarChart matters={matters} onBarClick={handleSLAChartClick} />
           <AlertsPanel matters={matters} onMatterClick={handleView} />
           <DeadlineCounterCard matters={matters} onClick={handleDeadlineClick} />
+        </div>
+
+        {/* Upcoming Events */}
+        <div className="mb-6">
+          <UpcomingEventsCard
+            meetings={upcomingMeetings}
+            onAdd={addMeeting}
+            onUpdate={updateMeeting}
+            onDelete={deleteMeeting}
+          />
         </div>
 
         {/* Filters */}
