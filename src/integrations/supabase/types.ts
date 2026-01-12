@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      leave_balances: {
+        Row: {
+          annual_entitlement: number
+          created_at: string
+          id: string
+          other_entitlement: number
+          sick_entitlement: number
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          annual_entitlement?: number
+          created_at?: string
+          id?: string
+          other_entitlement?: number
+          sick_entitlement?: number
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          annual_entitlement?: number
+          created_at?: string
+          id?: string
+          other_entitlement?: number
+          sick_entitlement?: number
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      leaves: {
+        Row: {
+          created_at: string
+          days_used: number
+          end_date: string
+          id: string
+          leave_type: string
+          notes: string | null
+          start_date: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          days_used: number
+          end_date: string
+          id?: string
+          leave_type?: string
+          notes?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          days_used?: number
+          end_date?: string
+          id?: string
+          leave_type?: string
+          notes?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       matters: {
         Row: {
           assigned_to: string | null
