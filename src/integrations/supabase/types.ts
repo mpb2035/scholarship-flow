@@ -158,6 +158,48 @@ export type Database = {
         }
         Relationships: []
       }
+      meetings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          location: string | null
+          meeting_date: string
+          meeting_time: string | null
+          meeting_type: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          meeting_date: string
+          meeting_time?: string | null
+          meeting_type?: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          meeting_date?: string
+          meeting_time?: string | null
+          meeting_type?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       playground_scorecards: {
         Row: {
           created_at: string

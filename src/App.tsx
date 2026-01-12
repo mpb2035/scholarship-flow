@@ -17,6 +17,7 @@ import GTCIDashboard from "./pages/GTCIDashboard";
 import TriathleteGoal from "./pages/TriathleteGoal";
 import TodoPage from "./pages/TodoPage";
 import LeavePlanner from "./pages/LeavePlanner";
+import PreviousMeetings from "./pages/PreviousMeetings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ function AppRoutes() {
         <Route path="/triathlete-goal" element={<TriathleteGoal />} />
         <Route path="/todo" element={<TodoPage />} />
         <Route path="/leave-planner" element={<LeavePlanner />} />
+        <Route path="/previous-meetings" element={<PreviousMeetings />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
