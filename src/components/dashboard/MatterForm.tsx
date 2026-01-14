@@ -43,6 +43,9 @@ const formSchema = z.object({
   sutheSubmittedToHuDate: z.string().optional(),
   queryIssuedDate: z.string().optional(),
   queryResponseDate: z.string().optional(),
+  secondQueryStatus: z.string(),
+  secondQueryIssuedDate: z.string().optional(),
+  secondQueryResponseDate: z.string().optional(),
   signedDate: z.string().optional(),
   deadline: z.string().optional(),
   queryStatus: z.string(),
@@ -116,6 +119,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       dsmSubmittedDate: new Date().toISOString().split('T')[0],
       sutheReceivedDate: new Date().toISOString().split('T')[0],
       queryStatus: 'No Query',
+      secondQueryStatus: 'No Query',
       overallStatus: 'Pending SUT HE Review',
       remarks: '',
       externalLink: '',
@@ -135,6 +139,9 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
         sutheSubmittedToHuDate: matter.sutheSubmittedToHuDate,
         queryIssuedDate: matter.queryIssuedDate,
         queryResponseDate: matter.queryResponseDate,
+        secondQueryStatus: matter.secondQueryStatus || 'No Query',
+        secondQueryIssuedDate: matter.secondQueryIssuedDate,
+        secondQueryResponseDate: matter.secondQueryResponseDate,
         signedDate: matter.signedDate,
         deadline: matter.deadline || '',
         queryStatus: matter.queryStatus,
@@ -214,6 +221,9 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       sutheSubmittedToHuDate: data.sutheSubmittedToHuDate,
       queryIssuedDate: data.queryIssuedDate,
       queryResponseDate: data.queryResponseDate,
+      secondQueryStatus: data.secondQueryStatus as QueryStatus,
+      secondQueryIssuedDate: data.secondQueryIssuedDate,
+      secondQueryResponseDate: data.secondQueryResponseDate,
       signedDate: data.signedDate,
       queryStatus: data.queryStatus as QueryStatus,
       overallStatus: data.overallStatus as OverallStatus,
@@ -497,6 +507,60 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
                     <FormLabel>Query Response Date</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} className="bg-input border-border/50" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Second Query Row */}
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="secondQueryStatus"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Second Query Status</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="bg-input border-border/50">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-popover border-border">
+                        {queryStatuses.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="secondQueryIssuedDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Second Query Issued Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value || ''} className="bg-input border-border/50" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="secondQueryResponseDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Second Query Response Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value || ''} className="bg-input border-border/50" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
