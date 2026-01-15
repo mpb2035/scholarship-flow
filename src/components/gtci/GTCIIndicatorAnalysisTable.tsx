@@ -1,0 +1,224 @@
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Copy, Check, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import type { IndicatorAnalysis } from '@/types/gtciAnalysis';
+
+interface GTCIIndicatorAnalysisTableProps {
+  indicators: IndicatorAnalysis[];
+  onUpdate: (indicators: IndicatorAnalysis[]) => void;
+  editable: boolean;
+}
+
+export function GTCIIndicatorAnalysisTable({ indicators, onUpdate, editable }: GTCIIndicatorAnalysisTableProps) {
+  const [copied, setCopied] = useState(false);
+  const [expandedIndicator, setExpandedIndicator] = useState<string | null>(null);
+
+  const groupedIndicators = indicators.reduce((acc, indicator) => {
+    const group = indicator.thematicGroup || 'Other';
+    if (!acc[group]) acc[group] = [];
+    acc[group].push(indicator);
+    return acc;
+  }, {} as Record<string, IndicatorAnalysis[]>);
+
+  const updateIndicator = (id: string, field: keyof IndicatorAnalysis, value: string) => {
+    const updated = indicators.map(ind => 
+      ind.id === id ? { ...ind, [field]: value } : ind
+    );
+    onUpdate(updated);
+  };
+
+  const deleteIndicator = (id: string) => {
+    onUpdate(indicators.filter(ind => ind.id !== id));
+  };
+
+  const addIndicator = (thematicGroup: string) => {
+    const newIndicator: IndicatorAnalysis = {
+      id: crypto.randomUUID(),
+      indicatorId: '',
+      indicatorName: 'New Indicator',
+      leadAgency: '',
+      dataSource: '',
+      currentScore: '',
+      currentInitiative: '',
+      dataStrategy: '',
+      gapAnalysis: '',
+      recommendedAction: '',
+      measurableKPI: '',
+      timeline: '',
+      alignment: '',
+      thematicGroup
+    };
+    onUpdate([...indicators, newIndicator]);
+  };
+
+  const copyAllToClipboard = () => {
+    const text = indicators.map(ind => 
+      `${ind.indicatorId} - ${ind.indicatorName}\n` +
+      `Lead Agency: ${ind.leadAgency}\n` +
+      `Data Source: ${ind.dataSource}\n` +
+      `Current Score: ${ind.currentScore}\n` +
+      `Gap Analysis: ${ind.gapAnalysis}\n` +
+      `Recommended Action: ${ind.recommendedAction}\n` +
+      `KPI: ${ind.measurableKPI}\n` +
+      `Timeline: ${ind.timeline}\n`
+    ).join('\n---\n');
+    
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      toast.success('Indicators copied to clipboard');
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const renderEditableField = (indicator: IndicatorAnalysis, field: keyof IndicatorAnalysis, label: string, multiline = false) => {
+    const value = indicator[field] as string || '';
+    
+    if (!editable) {
+      return (
+        <div className="space-y-1">
+          <span className="text-xs font-medium text-muted-foreground">{label}</span>
+          <p className="text-sm">{value || '-'}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-1">
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
+        {multiline ? (
+          <Textarea
+            value={value}
+            onChange={(e) => updateIndicator(indicator.id, field, e.target.value)}
+            className="min-h-[60px] text-sm"
+          />
+        ) : (
+          <Input
+            value={value}
+            onChange={(e) => updateIndicator(indicator.id, field, e.target.value)}
+            className="h-8 text-sm"
+          />
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Detailed 77-Indicator Analysis</h3>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={copyAllToClipboard}
+          className="flex items-center gap-1"
+        >
+          {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+          {copied ? 'Copied!' : 'Copy All'}
+        </Button>
+      </div>
+
+      <Accordion type="multiple" className="space-y-4">
+        {Object.entries(groupedIndicators).map(([group, groupIndicators]) => (
+          <AccordionItem key={group} value={group} className="border rounded-lg px-4">
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center gap-3">
+                <Badge variant="outline">{groupIndicators.length}</Badge>
+                <span className="font-medium">{group}</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="space-y-4 pt-4">
+              {groupIndicators.map((indicator) => (
+                <Card key={indicator.id} className="border-l-4 border-l-primary/50">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {indicator.indicatorId}
+                        </Badge>
+                        {editable ? (
+                          <Input
+                            value={indicator.indicatorName}
+                            onChange={(e) => updateIndicator(indicator.id, 'indicatorName', e.target.value)}
+                            className="h-7 text-sm font-semibold w-64"
+                          />
+                        ) : (
+                          <CardTitle className="text-base">{indicator.indicatorName}</CardTitle>
+                        )}
+                      </div>
+                      {editable && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteIndicator(indicator.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {renderEditableField(indicator, 'leadAgency', 'Lead Agency')}
+                      {renderEditableField(indicator, 'dataSource', 'Data Source')}
+                      {renderEditableField(indicator, 'currentScore', 'Current Score')}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {renderEditableField(indicator, 'currentInitiative', 'Current Initiative', true)}
+                      {renderEditableField(indicator, 'dataStrategy', 'Data Strategy', true)}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {renderEditableField(indicator, 'gapAnalysis', 'Gap Analysis', true)}
+                      {renderEditableField(indicator, 'recommendedAction', 'Recommended Action', true)}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {renderEditableField(indicator, 'measurableKPI', 'Measurable KPI')}
+                      {renderEditableField(indicator, 'timeline', 'Timeline')}
+                      {renderEditableField(indicator, 'alignment', 'Alignment')}
+                    </div>
+
+                    {indicator.fundingNote && (
+                      <div className="flex items-start gap-2 p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                        <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5" />
+                        {editable ? (
+                          <Textarea
+                            value={indicator.fundingNote}
+                            onChange={(e) => updateIndicator(indicator.id, 'fundingNote', e.target.value)}
+                            className="flex-1 text-sm min-h-[40px]"
+                          />
+                        ) : (
+                          <p className="text-sm">{indicator.fundingNote}</p>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {editable && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addIndicator(group)}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Indicator to {group}
+                </Button>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  );
+}

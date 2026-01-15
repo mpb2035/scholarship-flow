@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      gtci_strategic_analysis: {
+        Row: {
+          created_at: string
+          data_gap_indicators: Json
+          document_title: string
+          executive_summary: Json
+          expected_outcomes: Json
+          funding_model: Json
+          id: string
+          implementation_roadmap: Json
+          indicator_analysis: Json
+          metadata: Json
+          ministry_governance: Json
+          pillar_performance: Json
+          updated_at: string
+          user_id: string
+          wef_participation_steps: Json
+        }
+        Insert: {
+          created_at?: string
+          data_gap_indicators?: Json
+          document_title?: string
+          executive_summary?: Json
+          expected_outcomes?: Json
+          funding_model?: Json
+          id?: string
+          implementation_roadmap?: Json
+          indicator_analysis?: Json
+          metadata?: Json
+          ministry_governance?: Json
+          pillar_performance?: Json
+          updated_at?: string
+          user_id: string
+          wef_participation_steps?: Json
+        }
+        Update: {
+          created_at?: string
+          data_gap_indicators?: Json
+          document_title?: string
+          executive_summary?: Json
+          expected_outcomes?: Json
+          funding_model?: Json
+          id?: string
+          implementation_roadmap?: Json
+          indicator_analysis?: Json
+          metadata?: Json
+          ministry_governance?: Json
+          pillar_performance?: Json
+          updated_at?: string
+          user_id?: string
+          wef_participation_steps?: Json
+        }
+        Relationships: []
+      }
       leave_balances: {
         Row: {
           annual_entitlement: number
