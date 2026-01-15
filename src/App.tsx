@@ -14,6 +14,7 @@ import GTCIUpload from "./pages/GTCIUpload";
 import ProjectWorkflow from "./pages/ProjectWorkflow";
 import PendingResponse from "./pages/PendingResponse";
 import GTCIDashboard from "./pages/GTCIDashboard";
+import GTCIStrategicAnalysis from "./pages/GTCIStrategicAnalysis";
 import TriathleteGoal from "./pages/TriathleteGoal";
 import TodoPage from "./pages/TodoPage";
 import LeavePlanner from "./pages/LeavePlanner";
@@ -47,6 +48,7 @@ function AppRoutes() {
         <Route path="/project-workflow" element={<ProjectWorkflow />} />
         <Route path="/pending-response" element={<PendingResponse />} />
         <Route path="/gtci" element={<GTCIDashboard />} />
+        <Route path="/gtci-strategic" element={<GTCIStrategicAnalysis />} />
         <Route path="/triathlete-goal" element={<TriathleteGoal />} />
         <Route path="/todo" element={<TodoPage />} />
         <Route path="/leave-planner" element={<LeavePlanner />} />
