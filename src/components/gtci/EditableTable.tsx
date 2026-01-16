@@ -3,8 +3,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Copy, Check, Plus, Trash2, Edit2 } from 'lucide-react';
+import { Copy, Check, Plus, Trash2, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 interface Column {
   key: string;
@@ -65,6 +66,21 @@ export function EditableTable<T extends Record<string, unknown>>({
     });
   };
 
+  const exportToExcel = () => {
+    const worksheetData = [
+      columns.map(col => col.header),
+      ...data.map(row => columns.map(col => String(row[col.key] ?? '')))
+    ];
+    
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, title || 'Data');
+    
+    const fileName = `${(title || 'table').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    toast.success('Excel file downloaded');
+  };
+
   const renderCell = (row: T, column: Column, rowIndex: number) => {
     const value = row[column.key];
     const isEditing = editingCell?.row === rowIndex && editingCell?.col === column.key;
@@ -122,7 +138,16 @@ export function EditableTable<T extends Record<string, unknown>>({
             className="flex items-center gap-1"
           >
             {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-            {copied ? 'Copied!' : 'Copy Table'}
+            {copied ? 'Copied!' : 'Copy'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportToExcel}
+            className="flex items-center gap-1"
+          >
+            <Download className="h-3 w-3" />
+            Excel
           </Button>
           {editable && newRowTemplate && (
             <Button
