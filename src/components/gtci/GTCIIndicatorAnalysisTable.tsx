@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Copy, Check, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
+import { Copy, Check, Plus, Trash2, AlertCircle, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 import type { IndicatorAnalysis } from '@/types/gtciAnalysis';
 
@@ -17,9 +17,26 @@ interface GTCIIndicatorAnalysisTableProps {
 
 export function GTCIIndicatorAnalysisTable({ indicators, onUpdate, editable }: GTCIIndicatorAnalysisTableProps) {
   const [copied, setCopied] = useState(false);
-  const [expandedIndicator, setExpandedIndicator] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const groupedIndicators = indicators.reduce((acc, indicator) => {
+  // Filter indicators based on search query
+  const filteredIndicators = useMemo(() => {
+    if (!searchQuery.trim()) return indicators;
+    
+    const query = searchQuery.toLowerCase();
+    return indicators.filter(ind => 
+      ind.indicatorId?.toLowerCase().includes(query) ||
+      ind.indicatorName?.toLowerCase().includes(query) ||
+      ind.leadAgency?.toLowerCase().includes(query) ||
+      ind.dataSource?.toLowerCase().includes(query) ||
+      ind.thematicGroup?.toLowerCase().includes(query) ||
+      ind.gapAnalysis?.toLowerCase().includes(query) ||
+      ind.recommendedAction?.toLowerCase().includes(query) ||
+      ind.measurableKPI?.toLowerCase().includes(query)
+    );
+  }, [indicators, searchQuery]);
+
+  const groupedIndicators = filteredIndicators.reduce((acc, indicator) => {
     const group = indicator.thematicGroup || 'Other';
     if (!acc[group]) acc[group] = [];
     acc[group].push(indicator);
@@ -123,7 +140,46 @@ export function GTCIIndicatorAnalysisTable({ indicators, onUpdate, editable }: G
         </Button>
       </div>
 
-      <Accordion type="multiple" className="space-y-4">
+      {/* Search Input */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search indicators by name, ID, agency, data source..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 pr-9"
+        />
+        {searchQuery && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSearchQuery('')}
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
+      {/* Results count when searching */}
+      {searchQuery && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Badge variant="secondary">{filteredIndicators.length}</Badge>
+          <span>indicators found for "{searchQuery}"</span>
+        </div>
+      )}
+
+      {filteredIndicators.length === 0 && searchQuery && (
+        <div className="text-center py-8 text-muted-foreground">
+          <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p>No indicators found matching "{searchQuery}"</p>
+          <Button variant="link" onClick={() => setSearchQuery('')} className="mt-2">
+            Clear search
+          </Button>
+        </div>
+      )}
+
+      <Accordion type="multiple" className="space-y-4" defaultValue={searchQuery ? Object.keys(groupedIndicators) : []}>
         {Object.entries(groupedIndicators).map(([group, groupIndicators]) => (
           <AccordionItem key={group} value={group} className="border rounded-lg px-4">
             <AccordionTrigger className="hover:no-underline">
