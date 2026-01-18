@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -17,12 +17,15 @@ import {
   ListTodo, 
   Target,
   Loader2,
-  LogIn
+  LogIn,
+  Shield,
+  CheckCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
 import { useGTCIStrategicAnalysis } from '@/hooks/useGTCIStrategicAnalysis';
+import { useUserRole } from '@/hooks/useUserRole';
 import { GTCIStrategicHeader } from '@/components/gtci/GTCIStrategicHeader';
 import { GTCIPillarPerformanceChart } from '@/components/gtci/GTCIPillarPerformanceChart';
 import { GTCIIndicatorAnalysisTable } from '@/components/gtci/GTCIIndicatorAnalysisTable';
@@ -41,6 +44,9 @@ import type {
 export default function GTCIStrategicAnalysis() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const { isAdmin, loading: roleLoading } = useUserRole();
+  
+  // Admin-only edit mode - automatically enabled for admins
   const [editMode, setEditMode] = useState(false);
   
   const {
@@ -49,10 +55,19 @@ export default function GTCIStrategicAnalysis() {
     isSaving,
     hasUnsavedChanges,
     isAuthenticated,
+    autoSaveEnabled,
+    setAutoSaveEnabled,
     updateData,
     save,
     reset
   } = useGTCIStrategicAnalysis();
+
+  // Enable edit mode by default for admins
+  useEffect(() => {
+    if (isAdmin && !roleLoading) {
+      setEditMode(true);
+    }
+  }, [isAdmin, roleLoading]);
 
   if (isLoading) {
     return (
@@ -145,7 +160,7 @@ export default function GTCIStrategicAnalysis() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 md:p-6 space-y-6">
         {/* Control Bar */}
-        <div className="flex items-center justify-between sticky top-0 z-10 bg-background py-4 border-b">
+        <div className="flex flex-wrap items-center justify-between sticky top-0 z-10 bg-background py-4 border-b gap-4">
           <div className="flex items-center gap-4">
             <FileText className="h-6 w-6 text-primary" />
             <div>
@@ -154,51 +169,95 @@ export default function GTCIStrategicAnalysis() {
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Switch
-                id="edit-mode"
-                checked={editMode}
-                onCheckedChange={setEditMode}
-              />
-              <Label htmlFor="edit-mode" className="text-sm">Edit Mode</Label>
-            </div>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Admin Edit Mode Toggle */}
+            {isAdmin ? (
+              <>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-primary/10 border border-primary/20">
+                  <Shield className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-medium text-primary">Admin</span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="edit-mode"
+                    checked={editMode}
+                    onCheckedChange={setEditMode}
+                  />
+                  <Label htmlFor="edit-mode" className="text-sm">Edit Mode</Label>
+                </div>
+
+                {editMode && (
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="auto-save"
+                      checked={autoSaveEnabled}
+                      onCheckedChange={setAutoSaveEnabled}
+                    />
+                    <Label htmlFor="auto-save" className="text-sm">Auto-Save</Label>
+                  </div>
+                )}
+              </>
+            ) : (
+              <Badge variant="secondary" className="text-muted-foreground">
+                View Only
+              </Badge>
+            )}
             
-            {hasUnsavedChanges && (
+            {/* Save Status Indicators */}
+            {isSaving && (
+              <Badge variant="outline" className="text-blue-500 border-blue-500 animate-pulse">
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                Saving...
+              </Badge>
+            )}
+            
+            {!isSaving && !hasUnsavedChanges && editMode && (
+              <Badge variant="outline" className="text-green-500 border-green-500">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Saved
+              </Badge>
+            )}
+            
+            {hasUnsavedChanges && !isSaving && (
               <Badge variant="outline" className="text-amber-500 border-amber-500">
                 Unsaved Changes
               </Badge>
             )}
             
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={reset}
-              disabled={!editMode}
-            >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Reset
-            </Button>
-            
-            <Button
-              size="sm"
-              onClick={save}
-              disabled={isSaving || !hasUnsavedChanges}
-            >
-              {isSaving ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4 mr-2" />
-              )}
-              Save
-            </Button>
+            {/* Admin Actions */}
+            {isAdmin && editMode && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={reset}
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reset
+                </Button>
+                
+                <Button
+                  size="sm"
+                  onClick={save}
+                  disabled={isSaving || !hasUnsavedChanges}
+                >
+                  {isSaving ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  Save Now
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
         {/* Header Section */}
         <GTCIStrategicHeader 
           data={data} 
-          editable={editMode}
+          editable={isAdmin && editMode}
           onUpdate={updateData}
         />
 
@@ -248,7 +307,7 @@ export default function GTCIStrategicAnalysis() {
                   columns={pillarColumns}
                   data={data.pillar_performance}
                   onDataChange={(newData) => updateData('pillar_performance', newData as PillarPerformance[])}
-                  editable={editMode}
+                  editable={isAdmin && editMode}
                   newRowTemplate={{ pillar: '', score: 0, rank: 0, status: 'Moderate' }}
                 />
               </CardContent>
@@ -278,7 +337,7 @@ export default function GTCIStrategicAnalysis() {
                   columns={dataGapColumns}
                   data={data.data_gap_indicators}
                   onDataChange={(newData) => updateData('data_gap_indicators', newData as DataGapIndicator[])}
-                  editable={editMode}
+                  editable={isAdmin && editMode}
                   newRowTemplate={{ indicator: '', currentStatus: '', impact: '', dataSource: '' }}
                 />
 
@@ -292,7 +351,7 @@ export default function GTCIStrategicAnalysis() {
                       columns={wefColumns}
                       data={data.wef_participation_steps}
                       onDataChange={(newData) => updateData('wef_participation_steps', newData as WEFParticipationStep[])}
-                      editable={editMode}
+                      editable={isAdmin && editMode}
                       newRowTemplate={{ source: '', targetCount: '', contact: '', timeline: '' }}
                     />
                   </CardContent>
@@ -315,7 +374,7 @@ export default function GTCIStrategicAnalysis() {
                   columns={ministryColumns}
                   data={data.ministry_governance}
                   onDataChange={(newData) => updateData('ministry_governance', newData as MinistryGovernance[])}
-                  editable={editMode}
+                  editable={isAdmin && editMode}
                   newRowTemplate={{ thematicGroup: '', leadMinistry: '', coCoordinators: '', indicators: '' }}
                 />
               </CardContent>
@@ -333,7 +392,7 @@ export default function GTCIStrategicAnalysis() {
                   columns={fundingColumns}
                   data={data.funding_model}
                   onDataChange={(newData) => updateData('funding_model', newData as FundingModelItem[])}
-                  editable={editMode}
+                  editable={isAdmin && editMode}
                   newRowTemplate={{ component: '', budget: '', source: '', responsibility: '' }}
                 />
               </CardContent>
@@ -345,7 +404,7 @@ export default function GTCIStrategicAnalysis() {
             <GTCIIndicatorAnalysisTable
               indicators={data.indicator_analysis}
               onUpdate={(indicators) => updateData('indicator_analysis', indicators)}
-              editable={editMode}
+              editable={isAdmin && editMode}
             />
           </TabsContent>
 
@@ -363,7 +422,7 @@ export default function GTCIStrategicAnalysis() {
                   columns={roadmapColumns}
                   data={data.implementation_roadmap}
                   onDataChange={(newData) => updateData('implementation_roadmap', newData as ImplementationPhase[])}
-                  editable={editMode}
+                  editable={isAdmin && editMode}
                   newRowTemplate={{ priority: 'MEDIUM', action: '', leadAgency: '', deadline: '', budget: '' }}
                 />
               </CardContent>
@@ -384,7 +443,7 @@ export default function GTCIStrategicAnalysis() {
                   columns={outcomeColumns}
                   data={data.expected_outcomes}
                   onDataChange={(newData) => updateData('expected_outcomes', newData as ExpectedOutcome[])}
-                  editable={editMode}
+                  editable={isAdmin && editMode}
                   newRowTemplate={{ metric: '', baseline2023: '', target2027: '', target2030: '' }}
                 />
               </CardContent>

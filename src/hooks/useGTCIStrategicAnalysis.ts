@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,11 +7,15 @@ import { defaultGTCIStrategicAnalysis } from '@/data/gtciStrategicAnalysisData';
 import type { GTCIStrategicAnalysis } from '@/types/gtciAnalysis';
 import type { Json } from '@/integrations/supabase/types';
 
+const AUTO_SAVE_DELAY = 1500; // 1.5 seconds debounce
+
 export function useGTCIStrategicAnalysis() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [localData, setLocalData] = useState<GTCIStrategicAnalysis>(defaultGTCIStrategicAnalysis);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
 
   // Fetch existing data
   const { data: savedData, isLoading, refetch } = useQuery({
@@ -96,31 +100,68 @@ export function useGTCIStrategicAnalysis() {
         return inserted;
       }
     },
-    onSuccess: () => {
-      toast.success('Analysis saved successfully');
+    onSuccess: (result) => {
+      toast.success('Changes saved automatically');
       setHasUnsavedChanges(false);
+      // Update local data with the saved ID if this was a new insert
+      if (result && !localData.id) {
+        setLocalData(prev => ({ ...prev, id: result.id }));
+      }
       queryClient.invalidateQueries({ queryKey: ['gtci-strategic-analysis', user?.id] });
     },
     onError: (error) => {
-      toast.error('Failed to save analysis: ' + error.message);
+      toast.error('Failed to save: ' + error.message);
     }
   });
+
+  // Auto-save function with debounce
+  const triggerAutoSave = useCallback((dataToSave: GTCIStrategicAnalysis) => {
+    if (!autoSaveEnabled) return;
+    
+    // Clear existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    
+    // Set new timeout for auto-save
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      saveMutation.mutate(dataToSave);
+    }, AUTO_SAVE_DELAY);
+  }, [autoSaveEnabled, saveMutation]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const updateData = <K extends keyof GTCIStrategicAnalysis>(
     key: K,
     value: GTCIStrategicAnalysis[K]
   ) => {
-    setLocalData(prev => ({ ...prev, [key]: value }));
+    const newData = { ...localData, [key]: value };
+    setLocalData(newData);
     setHasUnsavedChanges(true);
+    
+    // Trigger auto-save
+    triggerAutoSave(newData);
   };
 
   const save = () => {
+    // Clear any pending auto-save
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
     saveMutation.mutate(localData);
   };
 
   const reset = () => {
     setLocalData(defaultGTCIStrategicAnalysis);
     setHasUnsavedChanges(true);
+    triggerAutoSave(defaultGTCIStrategicAnalysis);
   };
 
   return {
@@ -129,6 +170,8 @@ export function useGTCIStrategicAnalysis() {
     isSaving: saveMutation.isPending,
     hasUnsavedChanges,
     isAuthenticated: !!user,
+    autoSaveEnabled,
+    setAutoSaveEnabled,
     updateData,
     save,
     reset,
