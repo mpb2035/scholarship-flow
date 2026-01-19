@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMatters } from '@/hooks/useMatters';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects } from '@/hooks/useProjects';
 import { useMeetings } from '@/hooks/useMeetings';
+import { useAttachmentOverseas } from '@/hooks/useAttachmentOverseas';
 import { Header } from '@/components/dashboard/Header';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { KPIDetailDialog } from '@/components/dashboard/KPIDetailDialog';
@@ -58,6 +59,7 @@ const Index = () => {
 
   const { projects, createProjectFromMatter, refreshProjects } = useProjects();
   const { upcomingMeetings, addMeeting, updateMeeting, deleteMeeting } = useMeetings();
+  const { addAttachment } = useAttachmentOverseas();
   const { toast } = useToast();
   const [formOpen, setFormOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -184,16 +186,56 @@ const Index = () => {
     }
   };
 
+  // Auto-save attachment overseas data after matter creation
+  const saveAttachmentOverseas = useCallback(async (matterId: string) => {
+    const pendingData = sessionStorage.getItem('pendingAttachmentOverseas');
+    if (!pendingData) return;
+
+    try {
+      const attachmentData = JSON.parse(pendingData);
+      await addAttachment({
+        matterId,
+        institution: attachmentData.institution,
+        programmes: attachmentData.programmes || [],
+        programStartDate: attachmentData.programStartDate,
+        programEndDate: attachmentData.programEndDate,
+        fundingType: attachmentData.fundingType,
+        country: attachmentData.country,
+        destinationInstitution: attachmentData.destinationInstitution,
+        studentCount: attachmentData.studentCount || 1,
+      });
+      sessionStorage.removeItem('pendingAttachmentOverseas');
+      toast({
+        title: 'Attachment Overseas Saved',
+        description: 'Overseas attachment details have been linked to the matter.',
+      });
+    } catch (error) {
+      console.error('Error saving attachment overseas:', error);
+      toast({
+        title: 'Warning',
+        description: 'Matter saved, but failed to save attachment overseas details.',
+        variant: 'destructive',
+      });
+    }
+  }, [addAttachment, toast]);
+
   const handleFormSubmit = async (data: Omit<Matter, 'id'>) => {
     try {
       if (editingMatter) {
         await updateMatter(editingMatter.id, data);
+        // Check if there's pending attachment data for updates
+        if (data.caseType === 'Attachment Overseas') {
+          await saveAttachmentOverseas(editingMatter.id);
+        }
         toast({
           title: 'Matter Updated',
           description: 'The matter has been successfully updated.',
         });
       } else {
-        await addMatter(data);
+        const newMatter = await addMatter(data);
+        if (newMatter && data.caseType === 'Attachment Overseas') {
+          await saveAttachmentOverseas(newMatter.id);
+        }
         toast({
           title: 'Matter Logged',
           description: 'New matter has been added to tracking.',

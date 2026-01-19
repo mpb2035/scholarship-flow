@@ -223,7 +223,7 @@ export function useMatters() {
     };
   }, [matters]);
 
-  const addMatter = useCallback(async (matter: Omit<Matter, 'id'>) => {
+  const addMatter = useCallback(async (matter: Omit<Matter, 'id'>): Promise<Matter | null> => {
     const { data, error } = await supabase
       .from('matters')
       .insert({
