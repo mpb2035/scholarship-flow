@@ -402,6 +402,11 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
               )}
             />
 
+            {/* Conditional Attachment Overseas Fields */}
+            {watchCaseType === 'Attachment Overseas' && (
+              <AttachmentOverseasFields form={form} />
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
