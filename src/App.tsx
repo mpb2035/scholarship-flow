@@ -19,6 +19,7 @@ import TriathleteGoal from "./pages/TriathleteGoal";
 import TodoPage from "./pages/TodoPage";
 import LeavePlanner from "./pages/LeavePlanner";
 import PreviousMeetings from "./pages/PreviousMeetings";
+import AttachmentOverseas from "./pages/AttachmentOverseas";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ function AppRoutes() {
     <AppLayout>
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/attachment-overseas" element={<AttachmentOverseas />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/directory" element={<Directory />} />
         <Route path="/playground" element={<Playground />} />
