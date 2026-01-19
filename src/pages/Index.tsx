@@ -189,19 +189,33 @@ const Index = () => {
   // Auto-save attachment overseas data after matter creation
   const saveAttachmentOverseas = useCallback(async (matterId: string) => {
     const pendingData = sessionStorage.getItem('pendingAttachmentOverseas');
-    if (!pendingData) return;
+    console.log('Checking pending attachment overseas data:', pendingData);
+    
+    if (!pendingData) {
+      console.log('No pending attachment overseas data found');
+      return;
+    }
 
     try {
       const attachmentData = JSON.parse(pendingData);
+      console.log('Parsed attachment data:', attachmentData);
+      
+      // Validate required fields
+      if (!attachmentData.institution || !attachmentData.programStartDate || !attachmentData.programEndDate) {
+        console.log('Missing required fields, skipping save');
+        sessionStorage.removeItem('pendingAttachmentOverseas');
+        return;
+      }
+      
       await addAttachment({
         matterId,
         institution: attachmentData.institution,
         programmes: attachmentData.programmes || [],
         programStartDate: attachmentData.programStartDate,
         programEndDate: attachmentData.programEndDate,
-        fundingType: attachmentData.fundingType,
-        country: attachmentData.country,
-        destinationInstitution: attachmentData.destinationInstitution,
+        fundingType: attachmentData.fundingType || 'Self Funded',
+        country: attachmentData.country || '',
+        destinationInstitution: attachmentData.destinationInstitution || '',
         studentCount: attachmentData.studentCount || 1,
       });
       sessionStorage.removeItem('pendingAttachmentOverseas');

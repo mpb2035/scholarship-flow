@@ -228,19 +228,20 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
     const slaDays = data.priority === 'Urgent' ? 3 : data.priority === 'High' ? 7 : data.priority === 'Medium' ? 14 : 21;
 
     // Store attachment data for after matter is created
-    const attachmentData = data.caseType === 'Attachment Overseas' ? {
-      institution: data.attachmentInstitution as 'PB' | 'IBTE',
-      programmes: data.attachmentProgrammes || [],
-      programStartDate: data.attachmentStartDate || '',
-      programEndDate: data.attachmentEndDate || '',
-      fundingType: data.attachmentFundingType as 'Self Funded' | 'Organizer Funded',
-      country: data.attachmentCountry || '',
-      destinationInstitution: data.attachmentDestination || '',
-      studentCount: data.attachmentStudentCount || 1,
-    } : null;
-
-    // Store in sessionStorage to be picked up after matter creation
-    if (attachmentData && attachmentData.institution && attachmentData.programStartDate) {
+    if (data.caseType === 'Attachment Overseas') {
+      const attachmentData = {
+        institution: data.attachmentInstitution || '',
+        programmes: data.attachmentProgrammes || [],
+        programStartDate: data.attachmentStartDate || '',
+        programEndDate: data.attachmentEndDate || '',
+        fundingType: data.attachmentFundingType || '',
+        country: data.attachmentCountry || '',
+        destinationInstitution: data.attachmentDestination || '',
+        studentCount: data.attachmentStudentCount || 1,
+      };
+      
+      // Store in sessionStorage - save even if partially filled
+      console.log('Storing attachment overseas data:', attachmentData);
       sessionStorage.setItem('pendingAttachmentOverseas', JSON.stringify(attachmentData));
     }
 
