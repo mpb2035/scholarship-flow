@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      attachment_overseas: {
+        Row: {
+          country: string
+          created_at: string
+          destination_institution: string
+          funding_type: string
+          id: string
+          institution: string
+          matter_id: string
+          program_end_date: string
+          program_start_date: string
+          programmes: string[]
+          student_count: number
+          updated_at: string
+        }
+        Insert: {
+          country: string
+          created_at?: string
+          destination_institution: string
+          funding_type: string
+          id?: string
+          institution: string
+          matter_id: string
+          program_end_date: string
+          program_start_date: string
+          programmes?: string[]
+          student_count?: number
+          updated_at?: string
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          destination_institution?: string
+          funding_type?: string
+          id?: string
+          institution?: string
+          matter_id?: string
+          program_end_date?: string
+          program_start_date?: string
+          programmes?: string[]
+          student_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attachment_overseas_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gtci_strategic_analysis: {
         Row: {
           created_at: string

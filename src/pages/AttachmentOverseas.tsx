@@ -1,0 +1,295 @@
+import { useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { useAttachmentOverseas } from '@/hooks/useAttachmentOverseas';
+import { 
+  Plane, 
+  Users, 
+  Building2, 
+  GraduationCap, 
+  Calendar, 
+  MapPin, 
+  Clock,
+  CheckCircle2,
+  TrendingUp
+} from 'lucide-react';
+
+export default function AttachmentOverseas() {
+  const { attachments, stats, loading } = useAttachmentOverseas();
+
+  const activeAttachments = useMemo(() => {
+    const today = new Date();
+    return attachments.filter(a => new Date(a.programEndDate) >= today);
+  }, [attachments]);
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-display font-bold gold-text flex items-center gap-3">
+            <Plane className="h-8 w-8" />
+            Attachment Overseas Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Track students and programmes abroad
+          </p>
+        </div>
+      </div>
+
+      {/* Main Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <GraduationCap className="h-4 w-4 text-primary" />
+              Total Programmes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-primary">{stats.totalProgrammes}</div>
+            <p className="text-xs text-muted-foreground mt-1">Submitted to date</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-green-500" />
+              Active Programmes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-green-500">{stats.activeProgrammes}</div>
+            <p className="text-xs text-muted-foreground mt-1">Currently ongoing</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Users className="h-4 w-4 text-blue-500" />
+              Students Overseas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-blue-500">{stats.studentsCurrentlyOverseas}</div>
+            <p className="text-xs text-muted-foreground mt-1">Currently abroad</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-orange-500/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-orange-500" />
+              Returned to Brunei
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-orange-500">{stats.returnedToBrunei}</div>
+            <p className="text-xs text-muted-foreground mt-1">Programmes completed</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Institution Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-primary" />
+              Institution Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {stats.byInstitution.map((inst) => (
+              <div key={inst.institution} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={inst.institution === 'PB' ? 'default' : 'secondary'}>
+                      {inst.institution}
+                    </Badge>
+                    <span className="text-sm font-medium">
+                      {inst.institution === 'PB' ? 'Politeknik Brunei' : 'IBTE'}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-bold">{inst.count}</span>
+                    <span className="text-muted-foreground text-sm ml-1">programmes</span>
+                    <span className="text-muted-foreground mx-2">|</span>
+                    <span className="font-bold text-primary">{inst.studentCount}</span>
+                    <span className="text-muted-foreground text-sm ml-1">students</span>
+                  </div>
+                </div>
+                <Progress 
+                  value={stats.totalProgrammes > 0 ? (inst.count / stats.totalProgrammes) * 100 : 0} 
+                  className="h-2"
+                />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              Countries
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {stats.byCountry.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">No data yet</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {stats.byCountry.map(({ country, count }) => (
+                  <Badge key={country} variant="outline" className="text-sm py-1 px-3">
+                    {country}
+                    <span className="ml-2 bg-primary/20 text-primary px-1.5 py-0.5 rounded text-xs">
+                      {count}
+                    </span>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Programme Breakdown with Days Remaining */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5 text-primary" />
+            Programme Status & Days Remaining
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {stats.programmeBreakdown.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">
+              No programmes logged yet. Add an "Attachment Overseas" matter to see data here.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {stats.programmeBreakdown.map((prog) => (
+                <div 
+                  key={prog.programme} 
+                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border/50"
+                >
+                  <div className="flex items-center gap-3">
+                    <Badge variant={prog.isActive ? 'default' : 'secondary'}>
+                      {prog.isActive ? 'Active' : 'Completed'}
+                    </Badge>
+                    <span className="font-medium">{prog.programme}</span>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-bold">{prog.studentCount}</span>
+                      <span className="text-sm text-muted-foreground">students</span>
+                    </div>
+                    {prog.isActive && (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span className={`font-bold ${prog.daysRemaining <= 7 ? 'text-destructive' : prog.daysRemaining <= 30 ? 'text-warning' : 'text-green-500'}`}>
+                          {prog.daysRemaining}
+                        </span>
+                        <span className="text-sm text-muted-foreground">days left</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Active Attachments Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plane className="h-5 w-5 text-primary" />
+            Current Overseas Attachments
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {activeAttachments.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">
+              No active overseas attachments at the moment.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border/50">
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Institution</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Programme(s)</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Country</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Destination</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Students</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Duration</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Days Left</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Funding</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeAttachments.map((att) => {
+                    const startDate = new Date(att.programStartDate);
+                    const endDate = new Date(att.programEndDate);
+                    const today = new Date();
+                    const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+                    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+
+                    return (
+                      <tr key={att.id} className="border-b border-border/30 hover:bg-muted/30">
+                        <td className="py-3 px-3">
+                          <Badge variant={att.institution === 'PB' ? 'default' : 'secondary'}>
+                            {att.institution}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="flex flex-wrap gap-1">
+                            {att.programmes.map((prog, i) => (
+                              <Badge key={i} variant="outline" className="text-xs">
+                                {prog}
+                              </Badge>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 font-medium">{att.country}</td>
+                        <td className="py-3 px-3 text-sm">{att.destinationInstitution}</td>
+                        <td className="py-3 px-3">
+                          <span className="font-bold text-primary">{att.studentCount}</span>
+                        </td>
+                        <td className="py-3 px-3 text-sm text-muted-foreground">{totalDays} days</td>
+                        <td className="py-3 px-3">
+                          <span className={`font-bold ${daysRemaining <= 7 ? 'text-destructive' : daysRemaining <= 30 ? 'text-warning' : 'text-green-500'}`}>
+                            {daysRemaining}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3">
+                          <Badge variant={att.fundingType === 'Organizer Funded' ? 'default' : 'outline'}>
+                            {att.fundingType}
+                          </Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

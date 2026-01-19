@@ -32,6 +32,8 @@ import { Badge } from '@/components/ui/badge';
 import { ExternalLink, FolderKanban, Plus, Link2, CalendarClock } from 'lucide-react';
 import { Matter, CaseType, Priority, OverallStatus, QueryStatus, SLAStatus } from '@/types/matter';
 import { Project } from '@/hooks/useProjects';
+import { AttachmentOverseasFields } from './AttachmentOverseasFields';
+import { useAttachmentOverseas } from '@/hooks/useAttachmentOverseas';
 
 const formSchema = z.object({
   caseId: z.string().min(1, 'Case ID is required'),
@@ -52,6 +54,15 @@ const formSchema = z.object({
   overallStatus: z.string(),
   remarks: z.string().optional(),
   externalLink: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
+  // Attachment Overseas fields
+  attachmentInstitution: z.string().optional(),
+  attachmentProgrammes: z.array(z.string()).optional(),
+  attachmentStartDate: z.string().optional(),
+  attachmentEndDate: z.string().optional(),
+  attachmentFundingType: z.string().optional(),
+  attachmentCountry: z.string().optional(),
+  attachmentDestination: z.string().optional(),
+  attachmentStudentCount: z.number().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -108,6 +119,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
   const [selectedExisting, setSelectedExisting] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const { addAttachment, getByMatterId } = useAttachmentOverseas();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -124,8 +136,12 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       remarks: '',
       externalLink: '',
       deadline: '',
+      attachmentProgrammes: [],
+      attachmentStudentCount: 1,
     },
   });
+
+  const watchCaseType = form.watch('caseType');
 
   useEffect(() => {
     if (matter) {
@@ -186,7 +202,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
     return 'Within SLA';
   };
 
-  const handleSubmit = (data: FormData) => {
+  const handleSubmit = async (data: FormData) => {
     const daysInProcess = calculateDaysInProcess(data.dsmSubmittedDate);
     const slaStatus = data.overallStatus === 'Approved & Signed' 
       ? 'Completed' 
@@ -210,6 +226,23 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
     }
 
     const slaDays = data.priority === 'Urgent' ? 3 : data.priority === 'High' ? 7 : data.priority === 'Medium' ? 14 : 21;
+
+    // Store attachment data for after matter is created
+    const attachmentData = data.caseType === 'Attachment Overseas' ? {
+      institution: data.attachmentInstitution as 'PB' | 'IBTE',
+      programmes: data.attachmentProgrammes || [],
+      programStartDate: data.attachmentStartDate || '',
+      programEndDate: data.attachmentEndDate || '',
+      fundingType: data.attachmentFundingType as 'Self Funded' | 'Organizer Funded',
+      country: data.attachmentCountry || '',
+      destinationInstitution: data.attachmentDestination || '',
+      studentCount: data.attachmentStudentCount || 1,
+    } : null;
+
+    // Store in sessionStorage to be picked up after matter creation
+    if (attachmentData && attachmentData.institution && attachmentData.programStartDate) {
+      sessionStorage.setItem('pendingAttachmentOverseas', JSON.stringify(attachmentData));
+    }
 
     onSubmit({
       caseId: data.caseId,
