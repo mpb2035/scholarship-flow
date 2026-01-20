@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useAttachmentOverseas } from '@/hooks/useAttachmentOverseas';
+import { AttachmentCleanupDialog } from '@/components/dashboard/AttachmentCleanupDialog';
 import { 
   Plane, 
   Users, 
@@ -16,7 +17,7 @@ import {
 } from 'lucide-react';
 
 export default function AttachmentOverseas() {
-  const { attachments, stats, loading } = useAttachmentOverseas();
+  const { attachments, stats, loading, refreshAttachments } = useAttachmentOverseas();
 
   const activeAttachments = useMemo(() => {
     const today = new Date();
@@ -43,6 +44,7 @@ export default function AttachmentOverseas() {
             Track students and programmes abroad
           </p>
         </div>
+        <AttachmentCleanupDialog onCleanupComplete={refreshAttachments} />
       </div>
 
       {/* Main Stats Grid */}
