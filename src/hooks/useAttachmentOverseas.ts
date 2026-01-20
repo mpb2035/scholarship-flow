@@ -79,13 +79,30 @@ export function useAttachmentOverseas() {
         variant: 'destructive',
       });
     } else {
-      setAttachments((data || []).map(mapDbToAttachmentOverseas));
+      // De-dupe by matterId (keep newest per matter) to prevent double-counting
+      const mapped = (data || []).map(mapDbToAttachmentOverseas);
+      const seen = new Set<string>();
+      const deduped = mapped.filter((a) => {
+        if (seen.has(a.matterId)) return false;
+        seen.add(a.matterId);
+        return true;
+      });
+      setAttachments(deduped);
     }
     setLoading(false);
   }, [toast]);
 
   useEffect(() => {
     fetchAttachments();
+
+    const handleRefocus = () => {
+      // Helps when users are working across multiple browser tabs
+      if (document.hidden) return;
+      fetchAttachments();
+    };
+
+    window.addEventListener('focus', handleRefocus);
+    document.addEventListener('visibilitychange', handleRefocus);
 
     const channel = supabase
       .channel('attachment-overseas-changes')
@@ -99,6 +116,8 @@ export function useAttachmentOverseas() {
       .subscribe();
 
     return () => {
+      window.removeEventListener('focus', handleRefocus);
+      document.removeEventListener('visibilitychange', handleRefocus);
       supabase.removeChannel(channel);
     };
   }, [fetchAttachments]);
