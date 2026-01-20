@@ -59,7 +59,7 @@ const Index = () => {
 
   const { projects, createProjectFromMatter, refreshProjects } = useProjects();
   const { upcomingMeetings, addMeeting, updateMeeting, deleteMeeting } = useMeetings();
-  const { addAttachment } = useAttachmentOverseas();
+  const { addAttachment, updateAttachment, getByMatterId, refreshAttachments } = useAttachmentOverseas();
   const { toast } = useToast();
   const [formOpen, setFormOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -186,39 +186,70 @@ const Index = () => {
     }
   };
 
-  // Auto-save attachment overseas data after matter creation
+  // Auto-save attachment overseas data after matter creation/update (update if it already exists)
   const saveAttachmentOverseas = useCallback(async (matterId: string) => {
     const pendingData = sessionStorage.getItem('pendingAttachmentOverseas');
-    console.log('Checking pending attachment overseas data:', pendingData);
-    
-    if (!pendingData) {
-      console.log('No pending attachment overseas data found');
+    if (!pendingData) return;
+
+    let attachmentData: any;
+    try {
+      attachmentData = JSON.parse(pendingData);
+    } catch {
+      sessionStorage.removeItem('pendingAttachmentOverseas');
       return;
     }
 
-    try {
-      const attachmentData = JSON.parse(pendingData);
-      console.log('Parsed attachment data:', attachmentData);
-      
-      // Validate required fields
-      if (!attachmentData.institution || !attachmentData.programStartDate || !attachmentData.programEndDate) {
-        console.log('Missing required fields, skipping save');
-        sessionStorage.removeItem('pendingAttachmentOverseas');
-        return;
-      }
-      
-      await addAttachment({
-        matterId,
-        institution: attachmentData.institution,
-        programmes: attachmentData.programmes || [],
-        programStartDate: attachmentData.programStartDate,
-        programEndDate: attachmentData.programEndDate,
-        fundingType: attachmentData.fundingType || 'Self Funded',
-        country: attachmentData.country || '',
-        destinationInstitution: attachmentData.destinationInstitution || '',
-        studentCount: attachmentData.studentCount || 1,
-      });
+    const isBlank =
+      !attachmentData?.institution &&
+      !attachmentData?.programStartDate &&
+      !attachmentData?.programEndDate &&
+      !(attachmentData?.programmes?.length) &&
+      !attachmentData?.fundingType &&
+      !attachmentData?.country &&
+      !attachmentData?.destinationInstitution;
+
+    // If the user didn’t fill any overseas fields, don’t block matter save.
+    if (isBlank) {
       sessionStorage.removeItem('pendingAttachmentOverseas');
+      return;
+    }
+
+    // Validate required fields for saving the overseas record
+    if (!attachmentData.institution || !attachmentData.programStartDate || !attachmentData.programEndDate) {
+      toast({
+        title: 'Attachment Overseas not saved',
+        description: 'Please fill Institution, Start Date, and End Date to save the overseas details.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const payload = {
+      institution: attachmentData.institution,
+      programmes: attachmentData.programmes || [],
+      programStartDate: attachmentData.programStartDate,
+      programEndDate: attachmentData.programEndDate,
+      fundingType: attachmentData.fundingType || 'Self Funded',
+      country: attachmentData.country || '',
+      destinationInstitution: attachmentData.destinationInstitution || '',
+      studentCount: attachmentData.studentCount || 1,
+    };
+
+    try {
+      const existing = getByMatterId(matterId);
+
+      if (existing) {
+        await updateAttachment(existing.id, payload);
+      } else {
+        await addAttachment({
+          matterId,
+          ...payload,
+        });
+      }
+
+      sessionStorage.removeItem('pendingAttachmentOverseas');
+      await refreshAttachments();
+
       toast({
         title: 'Attachment Overseas Saved',
         description: 'Overseas attachment details have been linked to the matter.',
@@ -231,7 +262,7 @@ const Index = () => {
         variant: 'destructive',
       });
     }
-  }, [addAttachment, toast]);
+  }, [addAttachment, updateAttachment, getByMatterId, refreshAttachments, toast]);
 
   const handleFormSubmit = async (data: Omit<Matter, 'id'>) => {
     try {

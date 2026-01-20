@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -119,7 +119,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
   const [selectedExisting, setSelectedExisting] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [isCreatingProject, setIsCreatingProject] = useState(false);
-  const { addAttachment, getByMatterId } = useAttachmentOverseas();
+  const { getByMatterId } = useAttachmentOverseas();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -142,6 +142,14 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
   });
 
   const watchCaseType = form.watch('caseType');
+  const attachmentPrefillRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    // reset per-open so we can prefill again if user reopens the dialog
+    if (!open) {
+      attachmentPrefillRef.current = null;
+    }
+  }, [open]);
 
   useEffect(() => {
     if (matter) {
@@ -188,6 +196,29 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
     }
   }, [useExisting, selectedExisting, existingCaseIds, form]);
 
+  useEffect(() => {
+    if (!open) return;
+    if (!matter) return;
+    if (matter.caseType !== 'Attachment Overseas') return;
+
+    // Only prefill once per dialog open to avoid overwriting in-progress edits
+    if (attachmentPrefillRef.current === matter.id) return;
+
+    const existing = getByMatterId(matter.id);
+    if (!existing) return;
+
+    attachmentPrefillRef.current = matter.id;
+
+    form.setValue('attachmentInstitution', existing.institution, { shouldDirty: false });
+    form.setValue('attachmentProgrammes', existing.programmes || [], { shouldDirty: false });
+    form.setValue('attachmentStartDate', existing.programStartDate, { shouldDirty: false });
+    form.setValue('attachmentEndDate', existing.programEndDate, { shouldDirty: false });
+    form.setValue('attachmentFundingType', existing.fundingType, { shouldDirty: false });
+    form.setValue('attachmentCountry', existing.country || '', { shouldDirty: false });
+    form.setValue('attachmentDestination', existing.destinationInstitution || '', { shouldDirty: false });
+    form.setValue('attachmentStudentCount', existing.studentCount || 1, { shouldDirty: false });
+  }, [open, matter, getByMatterId, form]);
+
   const calculateDaysInProcess = (submittedDate: string): number => {
     const submitted = new Date(submittedDate);
     const today = new Date();
@@ -227,7 +258,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
 
     const slaDays = data.priority === 'Urgent' ? 3 : data.priority === 'High' ? 7 : data.priority === 'Medium' ? 14 : 21;
 
-    // Store attachment data for after matter is created
+    // Store attachment data for after matter is created/updated
     if (data.caseType === 'Attachment Overseas') {
       const attachmentData = {
         institution: data.attachmentInstitution || '',
@@ -239,9 +270,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
         destinationInstitution: data.attachmentDestination || '',
         studentCount: data.attachmentStudentCount || 1,
       };
-      
-      // Store in sessionStorage - save even if partially filled
-      console.log('Storing attachment overseas data:', attachmentData);
+
       sessionStorage.setItem('pendingAttachmentOverseas', JSON.stringify(attachmentData));
     }
 
