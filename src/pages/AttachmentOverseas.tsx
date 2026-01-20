@@ -1,9 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useAttachmentOverseas } from '@/hooks/useAttachmentOverseas';
+import { Button } from '@/components/ui/button';
+import { useAttachmentOverseas, AttachmentOverseas as AttachmentType } from '@/hooks/useAttachmentOverseas';
 import { AttachmentCleanupDialog } from '@/components/dashboard/AttachmentCleanupDialog';
+import { AttachmentScorecardDialog } from '@/components/dashboard/AttachmentScorecardDialog';
+import { AttachmentEditDialog } from '@/components/dashboard/AttachmentEditDialog';
 import { 
   Plane, 
   Users, 
@@ -13,16 +16,23 @@ import {
   MapPin, 
   Clock,
   CheckCircle2,
-  TrendingUp
+  TrendingUp,
+  Pencil
 } from 'lucide-react';
 
 export default function AttachmentOverseas() {
-  const { attachments, stats, loading, refreshAttachments } = useAttachmentOverseas();
+  const { attachments, stats, loading, refreshAttachments, updateAttachment } = useAttachmentOverseas();
+  const [editingAttachment, setEditingAttachment] = useState<AttachmentType | null>(null);
 
   const activeAttachments = useMemo(() => {
     const today = new Date();
     return attachments.filter(a => new Date(a.programEndDate) >= today);
   }, [attachments]);
+
+  const handleSaveAttachment = async (id: string, updates: Partial<AttachmentType>) => {
+    await updateAttachment(id, updates);
+    await refreshAttachments();
+  };
 
   if (loading) {
     return (
@@ -49,121 +59,135 @@ export default function AttachmentOverseas() {
 
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <GraduationCap className="h-4 w-4 text-primary" />
-              Total Programmes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-primary">{stats.totalProgrammes}</div>
-            <p className="text-xs text-muted-foreground mt-1">Submitted to date</p>
-          </CardContent>
-        </Card>
+        <AttachmentScorecardDialog type="total" stats={stats} attachments={attachments}>
+          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <GraduationCap className="h-4 w-4 text-primary" />
+                Total Programmes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-primary">{stats.totalProgrammes}</div>
+              <p className="text-xs text-muted-foreground mt-1">Submitted to date • Click for details</p>
+            </CardContent>
+          </Card>
+        </AttachmentScorecardDialog>
 
-        <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
-              Active Programmes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-500">{stats.activeProgrammes}</div>
-            <p className="text-xs text-muted-foreground mt-1">Currently ongoing</p>
-          </CardContent>
-        </Card>
+        <AttachmentScorecardDialog type="active" stats={stats} attachments={attachments}>
+          <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20 cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-green-500" />
+                Active Programmes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-500">{stats.activeProgrammes}</div>
+              <p className="text-xs text-muted-foreground mt-1">Currently ongoing • Click for details</p>
+            </CardContent>
+          </Card>
+        </AttachmentScorecardDialog>
 
-        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-500" />
-              Students Overseas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-blue-500">{stats.studentsCurrentlyOverseas}</div>
-            <p className="text-xs text-muted-foreground mt-1">Currently abroad</p>
-          </CardContent>
-        </Card>
+        <AttachmentScorecardDialog type="students" stats={stats} attachments={attachments}>
+          <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20 cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Users className="h-4 w-4 text-blue-500" />
+                Students Overseas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-blue-500">{stats.studentsCurrentlyOverseas}</div>
+              <p className="text-xs text-muted-foreground mt-1">Currently abroad • Click for details</p>
+            </CardContent>
+          </Card>
+        </AttachmentScorecardDialog>
 
-        <Card className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-orange-500/20">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-orange-500" />
-              Returned to Brunei
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-orange-500">{stats.returnedToBrunei}</div>
-            <p className="text-xs text-muted-foreground mt-1">Programmes completed</p>
-          </CardContent>
-        </Card>
+        <AttachmentScorecardDialog type="returned" stats={stats} attachments={attachments}>
+          <Card className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-orange-500/20 cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-orange-500" />
+                Returned to Brunei
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-orange-500">{stats.returnedToBrunei}</div>
+              <p className="text-xs text-muted-foreground mt-1">Programmes completed • Click for details</p>
+            </CardContent>
+          </Card>
+        </AttachmentScorecardDialog>
       </div>
 
       {/* Institution Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" />
-              Institution Breakdown
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {stats.byInstitution.map((inst) => (
-              <div key={inst.institution} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge variant={inst.institution === 'PB' ? 'default' : 'secondary'}>
-                      {inst.institution}
-                    </Badge>
-                    <span className="text-sm font-medium">
-                      {inst.institution === 'PB' ? 'Politeknik Brunei' : 'IBTE'}
-                    </span>
+        <AttachmentScorecardDialog type="institution" stats={stats} attachments={attachments}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                Institution Breakdown
+                <span className="text-xs text-muted-foreground ml-auto">Click for details</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {stats.byInstitution.map((inst) => (
+                <div key={inst.institution} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={inst.institution === 'PB' ? 'default' : 'secondary'}>
+                        {inst.institution}
+                      </Badge>
+                      <span className="text-sm font-medium">
+                        {inst.institution === 'PB' ? 'Politeknik Brunei' : 'IBTE'}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold">{inst.count}</span>
+                      <span className="text-muted-foreground text-sm ml-1">programmes</span>
+                      <span className="text-muted-foreground mx-2">|</span>
+                      <span className="font-bold text-primary">{inst.studentCount}</span>
+                      <span className="text-muted-foreground text-sm ml-1">students</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="font-bold">{inst.count}</span>
-                    <span className="text-muted-foreground text-sm ml-1">programmes</span>
-                    <span className="text-muted-foreground mx-2">|</span>
-                    <span className="font-bold text-primary">{inst.studentCount}</span>
-                    <span className="text-muted-foreground text-sm ml-1">students</span>
-                  </div>
+                  <Progress 
+                    value={stats.totalProgrammes > 0 ? (inst.count / stats.totalProgrammes) * 100 : 0} 
+                    className="h-2"
+                  />
                 </div>
-                <Progress 
-                  value={stats.totalProgrammes > 0 ? (inst.count / stats.totalProgrammes) * 100 : 0} 
-                  className="h-2"
-                />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              ))}
+            </CardContent>
+          </Card>
+        </AttachmentScorecardDialog>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-primary" />
-              Countries
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {stats.byCountry.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No data yet</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {stats.byCountry.map(({ country, count }) => (
-                  <Badge key={country} variant="outline" className="text-sm py-1 px-3">
-                    {country}
-                    <span className="ml-2 bg-primary/20 text-primary px-1.5 py-0.5 rounded text-xs">
-                      {count}
-                    </span>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <AttachmentScorecardDialog type="country" stats={stats} attachments={attachments}>
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-primary" />
+                Countries
+                <span className="text-xs text-muted-foreground ml-auto">Click for details</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {stats.byCountry.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No data yet</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {stats.byCountry.map(({ country, count }) => (
+                    <Badge key={country} variant="outline" className="text-sm py-1 px-3">
+                      {country}
+                      <span className="ml-2 bg-primary/20 text-primary px-1.5 py-0.5 rounded text-xs">
+                        {count}
+                      </span>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </AttachmentScorecardDialog>
       </div>
 
       {/* Programme Breakdown with Days Remaining */}
@@ -241,6 +265,7 @@ export default function AttachmentOverseas() {
                     <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Duration</th>
                     <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Days Left</th>
                     <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Funding</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -283,6 +308,16 @@ export default function AttachmentOverseas() {
                             {att.fundingType}
                           </Badge>
                         </td>
+                        <td className="py-3 px-3">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingAttachment(att)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </td>
                       </tr>
                     );
                   })}
@@ -292,6 +327,16 @@ export default function AttachmentOverseas() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Dialog */}
+      {editingAttachment && (
+        <AttachmentEditDialog
+          attachment={editingAttachment}
+          open={!!editingAttachment}
+          onOpenChange={(open) => !open && setEditingAttachment(null)}
+          onSave={handleSaveAttachment}
+        />
+      )}
     </div>
   );
 }
