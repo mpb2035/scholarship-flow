@@ -37,6 +37,8 @@ export interface IndicatorAnalysis {
   id: string;
   indicatorId: string;
   indicatorName: string;
+  definition?: string;
+  sourceUrl?: string;
   leadAgency: string;
   dataSource: string;
   currentScore: string;
