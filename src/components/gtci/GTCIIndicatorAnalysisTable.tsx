@@ -111,6 +111,8 @@ export function GTCIIndicatorAnalysisTable({ indicators, onUpdate, editable }: G
         const data = groupIndicators.map((ind) => ({
           'Indicator ID': ind.indicatorId || '',
           'Indicator Name': ind.indicatorName || '',
+          'Definition': ind.definition || '',
+          'Source URL': ind.sourceUrl || '',
           'Lead Agency': ind.leadAgency || '',
           'Data Source': ind.dataSource || '',
           'Current Score': ind.currentScore || '',
@@ -143,6 +145,8 @@ export function GTCIIndicatorAnalysisTable({ indicators, onUpdate, editable }: G
         'Thematic Group': ind.thematicGroup || '',
         'Indicator ID': ind.indicatorId || '',
         'Indicator Name': ind.indicatorName || '',
+        'Definition': ind.definition || '',
+        'Source URL': ind.sourceUrl || '',
         'Lead Agency': ind.leadAgency || '',
         'Data Source': ind.dataSource || '',
         'Current Score': ind.currentScore || '',
@@ -311,6 +315,47 @@ export function GTCIIndicatorAnalysisTable({ indicators, onUpdate, editable }: G
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {/* Definition & Source */}
+                    {(indicator.definition || indicator.sourceUrl || editable) && (
+                      <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800 space-y-3">
+                        <div className="space-y-1">
+                          <span className="text-xs font-medium text-blue-700 dark:text-blue-300">📖 Official Definition</span>
+                          {editable ? (
+                            <Textarea
+                              value={indicator.definition || ''}
+                              onChange={(e) => updateIndicator(indicator.id, 'definition', e.target.value)}
+                              placeholder="Enter the official indicator definition..."
+                              className="min-h-[60px] text-sm bg-white dark:bg-background"
+                            />
+                          ) : (
+                            <p className="text-sm text-muted-foreground">{indicator.definition || 'No definition available'}</p>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-xs font-medium text-blue-700 dark:text-blue-300">🔗 Source URL</span>
+                          {editable ? (
+                            <Input
+                              value={indicator.sourceUrl || ''}
+                              onChange={(e) => updateIndicator(indicator.id, 'sourceUrl', e.target.value)}
+                              placeholder="https://..."
+                              className="h-8 text-sm bg-white dark:bg-background"
+                            />
+                          ) : indicator.sourceUrl ? (
+                            <a 
+                              href={indicator.sourceUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-600 hover:text-blue-800 hover:underline break-all"
+                            >
+                              {indicator.sourceUrl}
+                            </a>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">No source URL available</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {renderEditableField(indicator, 'leadAgency', 'Lead Agency')}
                       {renderEditableField(indicator, 'dataSource', 'Data Source')}
