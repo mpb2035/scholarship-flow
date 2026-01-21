@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Copy, Check, Plus, Trash2, AlertCircle, Search, X } from 'lucide-react';
+import { Copy, Check, Plus, Trash2, AlertCircle, Search, X, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 import type { IndicatorAnalysis } from '@/types/gtciAnalysis';
 
 interface GTCIIndicatorAnalysisTableProps {
@@ -93,6 +94,85 @@ export function GTCIIndicatorAnalysisTable({ indicators, onUpdate, editable }: G
     });
   };
 
+  const exportToExcel = () => {
+    try {
+      const wb = XLSX.utils.book_new();
+      
+      // Group indicators by thematic group for separate sheets
+      const grouped = indicators.reduce((acc, indicator) => {
+        const group = indicator.thematicGroup || 'Other';
+        if (!acc[group]) acc[group] = [];
+        acc[group].push(indicator);
+        return acc;
+      }, {} as Record<string, IndicatorAnalysis[]>);
+
+      // Create a sheet for each thematic group
+      Object.entries(grouped).forEach(([groupName, groupIndicators]) => {
+        const data = groupIndicators.map((ind) => ({
+          'Indicator ID': ind.indicatorId || '',
+          'Indicator Name': ind.indicatorName || '',
+          'Lead Agency': ind.leadAgency || '',
+          'Data Source': ind.dataSource || '',
+          'Current Score': ind.currentScore || '',
+          'Current Initiative': ind.currentInitiative || '',
+          'Data Strategy': ind.dataStrategy || '',
+          'Gap Analysis': ind.gapAnalysis || '',
+          'Recommended Action': ind.recommendedAction || '',
+          'Measurable KPI': ind.measurableKPI || '',
+          'Timeline': ind.timeline || '',
+          'Alignment': ind.alignment || '',
+          'Funding Note': ind.fundingNote || ''
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        
+        // Auto-size columns
+        const maxWidth = 50;
+        const colWidths = Object.keys(data[0] || {}).map((key) => ({
+          wch: Math.min(maxWidth, Math.max(key.length, ...data.map(row => String(row[key as keyof typeof row] || '').length)))
+        }));
+        ws['!cols'] = colWidths;
+
+        // Sanitize sheet name (max 31 chars, no special chars)
+        const sheetName = groupName.substring(0, 31).replace(/[:\\/?*\[\]]/g, '_');
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      });
+
+      // Also create a summary sheet with all indicators
+      const allData = indicators.map((ind) => ({
+        'Thematic Group': ind.thematicGroup || '',
+        'Indicator ID': ind.indicatorId || '',
+        'Indicator Name': ind.indicatorName || '',
+        'Lead Agency': ind.leadAgency || '',
+        'Data Source': ind.dataSource || '',
+        'Current Score': ind.currentScore || '',
+        'Current Initiative': ind.currentInitiative || '',
+        'Data Strategy': ind.dataStrategy || '',
+        'Gap Analysis': ind.gapAnalysis || '',
+        'Recommended Action': ind.recommendedAction || '',
+        'Measurable KPI': ind.measurableKPI || '',
+        'Timeline': ind.timeline || '',
+        'Alignment': ind.alignment || '',
+        'Funding Note': ind.fundingNote || ''
+      }));
+
+      const summaryWs = XLSX.utils.json_to_sheet(allData);
+      const summaryColWidths = Object.keys(allData[0] || {}).map((key) => ({
+        wch: Math.min(50, Math.max(key.length, ...allData.map(row => String(row[key as keyof typeof row] || '').length)))
+      }));
+      summaryWs['!cols'] = summaryColWidths;
+      
+      // Insert summary sheet at the beginning
+      XLSX.utils.book_append_sheet(wb, summaryWs, 'All Indicators');
+
+      XLSX.writeFile(wb, `GTCI_Strategic_Indicators_${new Date().toISOString().split('T')[0]}.xlsx`);
+      toast.success('Excel file exported successfully');
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export Excel file');
+    }
+  };
+
   const renderEditableField = (indicator: IndicatorAnalysis, field: keyof IndicatorAnalysis, label: string, multiline = false) => {
     const value = indicator[field] as string || '';
     
@@ -129,15 +209,26 @@ export function GTCIIndicatorAnalysisTable({ indicators, onUpdate, editable }: G
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Detailed 77-Indicator Analysis</h3>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={copyAllToClipboard}
-          className="flex items-center gap-1"
-        >
-          {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-          {copied ? 'Copied!' : 'Copy All'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportToExcel}
+            className="flex items-center gap-1 border-green-600 text-green-600 hover:bg-green-50"
+          >
+            <FileSpreadsheet className="h-3 w-3" />
+            Export Excel
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={copyAllToClipboard}
+            className="flex items-center gap-1"
+          >
+            {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+            {copied ? 'Copied!' : 'Copy All'}
+          </Button>
+        </div>
       </div>
 
       {/* Search Input */}
