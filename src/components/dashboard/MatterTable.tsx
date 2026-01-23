@@ -16,10 +16,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Edit2, Trash2, MoreVertical, Eye, ArrowUpDown, Copy, FolderKanban } from 'lucide-react';
+import { Edit2, Trash2, MoreVertical, Eye, ArrowUpDown, Copy, FolderKanban, FileSpreadsheet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-
+import { differenceInDays, format } from 'date-fns';
+import * as XLSX from 'xlsx';
 interface MatterTableProps {
   matters: Matter[];
   onEdit: (matter: Matter) => void;
@@ -35,6 +36,111 @@ export function MatterTable({ matters, onEdit, onDelete, onView, onConvertToProj
   const [sortField, setSortField] = useState<SortField>('daysInProcess');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const { toast } = useToast();
+
+  // Calculate time since last response for a matter
+  const calculateTimeSinceLastResponse = (matter: Matter): { days: number; label: string } => {
+    const today = new Date();
+    
+    // Find the most recent response date
+    const dates = [
+      matter.queryResponseDate ? new Date(matter.queryResponseDate) : null,
+      matter.secondQueryResponseDate ? new Date(matter.secondQueryResponseDate) : null,
+      matter.sutheReceivedDate ? new Date(matter.sutheReceivedDate) : null,
+    ].filter(Boolean) as Date[];
+    
+    if (dates.length === 0) {
+      return { days: matter.daysInProcess, label: `${matter.daysInProcess} days (since received)` };
+    }
+    
+    const lastResponseDate = new Date(Math.max(...dates.map(d => d.getTime())));
+    const days = differenceInDays(today, lastResponseDate);
+    return { days, label: `${days} days since ${format(lastResponseDate, 'dd MMM yyyy')}` };
+  };
+
+  // Calculate SLA countdown
+  const calculateSLACountdown = (matter: Matter): { daysRemaining: number; label: string } => {
+    if (matter.slaStatus === 'Completed' || matter.slaStatus === 'Completed Overdue') {
+      return { daysRemaining: 0, label: 'Completed' };
+    }
+    
+    const daysRemaining = matter.overallSlaDays - matter.daysInProcess;
+    if (daysRemaining <= 0) {
+      return { daysRemaining, label: `${Math.abs(daysRemaining)} days overdue` };
+    }
+    return { daysRemaining, label: `${daysRemaining} days remaining` };
+  };
+
+  // Export In Process matters to Excel
+  const handleExportInProcess = () => {
+    const inProcessMatters = matters.filter(m => 
+      m.overallStatus !== 'Approved & Signed' && 
+      m.overallStatus !== 'Not Approved'
+    );
+
+    if (inProcessMatters.length === 0) {
+      toast({
+        title: "No data to export",
+        description: "No in-process matters found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const excelData = inProcessMatters.map((matter) => {
+      const timeSinceLastResponse = calculateTimeSinceLastResponse(matter);
+      const slaCountdown = calculateSLACountdown(matter);
+      
+      return {
+        'Case ID': matter.caseId,
+        'Case Title': matter.caseTitle,
+        'Case Type': matter.caseType,
+        'Priority': matter.priority,
+        'Overall Status': matter.overallStatus,
+        'Days in Process': matter.daysInProcess,
+        'SLA Days Allowed': matter.overallSlaDays,
+        'SLA Countdown': slaCountdown.label,
+        'Days Remaining': slaCountdown.daysRemaining,
+        'Time Since Last Response': timeSinceLastResponse.label,
+        'Days Since Last Response': timeSinceLastResponse.days,
+        'Query Status': matter.queryStatus,
+        'Second Query Status': matter.secondQueryStatus || 'No Query',
+        'Query Days Pending (SUT HE)': matter.queryDaysPendingSutHe,
+        'Query Days Pending (Higher Up)': matter.queryDaysPendingHigherUp,
+        'Days SUT HE to HU': matter.daysSutHeToHu,
+        'SLA Status': matter.slaStatus,
+        'Dept Submitted Date': matter.dsmSubmittedDate,
+        'SUT HE Received Date': matter.sutheReceivedDate,
+        'SUT HE Submitted to HU Date': matter.sutheSubmittedToHuDate || '',
+        'Query Issued Date': matter.queryIssuedDate || '',
+        'Query Response Date': matter.queryResponseDate || '',
+        'Second Query Issued Date': matter.secondQueryIssuedDate || '',
+        'Second Query Response Date': matter.secondQueryResponseDate || '',
+        'Deadline': matter.deadline || '',
+        'Assigned To': matter.assignedTo || '',
+        'Remarks': matter.remarks || '',
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    
+    // Auto-size columns
+    const maxWidth = 40;
+    const colWidths = Object.keys(excelData[0] || {}).map((key) => ({
+      wch: Math.min(maxWidth, Math.max(key.length, ...excelData.map(row => String(row[key as keyof typeof row] || '').length)))
+    }));
+    worksheet['!cols'] = colWidths;
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'In Process Matters');
+
+    const filename = `in_process_matters_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+    XLSX.writeFile(workbook, filename);
+    
+    toast({
+      title: "Export Successful",
+      description: `Exported ${inProcessMatters.length} in-process matters to Excel`,
+    });
+  };
 
   const handleCopyRow = async (e: React.MouseEvent, matter: Matter) => {
     e.stopPropagation();
@@ -132,8 +238,29 @@ export function MatterTable({ matters, onEdit, onDelete, onView, onConvertToProj
     </Button>
   );
 
+  const inProcessCount = matters.filter(m => 
+    m.overallStatus !== 'Approved & Signed' && 
+    m.overallStatus !== 'Not Approved'
+  ).length;
+
   return (
     <div className="glass-card overflow-hidden">
+      {/* Table Header with Export Button */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border/30">
+        <h3 className="text-sm font-medium text-muted-foreground">
+          Matters ({matters.length})
+        </h3>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportInProcess}
+          className="border-success/50 text-success hover:bg-success/10"
+          disabled={inProcessCount === 0}
+        >
+          <FileSpreadsheet className="h-4 w-4 mr-2" />
+          Export In Process ({inProcessCount})
+        </Button>
+      </div>
       <div className="overflow-x-auto scrollbar-gold">
         <Table>
           <TableHeader>
