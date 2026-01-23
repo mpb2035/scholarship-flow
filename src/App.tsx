@@ -13,6 +13,7 @@ import Playground from "./pages/Playground";
 import GTCIUpload from "./pages/GTCIUpload";
 import ProjectWorkflow from "./pages/ProjectWorkflow";
 import PendingResponse from "./pages/PendingResponse";
+import InProcessMatters from "./pages/InProcessMatters";
 import GTCIDashboard from "./pages/GTCIDashboard";
 import GTCIStrategicAnalysis from "./pages/GTCIStrategicAnalysis";
 import TriathleteGoal from "./pages/TriathleteGoal";
@@ -43,6 +44,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/attachment-overseas" element={<AttachmentOverseas />} />
+        <Route path="/in-process" element={<InProcessMatters />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/directory" element={<Directory />} />
         <Route path="/playground" element={<Playground />} />

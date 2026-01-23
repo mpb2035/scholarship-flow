@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid, FolderKanban, MessageSquareWarning, Globe, Users, FileUp, Target, Footprints, ListTodo, CalendarDays, History, FileText, Plane } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid, FolderKanban, MessageSquareWarning, Globe, Users, FileUp, Target, Footprints, ListTodo, CalendarDays, History, FileText, Plane, Clock } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
 import {
@@ -15,6 +15,7 @@ import {
 
 const mainNavItems = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
+  { title: 'In Process', url: '/in-process', icon: Clock },
   { title: 'Attachment Overseas', url: '/attachment-overseas', icon: Plane },
   { title: 'Pending Response', url: '/pending-response', icon: MessageSquareWarning },
   { title: 'Analytics', url: '/analytics', icon: BarChart3 },
