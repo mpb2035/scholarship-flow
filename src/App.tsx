@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
@@ -39,30 +40,32 @@ function AppRoutes() {
     );
   }
 
-  // All other pages with sidebar
+  // All other pages with sidebar - protected routes
   return (
-    <AppLayout>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/attachment-overseas" element={<AttachmentOverseas />} />
-        <Route path="/in-process" element={<InProcessMatters />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/directory" element={<Directory />} />
-        <Route path="/playground" element={<Playground />} />
-        <Route path="/gtci-upload" element={<GTCIUpload />} />
-        <Route path="/project-workflow" element={<ProjectWorkflow />} />
-        <Route path="/pending-response" element={<PendingResponse />} />
-        <Route path="/gtci" element={<GTCIDashboard />} />
-        <Route path="/gtci-strategic" element={<GTCIStrategicAnalysis />} />
-        <Route path="/triathlete-goal" element={<TriathleteGoal />} />
-        <Route path="/todo" element={<TodoPage />} />
-        <Route path="/leave-planner" element={<LeavePlanner />} />
-        <Route path="/previous-meetings" element={<PreviousMeetings />} />
-        <Route path="/financial-plan" element={<FinancialPlan />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </AppLayout>
+    <ProtectedRoute>
+      <AppLayout>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/attachment-overseas" element={<AttachmentOverseas />} />
+          <Route path="/in-process" element={<InProcessMatters />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/directory" element={<Directory />} />
+          <Route path="/playground" element={<Playground />} />
+          <Route path="/gtci-upload" element={<GTCIUpload />} />
+          <Route path="/project-workflow" element={<ProjectWorkflow />} />
+          <Route path="/pending-response" element={<PendingResponse />} />
+          <Route path="/gtci" element={<GTCIDashboard />} />
+          <Route path="/gtci-strategic" element={<GTCIStrategicAnalysis />} />
+          <Route path="/triathlete-goal" element={<TriathleteGoal />} />
+          <Route path="/todo" element={<TodoPage />} />
+          <Route path="/leave-planner" element={<LeavePlanner />} />
+          <Route path="/previous-meetings" element={<PreviousMeetings />} />
+          <Route path="/financial-plan" element={<FinancialPlan />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AppLayout>
+    </ProtectedRoute>
   );
 }
 

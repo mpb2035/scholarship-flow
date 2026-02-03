@@ -5,7 +5,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -13,17 +12,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SLAConfigManager } from '@/components/admin/SLAConfigManager';
 import { WorkflowManager } from '@/components/admin/WorkflowManager';
+import { UserPermissionsManager } from '@/components/admin/UserPermissionsManager';
 import { 
   ArrowLeft, 
   Users, 
   Database, 
-  Settings, 
   Loader2,
   Shield,
   Trash2,
-  Plus,
   Clock,
-  GitBranch
+  GitBranch,
+  Lock
 } from 'lucide-react';
 
 interface UserWithRole {
@@ -279,6 +278,10 @@ const Admin = () => {
               <GitBranch className="h-4 w-4" />
               Workflows
             </TabsTrigger>
+            <TabsTrigger value="permissions" className="gap-2">
+              <Lock className="h-4 w-4" />
+              Page Access
+            </TabsTrigger>
           </TabsList>
 
           {/* Users Tab */}
@@ -418,6 +421,11 @@ const Admin = () => {
           {/* Workflows Tab */}
           <TabsContent value="workflows">
             <WorkflowManager />
+          </TabsContent>
+
+          {/* Page Permissions Tab */}
+          <TabsContent value="permissions">
+            <UserPermissionsManager />
           </TabsContent>
         </Tabs>
       </div>
