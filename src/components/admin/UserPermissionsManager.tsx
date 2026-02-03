@@ -160,7 +160,7 @@ export function UserPermissionsManager() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[200px]">User ID</TableHead>
+                  <TableHead className="w-[250px]">User</TableHead>
                   <TableHead className="w-[120px]">Role</TableHead>
                   <TableHead className="w-[120px]">Quick Actions</TableHead>
                   {allPages.map((page) => (
@@ -173,8 +173,15 @@ export function UserPermissionsManager() {
               <TableBody>
                 {users.map((user) => (
                   <TableRow key={user.user_id}>
-                    <TableCell className="font-mono text-xs">
-                      {user.user_id.slice(0, 8)}...
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm">
+                          {user.email || 'No email'}
+                        </span>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          {user.user_id.slice(0, 8)}...
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Select
