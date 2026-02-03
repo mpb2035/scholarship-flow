@@ -112,6 +112,19 @@ export function useAdminUserManagement() {
 
       if (permError) throw permError;
 
+      // Get all profiles for email display
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, email, display_name');
+
+      if (profilesError) throw profilesError;
+
+      // Create email lookup map
+      const emailMap = new Map<string, string>();
+      for (const profile of (profilesData || [])) {
+        emailMap.set(profile.user_id, profile.email || '');
+      }
+
       // Group permissions by user
       const userMap = new Map<string, UserWithPermissions>();
       
@@ -120,7 +133,7 @@ export function useAdminUserManagement() {
         if (!userMap.has(userId)) {
           userMap.set(userId, {
             user_id: userId,
-            email: '', // Will be fetched separately
+            email: emailMap.get(userId) || '',
             role: roleRow.role as 'admin' | 'user',
             permissions: {},
           });
@@ -135,9 +148,21 @@ export function useAdminUserManagement() {
         } else {
           userMap.set(perm.user_id, {
             user_id: perm.user_id,
-            email: '',
+            email: emailMap.get(perm.user_id) || '',
             role: null,
             permissions: { [perm.page_path]: perm.can_access },
+          });
+        }
+      }
+
+      // Also add users from profiles that may not have roles/permissions yet
+      for (const profile of (profilesData || [])) {
+        if (!userMap.has(profile.user_id)) {
+          userMap.set(profile.user_id, {
+            user_id: profile.user_id,
+            email: profile.email || '',
+            role: null,
+            permissions: {},
           });
         }
       }
