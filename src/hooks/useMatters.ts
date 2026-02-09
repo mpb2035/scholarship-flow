@@ -52,6 +52,16 @@ const calculateDaysSutHeToHu = (sutheReceivedDate: string, sutheSubmittedToHuDat
   return Math.floor((submitted.getTime() - received.getTime()) / (1000 * 60 * 60 * 24));
 };
 
+const calculateDaysSecondSutHeToHu = (
+  firstSubmittedDate?: string | null, 
+  secondSubmittedDate?: string | null
+): number => {
+  if (!firstSubmittedDate || !secondSubmittedDate) return 0;
+  const first = new Date(firstSubmittedDate);
+  const second = new Date(secondSubmittedDate);
+  return Math.floor((second.getTime() - first.getTime()) / (1000 * 60 * 60 * 24));
+};
+
 const calculateQueryDaysPending = (
   queryIssuedDate?: string | null, 
   queryResponseDate?: string | null, 
@@ -92,6 +102,7 @@ const mapDbToMatter = (db: DbMatter): Matter => {
     overallStatus: db.overall_status as OverallStatus,
     daysInProcess: calculateDaysInProcess(db.dsm_submitted_date, db.signed_date),
     daysSutHeToHu: calculateDaysSutHeToHu(db.suthe_received_date, db.suthe_submitted_to_hu_date),
+    daysSecondSutHeToHu: calculateDaysSecondSutHeToHu(db.suthe_submitted_to_hu_date, db.second_suthe_submitted_to_hu_date),
     queryDaysPendingSutHe: queryDays.sutHe,
     queryDaysPendingHigherUp: queryDays.higherUp,
     overallSlaDays: db.overall_sla_days,

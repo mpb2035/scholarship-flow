@@ -53,6 +53,7 @@ export interface Matter {
   overallStatus: OverallStatus;
   daysInProcess: number;
   daysSutHeToHu: number;
+  daysSecondSutHeToHu: number;
   queryDaysPendingSutHe: number;
   queryDaysPendingHigherUp: number;
   overallSlaDays: number;
