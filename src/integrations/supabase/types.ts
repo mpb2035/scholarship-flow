@@ -315,6 +315,7 @@ export type Database = {
           second_query_issued_date: string | null
           second_query_response_date: string | null
           second_query_status: string | null
+          second_suthe_submitted_to_hu_date: string | null
           signed_date: string | null
           sla_status: string
           suthe_received_date: string
@@ -341,6 +342,7 @@ export type Database = {
           second_query_issued_date?: string | null
           second_query_response_date?: string | null
           second_query_status?: string | null
+          second_suthe_submitted_to_hu_date?: string | null
           signed_date?: string | null
           sla_status?: string
           suthe_received_date: string
@@ -367,6 +369,7 @@ export type Database = {
           second_query_issued_date?: string | null
           second_query_response_date?: string | null
           second_query_status?: string | null
+          second_suthe_submitted_to_hu_date?: string | null
           signed_date?: string | null
           sla_status?: string
           suthe_received_date?: string

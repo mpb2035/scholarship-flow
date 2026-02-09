@@ -48,6 +48,7 @@ const formSchema = z.object({
   secondQueryStatus: z.string(),
   secondQueryIssuedDate: z.string().optional(),
   secondQueryResponseDate: z.string().optional(),
+  secondSutheSubmittedToHuDate: z.string().optional(),
   signedDate: z.string().optional(),
   deadline: z.string().optional(),
   queryStatus: z.string(),
@@ -142,6 +143,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
   });
 
   const watchCaseType = form.watch('caseType');
+  const watchSecondQueryStatus = form.watch('secondQueryStatus');
   const attachmentPrefillRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -166,6 +168,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
         secondQueryStatus: matter.secondQueryStatus || 'No Query',
         secondQueryIssuedDate: matter.secondQueryIssuedDate,
         secondQueryResponseDate: matter.secondQueryResponseDate,
+        secondSutheSubmittedToHuDate: matter.secondSutheSubmittedToHuDate,
         signedDate: matter.signedDate,
         deadline: matter.deadline || '',
         queryStatus: matter.queryStatus,
@@ -287,6 +290,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       secondQueryStatus: data.secondQueryStatus as QueryStatus,
       secondQueryIssuedDate: data.secondQueryIssuedDate,
       secondQueryResponseDate: data.secondQueryResponseDate,
+      secondSutheSubmittedToHuDate: data.secondSutheSubmittedToHuDate,
       signedDate: data.signedDate,
       queryStatus: data.queryStatus as QueryStatus,
       overallStatus: data.overallStatus as OverallStatus,
@@ -635,6 +639,23 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
                 )}
               />
             </div>
+
+            {/* Second SUT HE Submitted to HU Date - only shown when there's a second query */}
+            {watchSecondQueryStatus && watchSecondQueryStatus !== 'No Query' && (
+              <FormField
+                control={form.control}
+                name="secondSutheSubmittedToHuDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Second SUT HE Submitted to HU Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value || ''} className="bg-input border-border/50" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
