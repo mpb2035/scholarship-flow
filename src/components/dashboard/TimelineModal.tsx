@@ -31,8 +31,11 @@ function buildTimeline(matter: Matter): TimelineEvent[] {
     { key: 'dsmSubmittedDate', label: 'Dept Submitted' },
     { key: 'sutheReceivedDate', label: 'SUT HE Received' },
     { key: 'sutheSubmittedToHuDate', label: 'SUT HE Submitted to HU' },
-    { key: 'queryIssuedDate', label: 'Query Issued' },
+    { key: 'queryIssuedDate', label: 'Query Issued to Dept' },
     { key: 'queryResponseDate', label: 'Query Response Received' },
+    { key: 'secondQueryIssuedDate', label: '2nd Query Issued to Dept' },
+    { key: 'secondQueryResponseDate', label: '2nd Query Response Received' },
+    { key: 'secondSutheSubmittedToHuDate', label: '2nd SUT HE Submitted to HU' },
     { key: 'signedDate', label: 'Approved & Signed' },
   ];
 
