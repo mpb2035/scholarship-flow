@@ -296,6 +296,9 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       overallStatus: data.overallStatus as OverallStatus,
       daysInProcess,
       daysSutHeToHu,
+      daysSecondSutHeToHu: data.sutheSubmittedToHuDate && data.secondSutheSubmittedToHuDate
+        ? Math.floor((new Date(data.secondSutheSubmittedToHuDate).getTime() - new Date(data.sutheSubmittedToHuDate).getTime()) / (1000 * 60 * 60 * 24))
+        : 0,
       queryDaysPendingSutHe,
       queryDaysPendingHigherUp,
       overallSlaDays: slaDays,
