@@ -19,6 +19,7 @@ export default function LeavePlanner() {
     loading,
     addLeave,
     deleteLeave,
+    updateBalance,
     getUsedDays,
     getRemainingDays,
     getNextLeave,
@@ -73,6 +74,7 @@ export default function LeavePlanner() {
         balance={balance}
         getUsedDays={getUsedDays}
         getRemainingDays={getRemainingDays}
+        onUpdateBalance={updateBalance}
       />
 
       {/* Countdown & Gap Cards */}
