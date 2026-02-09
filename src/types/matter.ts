@@ -47,6 +47,7 @@ export interface Matter {
   secondQueryStatus: QueryStatus;
   secondQueryIssuedDate?: string;
   secondQueryResponseDate?: string;
+  secondSutheSubmittedToHuDate?: string;
   signedDate?: string;
   queryStatus: QueryStatus;
   overallStatus: OverallStatus;

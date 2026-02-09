@@ -27,6 +27,7 @@ interface DbMatter {
   second_query_status: string | null;
   second_query_issued_date: string | null;
   second_query_response_date: string | null;
+  second_suthe_submitted_to_hu_date: string | null;
   signed_date: string | null;
   query_status: string;
   overall_status: string;
@@ -85,6 +86,7 @@ const mapDbToMatter = (db: DbMatter): Matter => {
     secondQueryStatus: (db.second_query_status as Matter['queryStatus']) || 'No Query',
     secondQueryIssuedDate: db.second_query_issued_date || undefined,
     secondQueryResponseDate: db.second_query_response_date || undefined,
+    secondSutheSubmittedToHuDate: db.second_suthe_submitted_to_hu_date || undefined,
     signedDate: db.signed_date || undefined,
     queryStatus: db.query_status as Matter['queryStatus'],
     overallStatus: db.overall_status as OverallStatus,
@@ -239,6 +241,7 @@ export function useMatters() {
         second_query_status: matter.secondQueryStatus || 'No Query',
         second_query_issued_date: matter.secondQueryIssuedDate || null,
         second_query_response_date: matter.secondQueryResponseDate || null,
+        second_suthe_submitted_to_hu_date: matter.secondSutheSubmittedToHuDate || null,
         signed_date: matter.signedDate || null,
         query_status: matter.queryStatus,
         overall_status: matter.overallStatus,
@@ -273,6 +276,7 @@ export function useMatters() {
     if (updates.secondQueryStatus !== undefined) dbUpdates.second_query_status = updates.secondQueryStatus || 'No Query';
     if (updates.secondQueryIssuedDate !== undefined) dbUpdates.second_query_issued_date = updates.secondQueryIssuedDate || null;
     if (updates.secondQueryResponseDate !== undefined) dbUpdates.second_query_response_date = updates.secondQueryResponseDate || null;
+    if (updates.secondSutheSubmittedToHuDate !== undefined) dbUpdates.second_suthe_submitted_to_hu_date = updates.secondSutheSubmittedToHuDate || null;
     if (updates.signedDate !== undefined) dbUpdates.signed_date = updates.signedDate || null;
     if (updates.queryStatus !== undefined) dbUpdates.query_status = updates.queryStatus;
     if (updates.overallStatus !== undefined) dbUpdates.overall_status = updates.overallStatus;
