@@ -57,6 +57,7 @@ export const useFinance = (month: number, year: number) => {
           amount: Number(e.amount),
           expenseDate: e.expense_date,
           isRecurring: e.is_recurring,
+          payPeriod: (e as any).pay_period as number | null,
           createdAt: e.created_at,
           updatedAt: e.updated_at,
         })));
@@ -90,6 +91,23 @@ export const useFinance = (month: number, year: number) => {
       return date.getMonth() + 1 === month && date.getFullYear() === year;
     });
   }, [expenses, month, year]);
+
+  // Filter expenses by pay period (1 or 2)
+  const getExpensesByPayPeriod = (payPeriod: 1 | 2) => {
+    return monthlyExpenses.filter(e => e.payPeriod === payPeriod);
+  };
+
+  // Get totals for a specific pay period
+  const getPayPeriodTotals = (payPeriod: 1 | 2) => {
+    const periodExpenses = getExpensesByPayPeriod(payPeriod);
+    const totalSpent = periodExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const perPaycheckBudget = totals.budget / 2; // Split budget evenly between pay periods
+    return {
+      spent: totalSpent,
+      budget: perPaycheckBudget,
+      remaining: perPaycheckBudget - totalSpent,
+    };
+  };
 
   // Calculate category summaries with budget and spending
   const categorySummaries = useMemo((): CategoryWithBudgetAndSpending[] => {
@@ -213,7 +231,7 @@ export const useFinance = (month: number, year: number) => {
     await fetchData();
   };
 
-  const addExpense = async (data: { categoryId: string | null; description: string; amount: number; expenseDate: string; isRecurring?: boolean }) => {
+  const addExpense = async (data: { categoryId: string | null; description: string; amount: number; expenseDate: string; isRecurring?: boolean; payPeriod?: number | null }) => {
     if (!user) return;
     const { error } = await supabase.from('expenses').insert({
       user_id: user.id,
@@ -222,6 +240,7 @@ export const useFinance = (month: number, year: number) => {
       amount: data.amount,
       expense_date: data.expenseDate,
       is_recurring: data.isRecurring || false,
+      pay_period: data.payPeriod ?? null,
     });
     if (error) throw error;
     await fetchData();
@@ -234,6 +253,7 @@ export const useFinance = (month: number, year: number) => {
       amount: updates.amount,
       expense_date: updates.expenseDate,
       is_recurring: updates.isRecurring,
+      pay_period: updates.payPeriod,
     }).eq('id', id);
     if (error) throw error;
     await fetchData();
@@ -275,6 +295,8 @@ export const useFinance = (month: number, year: number) => {
     categorySummaries,
     totals,
     biweeklyBreakdown,
+    getExpensesByPayPeriod,
+    getPayPeriodTotals,
     addCategory,
     updateCategory,
     deleteCategory,

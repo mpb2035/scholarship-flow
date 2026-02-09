@@ -27,6 +27,7 @@ export interface Expense {
   amount: number;
   expenseDate: string;
   isRecurring: boolean;
+  payPeriod: number | null; // 1 or 2 for biweekly, null for regular monthly
   createdAt: string;
   updatedAt: string;
 }

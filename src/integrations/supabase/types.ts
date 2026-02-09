@@ -133,6 +133,7 @@ export type Database = {
           expense_date: string
           id: string
           is_recurring: boolean
+          pay_period: number | null
           updated_at: string
           user_id: string
         }
@@ -144,6 +145,7 @@ export type Database = {
           expense_date?: string
           id?: string
           is_recurring?: boolean
+          pay_period?: number | null
           updated_at?: string
           user_id: string
         }
@@ -155,6 +157,7 @@ export type Database = {
           expense_date?: string
           id?: string
           is_recurring?: boolean
+          pay_period?: number | null
           updated_at?: string
           user_id?: string
         }

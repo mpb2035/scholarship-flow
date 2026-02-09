@@ -51,6 +51,8 @@ const FinancialPlan = () => {
     categorySummaries,
     totals,
     biweeklyBreakdown,
+    getExpensesByPayPeriod,
+    getPayPeriodTotals,
     addCategory,
     deleteCategory,
     setBudget,
@@ -62,6 +64,8 @@ const FinancialPlan = () => {
   // Dialog states
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
+  const [biweeklyExpenseDialogOpen, setBiweeklyExpenseDialogOpen] = useState(false);
+  const [activePayPeriod, setActivePayPeriod] = useState<1 | 2>(1);
   const [paySettingsDialogOpen, setPaySettingsDialogOpen] = useState(false);
   const [budgetEditCategory, setBudgetEditCategory] = useState<string | null>(null);
   const [budgetAmount, setBudgetAmount] = useState('');
@@ -69,6 +73,12 @@ const FinancialPlan = () => {
   // Form states
   const [newCategory, setNewCategory] = useState({ name: '', color: 'blue' });
   const [newExpense, setNewExpense] = useState({
+    categoryId: '',
+    description: '',
+    amount: '',
+    expenseDate: format(new Date(), 'yyyy-MM-dd'),
+  });
+  const [newBiweeklyExpense, setNewBiweeklyExpense] = useState({
     categoryId: '',
     description: '',
     amount: '',
@@ -128,6 +138,29 @@ const FinancialPlan = () => {
     }
   };
 
+  const handleAddBiweeklyExpense = async () => {
+    if (!newBiweeklyExpense.description.trim() || !newBiweeklyExpense.amount) return;
+    try {
+      await addExpense({
+        categoryId: newBiweeklyExpense.categoryId || null,
+        description: newBiweeklyExpense.description,
+        amount: parseFloat(newBiweeklyExpense.amount),
+        expenseDate: newBiweeklyExpense.expenseDate,
+        payPeriod: activePayPeriod,
+      });
+      setNewBiweeklyExpense({
+        categoryId: '',
+        description: '',
+        amount: '',
+        expenseDate: format(new Date(), 'yyyy-MM-dd'),
+      });
+      setBiweeklyExpenseDialogOpen(false);
+      toast({ title: 'Commitment added', description: `Added to Pay Period ${activePayPeriod}.` });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to add commitment.', variant: 'destructive' });
+    }
+  };
+
   const handleSaveBudget = async (categoryId: string) => {
     try {
       await setBudget(categoryId, parseFloat(budgetAmount) || 0);
@@ -148,6 +181,135 @@ const FinancialPlan = () => {
     } catch {
       toast({ title: 'Error', description: 'Failed to update pay settings.', variant: 'destructive' });
     }
+  };
+
+  // Render pay period content (expenses and summary for each period)
+  const renderPayPeriodContent = (period: 1 | 2) => {
+    const periodExpenses = getExpensesByPayPeriod(period);
+    const periodTotals = getPayPeriodTotals(period);
+    const perPaycheckBudget = totals.budget / 2;
+    const spentPercent = perPaycheckBudget > 0 ? Math.min((periodTotals.spent / perPaycheckBudget) * 100, 100) : 0;
+
+    return (
+      <>
+        {/* Period Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Period Budget</p>
+                  <p className="text-2xl font-bold text-foreground">${perPaycheckBudget.toFixed(2)}</p>
+                </div>
+                <Wallet className="h-8 w-8 text-primary" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/20">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Committed</p>
+                  <p className="text-2xl font-bold text-foreground">${periodTotals.spent.toFixed(2)}</p>
+                </div>
+                <TrendingDown className="h-8 w-8 text-destructive" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className={`bg-gradient-to-br ${periodTotals.remaining >= 0 ? 'from-green-500/10 to-green-500/5 border-green-500/20' : 'from-red-500/10 to-red-500/5 border-red-500/20'}`}>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Remaining</p>
+                  <p className={`text-2xl font-bold ${periodTotals.remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    ${Math.abs(periodTotals.remaining).toFixed(2)}
+                    {periodTotals.remaining < 0 && ' over'}
+                  </p>
+                </div>
+                <TrendingUp className="h-8 w-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Usage Progress */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Budget Usage</p>
+              <span className="text-sm font-medium">{spentPercent.toFixed(0)}%</span>
+            </div>
+            <Progress value={spentPercent} className="h-2" />
+          </CardContent>
+        </Card>
+
+        {/* Commitments List */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Receipt className="h-5 w-5" />
+              Commitments - Pay Period {period}
+            </CardTitle>
+            <Button size="sm" onClick={() => { setActivePayPeriod(period); setBiweeklyExpenseDialogOpen(true); }}>
+              <Plus className="h-4 w-4 mr-1" /> Add Commitment
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {periodExpenses.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No commitments for this pay period yet.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {periodExpenses.map(expense => {
+                    const category = categories.find(c => c.id === expense.categoryId);
+                    return (
+                      <TableRow key={expense.id}>
+                        <TableCell className="font-mono text-sm">
+                          {format(parseISO(expense.expenseDate), 'MMM d')}
+                        </TableCell>
+                        <TableCell>{expense.description}</TableCell>
+                        <TableCell>
+                          {category ? (
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${CATEGORY_COLORS[category.color] || 'bg-gray-500'}`} />
+                              <span className="text-sm">{category.name}</span>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">${expense.amount.toFixed(2)}</TableCell>
+                        <TableCell>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-7 w-7 text-destructive"
+                            onClick={() => deleteExpense(expense.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </>
+    );
   };
 
   if (loading || authLoading) {
@@ -532,7 +694,7 @@ const FinancialPlan = () => {
               </CardContent>
             </Card>
 
-            {/* Biweekly Breakdown */}
+            {/* Biweekly Overview Breakdown */}
             {biweeklyBreakdown && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
@@ -588,27 +750,28 @@ const FinancialPlan = () => {
               </div>
             )}
 
-            {/* Pay Dates */}
-            {biweeklyBreakdown && biweeklyBreakdown.payDates.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    Pay Dates in {MONTHS[selectedMonth - 1]} {selectedYear}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-3">
-                    {biweeklyBreakdown.payDates.map((date, i) => (
-                      <div key={i} className="px-4 py-2 bg-primary/10 rounded-lg border border-primary/20">
-                        <p className="text-sm font-medium">{format(date, 'EEEE')}</p>
-                        <p className="text-lg font-bold">{format(date, 'MMM d, yyyy')}</p>
-                        <p className="text-sm text-muted-foreground">${biweeklyBreakdown.payAmount.toFixed(2)}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Pay Period Tabs */}
+            {paySettings && (
+              <Tabs defaultValue="period1" className="space-y-4">
+                <TabsList className="grid w-full max-w-[400px] grid-cols-2">
+                  <TabsTrigger value="period1" onClick={() => setActivePayPeriod(1)}>
+                    Pay Period 1
+                  </TabsTrigger>
+                  <TabsTrigger value="period2" onClick={() => setActivePayPeriod(2)}>
+                    Pay Period 2
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Pay Period 1 */}
+                <TabsContent value="period1" className="space-y-4">
+                  {renderPayPeriodContent(1)}
+                </TabsContent>
+
+                {/* Pay Period 2 */}
+                <TabsContent value="period2" className="space-y-4">
+                  {renderPayPeriodContent(2)}
+                </TabsContent>
+              </Tabs>
             )}
 
             {/* Budget Allocation per Paycheck */}
@@ -654,6 +817,56 @@ const FinancialPlan = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* Add Biweekly Expense Dialog */}
+            <Dialog open={biweeklyExpenseDialogOpen} onOpenChange={setBiweeklyExpenseDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Commitment - Pay Period {activePayPeriod}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Label>Category</Label>
+                    <Select value={newBiweeklyExpense.categoryId} onValueChange={v => setNewBiweeklyExpense({ ...newBiweeklyExpense, categoryId: v })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Input 
+                      value={newBiweeklyExpense.description} 
+                      onChange={e => setNewBiweeklyExpense({ ...newBiweeklyExpense, description: e.target.value })}
+                      placeholder="What is this commitment for?"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Amount</Label>
+                    <Input 
+                      type="number"
+                      value={newBiweeklyExpense.amount} 
+                      onChange={e => setNewBiweeklyExpense({ ...newBiweeklyExpense, amount: e.target.value })}
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Date</Label>
+                    <Input 
+                      type="date"
+                      value={newBiweeklyExpense.expenseDate} 
+                      onChange={e => setNewBiweeklyExpense({ ...newBiweeklyExpense, expenseDate: e.target.value })}
+                    />
+                  </div>
+                  <Button onClick={handleAddBiweeklyExpense} className="w-full">Add Commitment</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
         </Tabs>
       </div>
