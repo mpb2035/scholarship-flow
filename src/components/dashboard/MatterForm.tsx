@@ -39,6 +39,9 @@ const formSchema = z.object({
   caseId: z.string().min(1, 'Case ID is required'),
   caseTitle: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
   caseType: z.string().min(1, 'Case type is required'),
+  receivedFrom: z.string().optional(),
+  suthePassToDepartment: z.string().optional(),
+  suthePassToDepartmentDate: z.string().optional(),
   priority: z.string().min(1, 'Priority is required'),
   dsmSubmittedDate: z.string().min(1, 'Submission date is required'),
   sutheReceivedDate: z.string().min(1, 'Received date is required'),
@@ -160,6 +163,9 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
         caseId: matter.caseId,
         caseTitle: matter.caseTitle,
         caseType: matter.caseType,
+        receivedFrom: matter.receivedFrom || '',
+        suthePassToDepartment: matter.suthePassToDepartment || '',
+        suthePassToDepartmentDate: matter.suthePassToDepartmentDate || '',
         priority: matter.priority,
         dsmSubmittedDate: matter.dsmSubmittedDate,
         sutheReceivedDate: matter.sutheReceivedDate,
@@ -283,6 +289,9 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       caseId: data.caseId,
       caseTitle: data.caseTitle,
       caseType: data.caseType as CaseType,
+      receivedFrom: data.receivedFrom || undefined,
+      suthePassToDepartment: data.suthePassToDepartment || undefined,
+      suthePassToDepartmentDate: data.suthePassToDepartmentDate || undefined,
       priority: data.priority as Priority,
       dsmSubmittedDate: data.dsmSubmittedDate,
       sutheReceivedDate: data.sutheReceivedDate,
@@ -441,6 +450,81 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
                 </FormItem>
               )}
             />
+
+            {/* Received From */}
+            <FormField
+              control={form.control}
+              name="receivedFrom"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Received From</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <FormControl>
+                      <SelectTrigger className="bg-input border-border/50">
+                        <SelectValue placeholder="Select source..." />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-popover border-border">
+                      <SelectItem value="Department">Department</SelectItem>
+                      <SelectItem value="Higher Up">Higher Up</SelectItem>
+                      <SelectItem value="Other Agency">Other Agency</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* SUT HE Pass to Department + Date */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="suthePassToDepartment"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>SUT HE Pass to Department</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                      <FormControl>
+                        <SelectTrigger className="bg-input border-border/50">
+                          <SelectValue placeholder="Select department..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-popover border-border max-h-[200px]">
+                        <SelectItem value="Jabatan Pentadbiran dan Perkhidmatan-perkhidmatan">Jabatan Pentadbiran dan Perkhidmatan-perkhidmatan</SelectItem>
+                        <SelectItem value="Jabatan Sekolah-sekolah">Jabatan Sekolah-sekolah</SelectItem>
+                        <SelectItem value="Jabatan Peperiksaan">Jabatan Peperiksaan</SelectItem>
+                        <SelectItem value="Jabatan Perancangan dan Pengurusan Dasar Pendidikan">Jabatan Perancangan dan Pengurusan Dasar Pendidikan</SelectItem>
+                        <SelectItem value="Jabatan Kurikulum">Jabatan Kurikulum</SelectItem>
+                        <SelectItem value="Jabatan Teknologi Maklumat dan Komunikasi">Jabatan Teknologi Maklumat dan Komunikasi</SelectItem>
+                        <SelectItem value="Jabatan Pengajian Tinggi">Jabatan Pengajian Tinggi</SelectItem>
+                        <SelectItem value="Jabatan Pendidikan Teknik">Jabatan Pendidikan Teknik</SelectItem>
+                        <SelectItem value="Institut Pendidikan Teknik Brunei (IBTE)">Institut Pendidikan Teknik Brunei (IBTE)</SelectItem>
+                        <SelectItem value="Universiti Brunei Darussalam (UBD)">Universiti Brunei Darussalam (UBD)</SelectItem>
+                        <SelectItem value="Universiti Teknologi Brunei (UTB)">Universiti Teknologi Brunei (UTB)</SelectItem>
+                        <SelectItem value="Universiti Islam Sultan Sharif Ali (UNISSA)">Universiti Islam Sultan Sharif Ali (UNISSA)</SelectItem>
+                        <SelectItem value="Politeknik Brunei (PB)">Politeknik Brunei (PB)</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="suthePassToDepartmentDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date Passed to Department</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value || ''} className="bg-input border-border/50" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Conditional Attachment Overseas Fields */}
             {watchCaseType === 'Attachment Overseas' && (

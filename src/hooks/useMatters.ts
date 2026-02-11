@@ -18,6 +18,9 @@ interface DbMatter {
   case_id: string;
   case_title: string;
   case_type: string;
+  received_from: string | null;
+  suthe_pass_to_department: string | null;
+  suthe_pass_to_department_date: string | null;
   priority: string;
   dsm_submitted_date: string;
   suthe_received_date: string;
@@ -88,6 +91,9 @@ const mapDbToMatter = (db: DbMatter): Matter => {
     caseId: db.case_id,
     caseTitle: db.case_title,
     caseType: db.case_type as CaseType,
+    receivedFrom: db.received_from || undefined,
+    suthePassToDepartment: db.suthe_pass_to_department || undefined,
+    suthePassToDepartmentDate: db.suthe_pass_to_department_date || undefined,
     priority: db.priority as Priority,
     dsmSubmittedDate: db.dsm_submitted_date,
     sutheReceivedDate: db.suthe_received_date,
@@ -245,6 +251,9 @@ export function useMatters() {
         case_id: matter.caseId,
         case_title: matter.caseTitle,
         case_type: matter.caseType,
+        received_from: matter.receivedFrom || null,
+        suthe_pass_to_department: matter.suthePassToDepartment || null,
+        suthe_pass_to_department_date: matter.suthePassToDepartmentDate || null,
         priority: matter.priority,
         dsm_submitted_date: matter.dsmSubmittedDate,
         suthe_received_date: matter.sutheReceivedDate,
@@ -281,6 +290,9 @@ export function useMatters() {
     if (updates.caseId !== undefined) dbUpdates.case_id = updates.caseId;
     if (updates.caseTitle !== undefined) dbUpdates.case_title = updates.caseTitle;
     if (updates.caseType !== undefined) dbUpdates.case_type = updates.caseType;
+    if (updates.receivedFrom !== undefined) dbUpdates.received_from = updates.receivedFrom || null;
+    if (updates.suthePassToDepartment !== undefined) dbUpdates.suthe_pass_to_department = updates.suthePassToDepartment || null;
+    if (updates.suthePassToDepartmentDate !== undefined) dbUpdates.suthe_pass_to_department_date = updates.suthePassToDepartmentDate || null;
     if (updates.priority !== undefined) dbUpdates.priority = updates.priority;
     if (updates.dsmSubmittedDate !== undefined) dbUpdates.dsm_submitted_date = updates.dsmSubmittedDate;
     if (updates.sutheReceivedDate !== undefined) dbUpdates.suthe_received_date = updates.sutheReceivedDate;

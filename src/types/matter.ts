@@ -38,6 +38,9 @@ export interface Matter {
   caseId: string;
   caseTitle: string;
   caseType: CaseType;
+  receivedFrom?: string;
+  suthePassToDepartment?: string;
+  suthePassToDepartmentDate?: string;
   priority: Priority;
   dsmSubmittedDate: string;
   sutheReceivedDate: string;

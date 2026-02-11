@@ -315,6 +315,7 @@ export type Database = {
           query_issued_date: string | null
           query_response_date: string | null
           query_status: string
+          received_from: string | null
           remarks: string | null
           second_query_issued_date: string | null
           second_query_response_date: string | null
@@ -322,6 +323,8 @@ export type Database = {
           second_suthe_submitted_to_hu_date: string | null
           signed_date: string | null
           sla_status: string
+          suthe_pass_to_department: string | null
+          suthe_pass_to_department_date: string | null
           suthe_received_date: string
           suthe_submitted_to_hu_date: string | null
           updated_at: string
@@ -343,6 +346,7 @@ export type Database = {
           query_issued_date?: string | null
           query_response_date?: string | null
           query_status?: string
+          received_from?: string | null
           remarks?: string | null
           second_query_issued_date?: string | null
           second_query_response_date?: string | null
@@ -350,6 +354,8 @@ export type Database = {
           second_suthe_submitted_to_hu_date?: string | null
           signed_date?: string | null
           sla_status?: string
+          suthe_pass_to_department?: string | null
+          suthe_pass_to_department_date?: string | null
           suthe_received_date: string
           suthe_submitted_to_hu_date?: string | null
           updated_at?: string
@@ -371,6 +377,7 @@ export type Database = {
           query_issued_date?: string | null
           query_response_date?: string | null
           query_status?: string
+          received_from?: string | null
           remarks?: string | null
           second_query_issued_date?: string | null
           second_query_response_date?: string | null
@@ -378,6 +385,8 @@ export type Database = {
           second_suthe_submitted_to_hu_date?: string | null
           signed_date?: string | null
           sla_status?: string
+          suthe_pass_to_department?: string | null
+          suthe_pass_to_department_date?: string | null
           suthe_received_date?: string
           suthe_submitted_to_hu_date?: string | null
           updated_at?: string
