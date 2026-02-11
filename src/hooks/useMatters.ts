@@ -22,6 +22,7 @@ interface DbMatter {
   dsm_submitted_date: string;
   suthe_received_date: string;
   suthe_submitted_to_hu_date: string | null;
+  hu_returned_to_suthe_date: string | null;
   query_issued_date: string | null;
   query_response_date: string | null;
   second_query_status: string | null;
@@ -91,6 +92,7 @@ const mapDbToMatter = (db: DbMatter): Matter => {
     dsmSubmittedDate: db.dsm_submitted_date,
     sutheReceivedDate: db.suthe_received_date,
     sutheSubmittedToHuDate: db.suthe_submitted_to_hu_date || undefined,
+    huReturnedToSutheDate: db.hu_returned_to_suthe_date || undefined,
     queryIssuedDate: db.query_issued_date || undefined,
     queryResponseDate: db.query_response_date || undefined,
     secondQueryStatus: (db.second_query_status as Matter['queryStatus']) || 'No Query',
@@ -247,6 +249,7 @@ export function useMatters() {
         dsm_submitted_date: matter.dsmSubmittedDate,
         suthe_received_date: matter.sutheReceivedDate,
         suthe_submitted_to_hu_date: matter.sutheSubmittedToHuDate || null,
+        hu_returned_to_suthe_date: matter.huReturnedToSutheDate || null,
         query_issued_date: matter.queryIssuedDate || null,
         query_response_date: matter.queryResponseDate || null,
         second_query_status: matter.secondQueryStatus || 'No Query',
@@ -282,6 +285,7 @@ export function useMatters() {
     if (updates.dsmSubmittedDate !== undefined) dbUpdates.dsm_submitted_date = updates.dsmSubmittedDate;
     if (updates.sutheReceivedDate !== undefined) dbUpdates.suthe_received_date = updates.sutheReceivedDate;
     if (updates.sutheSubmittedToHuDate !== undefined) dbUpdates.suthe_submitted_to_hu_date = updates.sutheSubmittedToHuDate || null;
+    if (updates.huReturnedToSutheDate !== undefined) dbUpdates.hu_returned_to_suthe_date = updates.huReturnedToSutheDate || null;
     if (updates.queryIssuedDate !== undefined) dbUpdates.query_issued_date = updates.queryIssuedDate || null;
     if (updates.queryResponseDate !== undefined) dbUpdates.query_response_date = updates.queryResponseDate || null;
     if (updates.secondQueryStatus !== undefined) dbUpdates.second_query_status = updates.secondQueryStatus || 'No Query';

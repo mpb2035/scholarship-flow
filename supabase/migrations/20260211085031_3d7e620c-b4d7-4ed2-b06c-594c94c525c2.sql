@@ -1,0 +1,1 @@
+ALTER TABLE public.matters ADD COLUMN hu_returned_to_suthe_date date DEFAULT NULL;

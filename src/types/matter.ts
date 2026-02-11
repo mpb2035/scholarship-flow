@@ -42,6 +42,7 @@ export interface Matter {
   dsmSubmittedDate: string;
   sutheReceivedDate: string;
   sutheSubmittedToHuDate?: string;
+  huReturnedToSutheDate?: string;
   queryIssuedDate?: string;
   queryResponseDate?: string;
   secondQueryStatus: QueryStatus;

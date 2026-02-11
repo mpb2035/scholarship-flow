@@ -307,6 +307,7 @@ export type Database = {
           deadline: string | null
           dsm_submitted_date: string
           external_link: string | null
+          hu_returned_to_suthe_date: string | null
           id: string
           overall_sla_days: number
           overall_status: string
@@ -334,6 +335,7 @@ export type Database = {
           deadline?: string | null
           dsm_submitted_date: string
           external_link?: string | null
+          hu_returned_to_suthe_date?: string | null
           id?: string
           overall_sla_days?: number
           overall_status?: string
@@ -361,6 +363,7 @@ export type Database = {
           deadline?: string | null
           dsm_submitted_date?: string
           external_link?: string | null
+          hu_returned_to_suthe_date?: string | null
           id?: string
           overall_sla_days?: number
           overall_status?: string
