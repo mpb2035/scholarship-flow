@@ -497,7 +497,8 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
                         <SelectItem value="Jabatan Kurikulum">Jabatan Kurikulum</SelectItem>
                         <SelectItem value="Jabatan Teknologi Maklumat dan Komunikasi">Jabatan Teknologi Maklumat dan Komunikasi</SelectItem>
                         <SelectItem value="Jabatan Pengajian Tinggi">Jabatan Pengajian Tinggi</SelectItem>
-                        <SelectItem value="Jabatan Pendidikan Teknik">Jabatan Pendidikan Teknik</SelectItem>
+                        <SelectItem value="Jabatan Pengurusan Biasiswa">Jabatan Pengurusan Biasiswa</SelectItem>
+                        <SelectItem value="Majlis Kebangsaan Pengiktirafan Kelulusan">Majlis Kebangsaan Pengiktirafan Kelulusan</SelectItem>
                         <SelectItem value="Institut Pendidikan Teknik Brunei (IBTE)">Institut Pendidikan Teknik Brunei (IBTE)</SelectItem>
                         <SelectItem value="Universiti Brunei Darussalam (UBD)">Universiti Brunei Darussalam (UBD)</SelectItem>
                         <SelectItem value="Universiti Teknologi Brunei (UTB)">Universiti Teknologi Brunei (UTB)</SelectItem>
