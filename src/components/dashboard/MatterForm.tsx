@@ -43,6 +43,7 @@ const formSchema = z.object({
   dsmSubmittedDate: z.string().min(1, 'Submission date is required'),
   sutheReceivedDate: z.string().min(1, 'Received date is required'),
   sutheSubmittedToHuDate: z.string().optional(),
+  huReturnedToSutheDate: z.string().optional(),
   queryIssuedDate: z.string().optional(),
   queryResponseDate: z.string().optional(),
   secondQueryStatus: z.string(),
@@ -163,6 +164,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
         dsmSubmittedDate: matter.dsmSubmittedDate,
         sutheReceivedDate: matter.sutheReceivedDate,
         sutheSubmittedToHuDate: matter.sutheSubmittedToHuDate,
+        huReturnedToSutheDate: matter.huReturnedToSutheDate,
         queryIssuedDate: matter.queryIssuedDate,
         queryResponseDate: matter.queryResponseDate,
         secondQueryStatus: matter.secondQueryStatus || 'No Query',
@@ -285,6 +287,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
       dsmSubmittedDate: data.dsmSubmittedDate,
       sutheReceivedDate: data.sutheReceivedDate,
       sutheSubmittedToHuDate: data.sutheSubmittedToHuDate,
+      huReturnedToSutheDate: data.huReturnedToSutheDate,
       queryIssuedDate: data.queryIssuedDate,
       queryResponseDate: data.queryResponseDate,
       secondQueryStatus: data.secondQueryStatus as QueryStatus,
@@ -522,19 +525,35 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="sutheSubmittedToHuDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>SUT HE Submitted to HU Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} value={field.value || ''} className="bg-input border-border/50" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="sutheSubmittedToHuDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>SUT HE Submitted to HU Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value || ''} className="bg-input border-border/50" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="huReturnedToSutheDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>HU Returned to SUT HE Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value || ''} className="bg-input border-border/50" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="grid grid-cols-3 gap-4">
               <FormField
