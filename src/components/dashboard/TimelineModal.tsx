@@ -30,6 +30,7 @@ function buildTimeline(matter: Matter): TimelineEvent[] {
   const dateFields: { key: keyof Matter; label: string }[] = [
     { key: 'dsmSubmittedDate', label: 'Dept Submitted' },
     { key: 'sutheReceivedDate', label: 'SUT HE Received' },
+    { key: 'suthePassToDepartmentDate', label: 'SUT HE Passed to Department' },
     { key: 'sutheSubmittedToHuDate', label: 'SUT HE Submitted to HU' },
     { key: 'huReturnedToSutheDate', label: 'HU Returned to SUT HE' },
     { key: 'queryIssuedDate', label: 'Query Issued to Dept' },
