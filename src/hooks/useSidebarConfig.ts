@@ -61,14 +61,26 @@ export function useSidebarConfig() {
 
   const groups = useMemo(() => {
     const seen = new Set<string>();
-    const result: string[] = [];
+    const groupsWithOrder: { name: string; order: number }[] = [];
     for (const item of items) {
       if (!seen.has(item.group_name)) {
         seen.add(item.group_name);
-        result.push(item.group_name);
+        const placeholder = items.find(
+          (i) => i.group_name === item.group_name && i.item_path.startsWith('__placeholder_')
+        );
+        groupsWithOrder.push({
+          name: item.group_name,
+          order: placeholder ? placeholder.sort_order : 0,
+        });
       }
     }
-    return result;
+    // 'main' always first, then sort by placeholder sort_order
+    groupsWithOrder.sort((a, b) => {
+      if (a.name === 'main') return -1;
+      if (b.name === 'main') return 1;
+      return a.order - b.order;
+    });
+    return groupsWithOrder.map((g) => g.name);
   }, [items]);
 
   const isPlaceholder = (item: SidebarItem) => item.item_path.startsWith('__placeholder_');
@@ -187,6 +199,39 @@ export function useSidebarConfig() {
     await fetchConfig();
   };
 
+  const reorderGroups = async (groupName: string, direction: 'up' | 'down') => {
+    // Get current group order (excluding main which is always first)
+    const nonMainGroups = groups.filter((g) => g !== 'main');
+    const idx = nonMainGroups.indexOf(groupName);
+    if (idx < 0) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= nonMainGroups.length) return;
+
+    const getOrCreatePlaceholder = async (gName: string): Promise<string> => {
+      const ph = items.find((i) => i.group_name === gName && isPlaceholder(i));
+      if (ph) return ph.id;
+      const { data, error } = await supabase
+        .from('sidebar_config')
+        .insert({ group_name: gName, item_path: `__placeholder_${gName}__`, item_title: gName, visible: false, sort_order: 0 })
+        .select('id')
+        .single();
+      if (error) throw error;
+      return data.id;
+    };
+
+    const id1 = await getOrCreatePlaceholder(nonMainGroups[idx]);
+    const id2 = await getOrCreatePlaceholder(nonMainGroups[swapIdx]);
+
+    const ph1 = items.find((i) => i.id === id1);
+    const ph2 = items.find((i) => i.id === id2);
+    const order1 = ph1?.sort_order ?? idx;
+    const order2 = ph2?.sort_order ?? swapIdx;
+
+    await supabase.from('sidebar_config').update({ sort_order: order2 }).eq('id', id1);
+    await supabase.from('sidebar_config').update({ sort_order: order1 }).eq('id', id2);
+    await fetchConfig();
+  };
+
   const deleteGroup = async (groupName: string) => {
     const groupItems = getAllGroupItems(groupName);
     const mainItems = getAllGroupItems('main');
@@ -224,6 +269,7 @@ export function useSidebarConfig() {
     renameGroup,
     renameItem,
     moveToGroup,
+    reorderGroups,
     deleteGroup,
     refetch: fetchConfig,
     iconMap: ICON_MAP,
