@@ -84,7 +84,7 @@ export default function ProjectWorkflow() {
       await createProject(newProject);
       toast({
         title: 'Project Created',
-        description: 'Your new project has been saved.',
+        description: 'Your new project has been saved with a linked To Do task.',
       });
     } catch (error) {
       toast({

@@ -6,11 +6,13 @@ import { Plus, ListTodo, Loader2 } from 'lucide-react';
 import { useTodos } from '@/hooks/useTodos';
 import { TodoCard } from '@/components/todo/TodoCard';
 import { useAuth } from '@/hooks/useAuth';
+import { useProjects } from '@/hooks/useProjects';
 
 export default function TodoPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { todos, isLoading, createTodo, updateTodo, deleteTodo, createSubTodo, updateSubTodo, deleteSubTodo } = useTodos();
+  const { projects } = useProjects();
   const [newTodoTitle, setNewTodoTitle] = useState('');
 
   useEffect(() => {
@@ -104,6 +106,7 @@ export default function TodoPage() {
             <TodoCard
               key={todo.id}
               todo={todo}
+              linkedProject={projects.find(p => p.id === todo.project_id) || null}
               onUpdateTodo={updateTodo}
               onDeleteTodo={deleteTodo}
               onCreateSubTodo={createSubTodo}

@@ -744,6 +744,7 @@ export type Database = {
           id: string
           is_main_timer_running: boolean
           main_timer_elapsed_seconds: number
+          project_id: string | null
           title: string
           updated_at: string
           user_id: string
@@ -753,6 +754,7 @@ export type Database = {
           id?: string
           is_main_timer_running?: boolean
           main_timer_elapsed_seconds?: number
+          project_id?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -762,11 +764,20 @@ export type Database = {
           id?: string
           is_main_timer_running?: boolean
           main_timer_elapsed_seconds?: number
+          project_id?: string | null
           title?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "todos_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
