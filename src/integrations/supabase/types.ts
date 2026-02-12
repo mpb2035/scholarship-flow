@@ -664,6 +664,39 @@ export type Database = {
         }
         Relationships: []
       }
+      sidebar_config: {
+        Row: {
+          created_at: string
+          group_name: string
+          id: string
+          item_path: string
+          item_title: string
+          sort_order: number
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          group_name: string
+          id?: string
+          item_path: string
+          item_title: string
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          group_name?: string
+          id?: string
+          item_path?: string
+          item_title?: string
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       sla_configurations: {
         Row: {
           at_risk_days: number

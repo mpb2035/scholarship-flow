@@ -1,6 +1,7 @@
-import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid, FolderKanban, MessageSquareWarning, Globe, Users, FileUp, Target, Footprints, ListTodo, CalendarDays, History, FileText, Plane, Clock, Wallet } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid, FolderKanban, MessageSquareWarning, Globe, Users, FileUp, Target, Footprints, ListTodo, CalendarDays, History, FileText, Plane, Clock, Wallet, ChevronDown } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useSidebarConfig } from '@/hooks/useSidebarConfig';
 import {
   Sidebar,
   SidebarContent,
@@ -12,114 +13,122 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { useState } from 'react';
 
-const mainNavItems = [
-  { title: 'Dashboard', url: '/', icon: LayoutDashboard },
-  { title: 'In Process', url: '/in-process', icon: Clock },
-  { title: 'Attachment Overseas', url: '/attachment-overseas', icon: Plane },
-  { title: 'Pending Response', url: '/pending-response', icon: MessageSquareWarning },
-  { title: 'Analytics', url: '/analytics', icon: BarChart3 },
-  { title: 'My Directory', url: '/directory', icon: Bookmark },
-  { title: 'Project Workflow', url: '/project-workflow', icon: FolderKanban },
-  { title: 'To Do', url: '/todo', icon: ListTodo },
-  { title: 'Leave Planner', url: '/leave-planner', icon: CalendarDays },
-  { title: 'Financial Plan', url: '/financial-plan', icon: Wallet },
-  { title: 'Previous Meetings', url: '/previous-meetings', icon: History },
-];
-
-const manpowerBlueprintItems = [
-  { title: 'GTCI Analysis', url: '/gtci', icon: Globe },
-  { title: 'GTCI Strategic', url: '/gtci-strategic', icon: FileText },
-  { title: 'GTCI Upload', url: '/gtci-upload', icon: FileUp },
-  { title: 'Playground', url: '/playground', icon: LayoutGrid },
-];
-
-const runningItems = [
-  { title: 'Triathlete Goal', url: '/triathlete-goal', icon: Target },
-];
+const ICON_COMPONENTS: Record<string, React.ElementType> = {
+  LayoutDashboard, Clock, Plane, MessageSquareWarning, BarChart3,
+  Bookmark, FolderKanban, ListTodo, CalendarDays, Wallet, History,
+  Globe, FileText, FileUp, LayoutGrid, Target,
+};
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const { isAdmin } = useUserRole();
+  const { getGroupItems, loading, iconMap } = useSidebarConfig();
   const collapsed = state === 'collapsed';
 
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    main: true,
+    manpower_blueprint: true,
+    running: true,
+  });
+
+  const toggleGroup = (group: string) => {
+    setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
+  };
+
+  const renderItems = (groupName: string) => {
+    const items = getGroupItems(groupName);
+    return items.map((item) => {
+      const iconName = iconMap[item.item_path] || 'LayoutDashboard';
+      const IconComp = ICON_COMPONENTS[iconName] || LayoutDashboard;
+      return (
+        <SidebarMenuItem key={item.item_path}>
+          <SidebarMenuButton asChild>
+            <NavLink
+              to={item.item_path}
+              end={item.item_path === '/'}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-muted/50"
+              activeClassName="bg-primary/10 text-primary border-l-2 border-primary"
+            >
+              <IconComp className="h-5 w-5 shrink-0" />
+              {!collapsed && <span>{item.item_title}</span>}
+            </NavLink>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      );
+    });
+  };
+
+  if (loading) return <Sidebar className={collapsed ? 'w-14' : 'w-56'} collapsible="icon"><SidebarContent /></Sidebar>;
+
   return (
-    <Sidebar
-      className={collapsed ? 'w-14' : 'w-56'}
-      collapsible="icon"
-    >
+    <Sidebar className={collapsed ? 'w-14' : 'w-56'} collapsible="icon">
       <SidebarContent className="pt-4">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      end={item.url === '/'} 
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-muted/50"
-                      activeClassName="bg-primary/10 text-primary border-l-2 border-primary"
-                    >
-                      <item.icon className="h-5 w-5 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Main Nav - Collapsible */}
+        <Collapsible open={openGroups.main} onOpenChange={() => toggleGroup('main')}>
+          <SidebarGroup>
+            {!collapsed && (
+              <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors cursor-pointer">
+                <span className="flex items-center gap-2">
+                  <LayoutDashboard className="h-4 w-4" />
+                  Main
+                </span>
+                <ChevronDown className={`h-3 w-3 transition-transform ${openGroups.main ? 'rotate-0' : '-rotate-90'}`} />
+              </CollapsibleTrigger>
+            )}
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu>{renderItems('main')}</SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className={collapsed ? 'sr-only' : 'flex items-center gap-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider'}>
-            <Users className="h-4 w-4" />
-            Manpower Blueprint
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {manpowerBlueprintItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-muted/50"
-                      activeClassName="bg-primary/10 text-primary border-l-2 border-primary"
-                    >
-                      <item.icon className="h-5 w-5 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Manpower Blueprint - Collapsible */}
+        <Collapsible open={openGroups.manpower_blueprint} onOpenChange={() => toggleGroup('manpower_blueprint')}>
+          <SidebarGroup>
+            {!collapsed && (
+              <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors cursor-pointer">
+                <span className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Manpower Blueprint
+                </span>
+                <ChevronDown className={`h-3 w-3 transition-transform ${openGroups.manpower_blueprint ? 'rotate-0' : '-rotate-90'}`} />
+              </CollapsibleTrigger>
+            )}
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu>{renderItems('manpower_blueprint')}</SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className={collapsed ? 'sr-only' : 'flex items-center gap-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider'}>
-            <Footprints className="h-4 w-4" />
-            Running
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {runningItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-muted/50"
-                      activeClassName="bg-primary/10 text-primary border-l-2 border-primary"
-                    >
-                      <item.icon className="h-5 w-5 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Running - Collapsible */}
+        <Collapsible open={openGroups.running} onOpenChange={() => toggleGroup('running')}>
+          <SidebarGroup>
+            {!collapsed && (
+              <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors cursor-pointer">
+                <span className="flex items-center gap-2">
+                  <Footprints className="h-4 w-4" />
+                  Running
+                </span>
+                <ChevronDown className={`h-3 w-3 transition-transform ${openGroups.running ? 'rotate-0' : '-rotate-90'}`} />
+              </CollapsibleTrigger>
+            )}
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu>{renderItems('running')}</SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
 
         {isAdmin && (
           <SidebarGroup>
@@ -127,8 +136,8 @@ export function AppSidebar() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <NavLink 
-                      to="/admin" 
+                    <NavLink
+                      to="/admin"
                       className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-muted/50"
                       activeClassName="bg-primary/10 text-primary border-l-2 border-primary"
                     >
