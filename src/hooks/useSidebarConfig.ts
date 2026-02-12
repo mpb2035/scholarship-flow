@@ -29,6 +29,12 @@ const ICON_MAP: Record<string, string> = {
   '/triathlete-goal': 'Target',
 };
 
+const DEFAULT_GROUP_LABELS: Record<string, string> = {
+  main: 'Main Navigation',
+  manpower_blueprint: 'Manpower Blueprint',
+  running: 'Running',
+};
+
 export function useSidebarConfig() {
   const [items, setItems] = useState<SidebarItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +59,6 @@ export function useSidebarConfig() {
     fetchConfig();
   }, [fetchConfig]);
 
-  // Derive unique group names from data, preserving order of first appearance
   const groups = useMemo(() => {
     const seen = new Set<string>();
     const result: string[] = [];
@@ -67,6 +72,18 @@ export function useSidebarConfig() {
   }, [items]);
 
   const isPlaceholder = (item: SidebarItem) => item.item_path.startsWith('__placeholder_');
+
+  // Get display label for a group from its placeholder row, or fallback to defaults
+  const getGroupLabel = useCallback(
+    (groupName: string): string => {
+      const placeholder = items.find(
+        (i) => i.group_name === groupName && isPlaceholder(i)
+      );
+      if (placeholder) return placeholder.item_title;
+      return DEFAULT_GROUP_LABELS[groupName] || groupName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    },
+    [items]
+  );
 
   const getGroupItems = useCallback(
     (groupName: string) =>
@@ -105,7 +122,6 @@ export function useSidebarConfig() {
   };
 
   const createGroup = async (groupSlug: string, displayLabel: string) => {
-    // Insert a placeholder row so the group persists in the DB
     const { error } = await supabase
       .from('sidebar_config')
       .insert({
@@ -115,6 +131,44 @@ export function useSidebarConfig() {
         visible: false,
         sort_order: -1,
       });
+    if (error) throw error;
+    await fetchConfig();
+  };
+
+  // Rename a group's display label (stored on placeholder row)
+  const renameGroup = async (groupName: string, newLabel: string) => {
+    const placeholder = items.find(
+      (i) => i.group_name === groupName && isPlaceholder(i)
+    );
+    if (placeholder) {
+      // Update existing placeholder's title
+      const { error } = await supabase
+        .from('sidebar_config')
+        .update({ item_title: newLabel })
+        .eq('id', placeholder.id);
+      if (error) throw error;
+    } else {
+      // Create a placeholder for this group to store its label
+      const { error } = await supabase
+        .from('sidebar_config')
+        .insert({
+          group_name: groupName,
+          item_path: `__placeholder_${groupName}__`,
+          item_title: newLabel,
+          visible: false,
+          sort_order: -1,
+        });
+      if (error) throw error;
+    }
+    await fetchConfig();
+  };
+
+  // Rename an individual sidebar item
+  const renameItem = async (itemId: string, newTitle: string) => {
+    const { error } = await supabase
+      .from('sidebar_config')
+      .update({ item_title: newTitle })
+      .eq('id', itemId);
     if (error) throw error;
     await fetchConfig();
   };
@@ -134,7 +188,6 @@ export function useSidebarConfig() {
   };
 
   const deleteGroup = async (groupName: string) => {
-    // Move all items to 'main' group first
     const groupItems = getAllGroupItems(groupName);
     const mainItems = getAllGroupItems('main');
     const maxOrder = mainItems.length > 0 ? Math.max(...mainItems.map(i => i.sort_order)) : -1;
@@ -146,6 +199,15 @@ export function useSidebarConfig() {
         .eq('id', groupItems[i].id);
       if (error) throw error;
     }
+
+    // Delete the placeholder row too
+    const placeholder = items.find(
+      (i) => i.group_name === groupName && isPlaceholder(i)
+    );
+    if (placeholder) {
+      await supabase.from('sidebar_config').delete().eq('id', placeholder.id);
+    }
+
     await fetchConfig();
   };
 
@@ -155,9 +217,12 @@ export function useSidebarConfig() {
     groups,
     getGroupItems,
     getAllGroupItems,
+    getGroupLabel,
     updateVisibility,
     updateOrder,
     createGroup,
+    renameGroup,
+    renameItem,
     moveToGroup,
     deleteGroup,
     refetch: fetchConfig,

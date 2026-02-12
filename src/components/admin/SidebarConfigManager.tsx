@@ -6,21 +6,26 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSidebarConfig, SidebarItem } from '@/hooks/useSidebarConfig';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, GripVertical, Eye, ArrowUp, ArrowDown, Plus, ArrowRightLeft, Trash2 } from 'lucide-react';
-
-const DEFAULT_GROUP_LABELS: Record<string, string> = {
-  main: 'Main Navigation',
-  manpower_blueprint: 'Manpower Blueprint',
-  running: 'Running',
-};
+import { Loader2, GripVertical, Eye, ArrowUp, ArrowDown, Plus, ArrowRightLeft, Trash2, Pencil, Check, X } from 'lucide-react';
 
 export function SidebarConfigManager() {
-  const { items, loading, groups, getAllGroupItems, updateVisibility, updateOrder, moveToGroup, createGroup, deleteGroup, refetch } = useSidebarConfig();
+  const {
+    items, loading, groups, getAllGroupItems, getGroupLabel,
+    updateVisibility, updateOrder, moveToGroup, createGroup, renameGroup, renameItem, deleteGroup, refetch
+  } = useSidebarConfig();
   const { toast } = useToast();
   const [updating, setUpdating] = useState<string | null>(null);
   const [newGroupName, setNewGroupName] = useState('');
   const [showNewGroup, setShowNewGroup] = useState(false);
   const [movingItem, setMovingItem] = useState<string | null>(null);
+
+  // Editing state for group names
+  const [editingGroup, setEditingGroup] = useState<string | null>(null);
+  const [editGroupValue, setEditGroupValue] = useState('');
+
+  // Editing state for item names
+  const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [editItemValue, setEditItemValue] = useState('');
 
   const handleToggle = async (item: SidebarItem) => {
     setUpdating(item.id);
@@ -101,10 +106,51 @@ export function SidebarConfigManager() {
     }
   };
 
-  const getGroupLabel = (name: string) => DEFAULT_GROUP_LABELS[name] || name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  // Group rename handlers
+  const startEditGroup = (groupName: string) => {
+    setEditingGroup(groupName);
+    setEditGroupValue(getGroupLabel(groupName));
+  };
 
-  // All possible target groups for moving (including typed new groups)
-  const allTargetGroups = [...groups];
+  const saveGroupName = async (groupName: string) => {
+    if (!editGroupValue.trim()) {
+      setEditingGroup(null);
+      return;
+    }
+    setUpdating(`group-rename-${groupName}`);
+    try {
+      await renameGroup(groupName, editGroupValue.trim());
+      toast({ title: 'Renamed', description: 'Group name updated.' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to rename group.', variant: 'destructive' });
+    } finally {
+      setEditingGroup(null);
+      setUpdating(null);
+    }
+  };
+
+  // Item rename handlers
+  const startEditItem = (item: SidebarItem) => {
+    setEditingItem(item.id);
+    setEditItemValue(item.item_title);
+  };
+
+  const saveItemName = async (itemId: string) => {
+    if (!editItemValue.trim()) {
+      setEditingItem(null);
+      return;
+    }
+    setUpdating(`item-rename-${itemId}`);
+    try {
+      await renameItem(itemId, editItemValue.trim());
+      toast({ title: 'Renamed', description: 'Item name updated.' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to rename item.', variant: 'destructive' });
+    } finally {
+      setEditingItem(null);
+      setUpdating(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -124,7 +170,7 @@ export function SidebarConfigManager() {
           Sidebar Configuration
         </CardTitle>
         <CardDescription>
-          Toggle visibility, reorder items, move between groups, or create new groups. Changes apply to all users.
+          Toggle visibility, reorder, rename items and groups, or move between groups. Changes apply to all users.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -156,12 +202,46 @@ export function SidebarConfigManager() {
 
         {groups.map((groupName) => {
           const groupItems = getAllGroupItems(groupName);
+          const label = getGroupLabel(groupName);
+
           return (
             <div key={groupName} className="space-y-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                  {getGroupLabel(groupName)}
-                </h3>
+                {editingGroup === groupName ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={editGroupValue}
+                      onChange={(e) => setEditGroupValue(e.target.value)}
+                      className="h-7 text-sm max-w-[200px]"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') saveGroupName(groupName);
+                        if (e.key === 'Escape') setEditingGroup(null);
+                      }}
+                    />
+                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => saveGroupName(groupName)}>
+                      <Check className="h-3 w-3 text-primary" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditingGroup(null)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      {label}
+                    </h3>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6"
+                      onClick={() => startEditGroup(groupName)}
+                      title="Rename group"
+                    >
+                      <Pencil className="h-3 w-3 text-muted-foreground" />
+                    </Button>
+                  </div>
+                )}
                 {groupName !== 'main' && (
                   <Button
                     size="sm"
@@ -190,19 +270,54 @@ export function SidebarConfigManager() {
                       onCheckedChange={() => handleToggle(item)}
                       disabled={updating === item.id}
                     />
-                    <span className={`flex-1 text-sm ${!item.visible ? 'text-muted-foreground line-through' : ''}`}>
-                      {item.item_title}
-                    </span>
-                    <span className="text-xs text-muted-foreground font-mono hidden sm:inline">{item.item_path}</span>
+
+                    {/* Item name - inline editable */}
+                    {editingItem === item.id ? (
+                      <div className="flex items-center gap-1 flex-1">
+                        <Input
+                          value={editItemValue}
+                          onChange={(e) => setEditItemValue(e.target.value)}
+                          className="h-7 text-sm"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveItemName(item.id);
+                            if (e.key === 'Escape') setEditingItem(null);
+                          }}
+                        />
+                        <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => saveItemName(item.id)}>
+                          <Check className="h-3 w-3 text-primary" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => setEditingItem(null)}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 flex-1 min-w-0">
+                        <span className={`text-sm truncate ${!item.visible ? 'text-muted-foreground line-through' : ''}`}>
+                          {item.item_title}
+                        </span>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 shrink-0"
+                          onClick={() => startEditItem(item)}
+                          title="Rename item"
+                        >
+                          <Pencil className="h-3 w-3 text-muted-foreground" />
+                        </Button>
+                      </div>
+                    )}
+
+                    <span className="text-xs text-muted-foreground font-mono hidden sm:inline shrink-0">{item.item_path}</span>
 
                     {/* Move to group */}
                     {movingItem === item.id ? (
                       <Select onValueChange={(val) => handleMoveToGroup(item.id, val)}>
-                        <SelectTrigger className="w-[140px] h-7 text-xs">
+                        <SelectTrigger className="w-[140px] h-7 text-xs shrink-0">
                           <SelectValue placeholder="Move to..." />
                         </SelectTrigger>
                         <SelectContent>
-                          {allTargetGroups
+                          {groups
                             .filter((g) => g !== groupName)
                             .map((g) => (
                               <SelectItem key={g} value={g}>
@@ -215,7 +330,7 @@ export function SidebarConfigManager() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-7 w-7"
+                        className="h-7 w-7 shrink-0"
                         title="Move to another group"
                         onClick={() => setMovingItem(item.id)}
                         disabled={updating !== null || groups.length < 2}
@@ -224,7 +339,7 @@ export function SidebarConfigManager() {
                       </Button>
                     )}
 
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 shrink-0">
                       <Button
                         size="icon"
                         variant="ghost"
