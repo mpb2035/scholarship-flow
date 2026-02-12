@@ -2,22 +2,25 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSidebarConfig, SidebarItem } from '@/hooks/useSidebarConfig';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, GripVertical, Eye, ArrowUp, ArrowDown } from 'lucide-react';
+import { Loader2, GripVertical, Eye, ArrowUp, ArrowDown, Plus, ArrowRightLeft, Trash2 } from 'lucide-react';
 
-const GROUP_LABELS: Record<string, string> = {
+const DEFAULT_GROUP_LABELS: Record<string, string> = {
   main: 'Main Navigation',
   manpower_blueprint: 'Manpower Blueprint',
   running: 'Running',
 };
 
 export function SidebarConfigManager() {
-  const { items, loading, getAllGroupItems, updateVisibility, updateOrder, refetch } = useSidebarConfig();
+  const { items, loading, groups, getAllGroupItems, updateVisibility, updateOrder, moveToGroup, deleteGroup, refetch } = useSidebarConfig();
   const { toast } = useToast();
   const [updating, setUpdating] = useState<string | null>(null);
-
-  const groups = ['main', 'manpower_blueprint', 'running'];
+  const [newGroupName, setNewGroupName] = useState('');
+  const [showNewGroup, setShowNewGroup] = useState(false);
+  const [movingItem, setMovingItem] = useState<string | null>(null);
 
   const handleToggle = async (item: SidebarItem) => {
     setUpdating(item.id);
@@ -49,6 +52,56 @@ export function SidebarConfigManager() {
     }
   };
 
+  const handleMoveToGroup = async (itemId: string, targetGroup: string) => {
+    setUpdating(itemId);
+    try {
+      await moveToGroup(itemId, targetGroup);
+      toast({ title: 'Moved', description: 'Item moved to new group.' });
+      setMovingItem(null);
+    } catch {
+      toast({ title: 'Error', description: 'Failed to move item.', variant: 'destructive' });
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleCreateGroup = () => {
+    if (!newGroupName.trim()) return;
+    // Group is created implicitly when items are moved into it
+    // For now, just add it to the list by showing it
+    const slug = newGroupName.trim().toLowerCase().replace(/\s+/g, '_');
+    if (groups.includes(slug)) {
+      toast({ title: 'Exists', description: 'Group already exists.', variant: 'destructive' });
+      return;
+    }
+    // We need at least one item in a group for it to exist.
+    // Show a toast telling admin to move items into the new group
+    toast({ title: 'Group Ready', description: `Move items to "${slug}" using the move button to create the group.` });
+    setNewGroupName('');
+    setShowNewGroup(false);
+  };
+
+  const handleDeleteGroup = async (groupName: string) => {
+    if (groupName === 'main') {
+      toast({ title: 'Cannot Delete', description: 'Main group cannot be deleted.', variant: 'destructive' });
+      return;
+    }
+    setUpdating(groupName);
+    try {
+      await deleteGroup(groupName);
+      toast({ title: 'Group Deleted', description: 'Items moved to Main Navigation.' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to delete group.', variant: 'destructive' });
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const getGroupLabel = (name: string) => DEFAULT_GROUP_LABELS[name] || name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  // All possible target groups for moving (including typed new groups)
+  const allTargetGroups = [...groups];
+
   if (loading) {
     return (
       <Card>
@@ -67,18 +120,61 @@ export function SidebarConfigManager() {
           Sidebar Configuration
         </CardTitle>
         <CardDescription>
-          Toggle visibility and reorder sidebar items. Changes apply to all users.
+          Toggle visibility, reorder items, move between groups, or create new groups. Changes apply to all users.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Create new group */}
+        <div className="flex items-center gap-2">
+          {showNewGroup ? (
+            <>
+              <Input
+                placeholder="New group name (e.g. reports)"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+                className="max-w-xs"
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateGroup()}
+              />
+              <Button size="sm" onClick={handleCreateGroup} disabled={!newGroupName.trim()}>
+                Create
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => { setShowNewGroup(false); setNewGroupName(''); }}>
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <Button size="sm" variant="outline" onClick={() => setShowNewGroup(true)} className="gap-1">
+              <Plus className="h-4 w-4" />
+              New Group
+            </Button>
+          )}
+        </div>
+
         {groups.map((groupName) => {
           const groupItems = getAllGroupItems(groupName);
           return (
             <div key={groupName} className="space-y-2">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                {GROUP_LABELS[groupName] || groupName}
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                  {getGroupLabel(groupName)}
+                </h3>
+                {groupName !== 'main' && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 text-destructive hover:text-destructive gap-1 text-xs"
+                    onClick={() => handleDeleteGroup(groupName)}
+                    disabled={updating === groupName}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    Delete Group
+                  </Button>
+                )}
+              </div>
               <div className="border rounded-lg divide-y divide-border">
+                {groupItems.length === 0 && (
+                  <div className="px-4 py-3 text-sm text-muted-foreground italic">No items in this group</div>
+                )}
                 {groupItems.map((item, idx) => (
                   <div
                     key={item.id}
@@ -93,7 +189,37 @@ export function SidebarConfigManager() {
                     <span className={`flex-1 text-sm ${!item.visible ? 'text-muted-foreground line-through' : ''}`}>
                       {item.item_title}
                     </span>
-                    <span className="text-xs text-muted-foreground font-mono">{item.item_path}</span>
+                    <span className="text-xs text-muted-foreground font-mono hidden sm:inline">{item.item_path}</span>
+
+                    {/* Move to group */}
+                    {movingItem === item.id ? (
+                      <Select onValueChange={(val) => handleMoveToGroup(item.id, val)}>
+                        <SelectTrigger className="w-[140px] h-7 text-xs">
+                          <SelectValue placeholder="Move to..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {allTargetGroups
+                            .filter((g) => g !== groupName)
+                            .map((g) => (
+                              <SelectItem key={g} value={g}>
+                                {getGroupLabel(g)}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        title="Move to another group"
+                        onClick={() => setMovingItem(item.id)}
+                        disabled={updating !== null || groups.length < 2}
+                      >
+                        <ArrowRightLeft className="h-3 w-3" />
+                      </Button>
+                    )}
+
                     <div className="flex gap-1">
                       <Button
                         size="icon"

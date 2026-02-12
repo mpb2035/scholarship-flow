@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid, FolderKanban, MessageSquareWarning, Globe, Users, FileUp, Target, Footprints, ListTodo, CalendarDays, History, FileText, Plane, Clock, Wallet, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Shield, Bookmark, LayoutGrid, FolderKanban, MessageSquareWarning, Globe, Users, FileUp, Target, Footprints, ListTodo, CalendarDays, History, FileText, Plane, Clock, Wallet, ChevronDown, Folder } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useSidebarConfig } from '@/hooks/useSidebarConfig';
@@ -7,7 +7,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -26,20 +25,29 @@ const ICON_COMPONENTS: Record<string, React.ElementType> = {
   Globe, FileText, FileUp, LayoutGrid, Target,
 };
 
+const GROUP_ICONS: Record<string, React.ElementType> = {
+  main: LayoutDashboard,
+  manpower_blueprint: Users,
+  running: Footprints,
+};
+
+const GROUP_LABELS: Record<string, string> = {
+  main: 'Main',
+  manpower_blueprint: 'Manpower Blueprint',
+  running: 'Running',
+};
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const { isAdmin } = useUserRole();
-  const { getGroupItems, loading, iconMap } = useSidebarConfig();
+  const { groups, getGroupItems, loading, iconMap } = useSidebarConfig();
   const collapsed = state === 'collapsed';
 
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    main: true,
-    manpower_blueprint: true,
-    running: true,
-  });
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
+  const isOpen = (group: string) => openGroups[group] ?? true;
   const toggleGroup = (group: string) => {
-    setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
+    setOpenGroups(prev => ({ ...prev, [group]: !(prev[group] ?? true) }));
   };
 
   const renderItems = (groupName: string) => {
@@ -65,70 +73,40 @@ export function AppSidebar() {
     });
   };
 
+  const getGroupLabel = (name: string) =>
+    GROUP_LABELS[name] || name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
   if (loading) return <Sidebar className={collapsed ? 'w-14' : 'w-56'} collapsible="icon"><SidebarContent /></Sidebar>;
 
   return (
     <Sidebar className={collapsed ? 'w-14' : 'w-56'} collapsible="icon">
       <SidebarContent className="pt-4">
-        {/* Main Nav - Collapsible */}
-        <Collapsible open={openGroups.main} onOpenChange={() => toggleGroup('main')}>
-          <SidebarGroup>
-            {!collapsed && (
-              <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors cursor-pointer">
-                <span className="flex items-center gap-2">
-                  <LayoutDashboard className="h-4 w-4" />
-                  Main
-                </span>
-                <ChevronDown className={`h-3 w-3 transition-transform ${openGroups.main ? 'rotate-0' : '-rotate-90'}`} />
-              </CollapsibleTrigger>
-            )}
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>{renderItems('main')}</SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </SidebarGroup>
-        </Collapsible>
+        {groups.map((groupName) => {
+          const GroupIcon = GROUP_ICONS[groupName] || Folder;
+          const groupItems = getGroupItems(groupName);
+          if (groupItems.length === 0) return null;
 
-        {/* Manpower Blueprint - Collapsible */}
-        <Collapsible open={openGroups.manpower_blueprint} onOpenChange={() => toggleGroup('manpower_blueprint')}>
-          <SidebarGroup>
-            {!collapsed && (
-              <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors cursor-pointer">
-                <span className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Manpower Blueprint
-                </span>
-                <ChevronDown className={`h-3 w-3 transition-transform ${openGroups.manpower_blueprint ? 'rotate-0' : '-rotate-90'}`} />
-              </CollapsibleTrigger>
-            )}
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>{renderItems('manpower_blueprint')}</SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </SidebarGroup>
-        </Collapsible>
-
-        {/* Running - Collapsible */}
-        <Collapsible open={openGroups.running} onOpenChange={() => toggleGroup('running')}>
-          <SidebarGroup>
-            {!collapsed && (
-              <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors cursor-pointer">
-                <span className="flex items-center gap-2">
-                  <Footprints className="h-4 w-4" />
-                  Running
-                </span>
-                <ChevronDown className={`h-3 w-3 transition-transform ${openGroups.running ? 'rotate-0' : '-rotate-90'}`} />
-              </CollapsibleTrigger>
-            )}
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>{renderItems('running')}</SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </SidebarGroup>
-        </Collapsible>
+          return (
+            <Collapsible key={groupName} open={isOpen(groupName)} onOpenChange={() => toggleGroup(groupName)}>
+              <SidebarGroup>
+                {!collapsed && (
+                  <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors cursor-pointer">
+                    <span className="flex items-center gap-2">
+                      <GroupIcon className="h-4 w-4" />
+                      {getGroupLabel(groupName)}
+                    </span>
+                    <ChevronDown className={`h-3 w-3 transition-transform ${isOpen(groupName) ? 'rotate-0' : '-rotate-90'}`} />
+                  </CollapsibleTrigger>
+                )}
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenu>{renderItems(groupName)}</SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </SidebarGroup>
+            </Collapsible>
+          );
+        })}
 
         {isAdmin && (
           <SidebarGroup>
