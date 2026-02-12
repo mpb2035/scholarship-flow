@@ -11,7 +11,7 @@ import { Loader2, GripVertical, Eye, ArrowUp, ArrowDown, Plus, ArrowRightLeft, T
 export function SidebarConfigManager() {
   const {
     items, loading, groups, getAllGroupItems, getGroupLabel,
-    updateVisibility, updateOrder, moveToGroup, createGroup, renameGroup, renameItem, deleteGroup, refetch
+    updateVisibility, updateOrder, moveToGroup, createGroup, renameGroup, renameItem, reorderGroups, deleteGroup, refetch
   } = useSidebarConfig();
   const { toast } = useToast();
   const [updating, setUpdating] = useState<string | null>(null);
@@ -101,6 +101,17 @@ export function SidebarConfigManager() {
       toast({ title: 'Group Deleted', description: 'Items moved to Main Navigation.' });
     } catch {
       toast({ title: 'Error', description: 'Failed to delete group.', variant: 'destructive' });
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleReorderGroup = async (groupName: string, direction: 'up' | 'down') => {
+    setUpdating(`group-reorder-${groupName}`);
+    try {
+      await reorderGroups(groupName, direction);
+    } catch {
+      toast({ title: 'Error', description: 'Failed to reorder group.', variant: 'destructive' });
     } finally {
       setUpdating(null);
     }
@@ -243,16 +254,38 @@ export function SidebarConfigManager() {
                   </div>
                 )}
                 {groupName !== 'main' && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 text-destructive hover:text-destructive gap-1 text-xs"
-                    onClick={() => handleDeleteGroup(groupName)}
-                    disabled={updating === groupName}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    Delete Group
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7"
+                      title="Move group up"
+                      onClick={() => handleReorderGroup(groupName, 'up')}
+                      disabled={updating !== null || groups.filter(g => g !== 'main').indexOf(groupName) === 0}
+                    >
+                      <ArrowUp className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7"
+                      title="Move group down"
+                      onClick={() => handleReorderGroup(groupName, 'down')}
+                      disabled={updating !== null || groups.filter(g => g !== 'main').indexOf(groupName) === groups.filter(g => g !== 'main').length - 1}
+                    >
+                      <ArrowDown className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-destructive hover:text-destructive gap-1 text-xs"
+                      onClick={() => handleDeleteGroup(groupName)}
+                      disabled={updating === groupName}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Delete
+                    </Button>
+                  </div>
                 )}
               </div>
               <div className="border rounded-lg divide-y divide-border">
