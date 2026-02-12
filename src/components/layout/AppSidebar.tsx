@@ -31,16 +31,10 @@ const GROUP_ICONS: Record<string, React.ElementType> = {
   running: Footprints,
 };
 
-const GROUP_LABELS: Record<string, string> = {
-  main: 'Main',
-  manpower_blueprint: 'Manpower Blueprint',
-  running: 'Running',
-};
-
 export function AppSidebar() {
   const { state } = useSidebar();
   const { isAdmin } = useUserRole();
-  const { groups, getGroupItems, loading, iconMap } = useSidebarConfig();
+  const { groups, getGroupItems, getGroupLabel, loading, iconMap } = useSidebarConfig();
   const collapsed = state === 'collapsed';
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
@@ -73,8 +67,6 @@ export function AppSidebar() {
     });
   };
 
-  const getGroupLabel = (name: string) =>
-    GROUP_LABELS[name] || name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
   if (loading) return <Sidebar className={collapsed ? 'w-14' : 'w-56'} collapsible="icon"><SidebarContent /></Sidebar>;
 
