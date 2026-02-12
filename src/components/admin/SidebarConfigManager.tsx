@@ -15,7 +15,7 @@ const DEFAULT_GROUP_LABELS: Record<string, string> = {
 };
 
 export function SidebarConfigManager() {
-  const { items, loading, groups, getAllGroupItems, updateVisibility, updateOrder, moveToGroup, deleteGroup, refetch } = useSidebarConfig();
+  const { items, loading, groups, getAllGroupItems, updateVisibility, updateOrder, moveToGroup, createGroup, deleteGroup, refetch } = useSidebarConfig();
   const { toast } = useToast();
   const [updating, setUpdating] = useState<string | null>(null);
   const [newGroupName, setNewGroupName] = useState('');
@@ -65,20 +65,24 @@ export function SidebarConfigManager() {
     }
   };
 
-  const handleCreateGroup = () => {
+  const handleCreateGroup = async () => {
     if (!newGroupName.trim()) return;
-    // Group is created implicitly when items are moved into it
-    // For now, just add it to the list by showing it
     const slug = newGroupName.trim().toLowerCase().replace(/\s+/g, '_');
     if (groups.includes(slug)) {
       toast({ title: 'Exists', description: 'Group already exists.', variant: 'destructive' });
       return;
     }
-    // We need at least one item in a group for it to exist.
-    // Show a toast telling admin to move items into the new group
-    toast({ title: 'Group Ready', description: `Move items to "${slug}" using the move button to create the group.` });
-    setNewGroupName('');
-    setShowNewGroup(false);
+    setUpdating('new-group');
+    try {
+      await createGroup(slug, newGroupName.trim());
+      toast({ title: 'Group Created', description: `"${newGroupName.trim()}" group has been saved.` });
+      setNewGroupName('');
+      setShowNewGroup(false);
+    } catch {
+      toast({ title: 'Error', description: 'Failed to create group.', variant: 'destructive' });
+    } finally {
+      setUpdating(null);
+    }
   };
 
   const handleDeleteGroup = async (groupName: string) => {
