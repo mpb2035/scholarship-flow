@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SLAConfigManager } from '@/components/admin/SLAConfigManager';
 import { WorkflowManager } from '@/components/admin/WorkflowManager';
 import { UserPermissionsManager } from '@/components/admin/UserPermissionsManager';
+import { SidebarConfigManager } from '@/components/admin/SidebarConfigManager';
 import { 
   ArrowLeft, 
   Users, 
@@ -22,7 +23,8 @@ import {
   Trash2,
   Clock,
   GitBranch,
-  Lock
+  Lock,
+  LayoutDashboard
 } from 'lucide-react';
 
 interface UserWithRole {
@@ -282,6 +284,10 @@ const Admin = () => {
               <Lock className="h-4 w-4" />
               Page Access
             </TabsTrigger>
+            <TabsTrigger value="sidebar" className="gap-2">
+              <LayoutDashboard className="h-4 w-4" />
+              Sidebar
+            </TabsTrigger>
           </TabsList>
 
           {/* Users Tab */}
@@ -426,6 +432,11 @@ const Admin = () => {
           {/* Page Permissions Tab */}
           <TabsContent value="permissions">
             <UserPermissionsManager />
+          </TabsContent>
+
+          {/* Sidebar Config Tab */}
+          <TabsContent value="sidebar">
+            <SidebarConfigManager />
           </TabsContent>
         </Tabs>
       </div>
