@@ -108,7 +108,7 @@ export function useProjects() {
     fetchProjects();
   }, [fetchProjects]);
 
-  const createProject = useCallback(async (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const createProject = useCallback(async (project: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>, autoCreateTodo = true) => {
     if (!user) throw new Error('Not authenticated');
 
     const { data, error } = await supabase
@@ -133,6 +133,22 @@ export function useProjects() {
     
     const newProject = mapDBToProject(data);
     setProjects(prev => [newProject, ...prev]);
+
+    // Auto-create a linked todo for this project
+    if (autoCreateTodo) {
+      try {
+        await supabase
+          .from('todos')
+          .insert({
+            title: project.title,
+            user_id: user.id,
+            project_id: newProject.id,
+          });
+      } catch (todoError) {
+        console.error('Error auto-creating linked todo:', todoError);
+      }
+    }
+
     return newProject;
   }, [user]);
 

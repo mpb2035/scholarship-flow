@@ -16,6 +16,7 @@ export interface Todo {
   title: string;
   is_main_timer_running: boolean;
   main_timer_elapsed_seconds: number;
+  project_id?: string | null;
   created_at: string;
   updated_at: string;
   sub_todos?: SubTodo[];

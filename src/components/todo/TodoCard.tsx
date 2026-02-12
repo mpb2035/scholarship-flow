@@ -2,14 +2,17 @@ import { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Edit2, Check } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Trash2, Edit2, Check, FolderKanban } from 'lucide-react';
 import { TodoWithSubTodos, SubTodo, Todo } from '@/types/todo';
 import { TodoTimer } from './TodoTimer';
 import { SubTodoItem } from './SubTodoItem';
 import { cn } from '@/lib/utils';
+import { Project } from '@/hooks/useProjects';
 
 interface TodoCardProps {
   todo: TodoWithSubTodos;
+  linkedProject?: Project | null;
   onUpdateTodo: (id: string, updates: Partial<Todo>) => void;
   onDeleteTodo: (id: string) => void;
   onCreateSubTodo: (todoId: string, title: string) => void;
@@ -19,6 +22,7 @@ interface TodoCardProps {
 
 export function TodoCard({
   todo,
+  linkedProject,
   onUpdateTodo,
   onDeleteTodo,
   onCreateSubTodo,
@@ -61,6 +65,12 @@ export function TodoCard({
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-3 space-y-3">
+        {linkedProject && (
+          <Badge variant="secondary" className="w-fit text-xs gap-1">
+            <FolderKanban className="h-3 w-3" />
+            {linkedProject.title}
+          </Badge>
+        )}
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             {isEditingTitle ? (
