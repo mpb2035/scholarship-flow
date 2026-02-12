@@ -66,10 +66,12 @@ export function useSidebarConfig() {
     return result;
   }, [items]);
 
+  const isPlaceholder = (item: SidebarItem) => item.item_path.startsWith('__placeholder_');
+
   const getGroupItems = useCallback(
     (groupName: string) =>
       items
-        .filter((i) => i.group_name === groupName && i.visible)
+        .filter((i) => i.group_name === groupName && i.visible && !isPlaceholder(i))
         .sort((a, b) => a.sort_order - b.sort_order),
     [items]
   );
@@ -77,7 +79,7 @@ export function useSidebarConfig() {
   const getAllGroupItems = useCallback(
     (groupName: string) =>
       items
-        .filter((i) => i.group_name === groupName)
+        .filter((i) => i.group_name === groupName && !isPlaceholder(i))
         .sort((a, b) => a.sort_order - b.sort_order),
     [items]
   );
@@ -102,8 +104,22 @@ export function useSidebarConfig() {
     await fetchConfig();
   };
 
+  const createGroup = async (groupSlug: string, displayLabel: string) => {
+    // Insert a placeholder row so the group persists in the DB
+    const { error } = await supabase
+      .from('sidebar_config')
+      .insert({
+        group_name: groupSlug,
+        item_path: `__placeholder_${groupSlug}__`,
+        item_title: displayLabel,
+        visible: false,
+        sort_order: -1,
+      });
+    if (error) throw error;
+    await fetchConfig();
+  };
+
   const moveToGroup = async (itemId: string, targetGroup: string) => {
-    // Get max sort_order in target group
     const targetItems = getAllGroupItems(targetGroup);
     const maxOrder = targetItems.length > 0
       ? Math.max(...targetItems.map(i => i.sort_order))
@@ -141,6 +157,7 @@ export function useSidebarConfig() {
     getAllGroupItems,
     updateVisibility,
     updateOrder,
+    createGroup,
     moveToGroup,
     deleteGroup,
     refetch: fetchConfig,
