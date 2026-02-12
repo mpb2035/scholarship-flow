@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface SidebarItem {
@@ -53,6 +53,19 @@ export function useSidebarConfig() {
     fetchConfig();
   }, [fetchConfig]);
 
+  // Derive unique group names from data, preserving order of first appearance
+  const groups = useMemo(() => {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const item of items) {
+      if (!seen.has(item.group_name)) {
+        seen.add(item.group_name);
+        result.push(item.group_name);
+      }
+    }
+    return result;
+  }, [items]);
+
   const getGroupItems = useCallback(
     (groupName: string) =>
       items
@@ -89,13 +102,47 @@ export function useSidebarConfig() {
     await fetchConfig();
   };
 
+  const moveToGroup = async (itemId: string, targetGroup: string) => {
+    // Get max sort_order in target group
+    const targetItems = getAllGroupItems(targetGroup);
+    const maxOrder = targetItems.length > 0
+      ? Math.max(...targetItems.map(i => i.sort_order))
+      : -1;
+
+    const { error } = await supabase
+      .from('sidebar_config')
+      .update({ group_name: targetGroup, sort_order: maxOrder + 1 })
+      .eq('id', itemId);
+    if (error) throw error;
+    await fetchConfig();
+  };
+
+  const deleteGroup = async (groupName: string) => {
+    // Move all items to 'main' group first
+    const groupItems = getAllGroupItems(groupName);
+    const mainItems = getAllGroupItems('main');
+    const maxOrder = mainItems.length > 0 ? Math.max(...mainItems.map(i => i.sort_order)) : -1;
+
+    for (let i = 0; i < groupItems.length; i++) {
+      const { error } = await supabase
+        .from('sidebar_config')
+        .update({ group_name: 'main', sort_order: maxOrder + 1 + i })
+        .eq('id', groupItems[i].id);
+      if (error) throw error;
+    }
+    await fetchConfig();
+  };
+
   return {
     items,
     loading,
+    groups,
     getGroupItems,
     getAllGroupItems,
     updateVisibility,
     updateOrder,
+    moveToGroup,
+    deleteGroup,
     refetch: fetchConfig,
     iconMap: ICON_MAP,
   };
