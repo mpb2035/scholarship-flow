@@ -24,6 +24,7 @@ import PreviousMeetings from "./pages/PreviousMeetings";
 import AttachmentOverseas from "./pages/AttachmentOverseas";
 import FinancialPlan from "./pages/FinancialPlan";
 import MatterLogsScorecard from "./pages/MatterLogsScorecard";
+import NotesPage from "./pages/NotesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ function AppRoutes() {
           <Route path="/previous-meetings" element={<PreviousMeetings />} />
           <Route path="/financial-plan" element={<FinancialPlan />} />
           <Route path="/matter-logs" element={<MatterLogsScorecard />} />
+          <Route path="/notes" element={<NotesPage />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
