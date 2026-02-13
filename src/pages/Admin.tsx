@@ -14,6 +14,7 @@ import { SLAConfigManager } from '@/components/admin/SLAConfigManager';
 import { WorkflowManager } from '@/components/admin/WorkflowManager';
 import { UserPermissionsManager } from '@/components/admin/UserPermissionsManager';
 import { SidebarConfigManager } from '@/components/admin/SidebarConfigManager';
+import { UserApprovalManager } from '@/components/admin/UserApprovalManager';
 import { 
   ArrowLeft, 
   Users, 
@@ -24,7 +25,8 @@ import {
   Clock,
   GitBranch,
   Lock,
-  LayoutDashboard
+  LayoutDashboard,
+  UserCheck
 } from 'lucide-react';
 
 interface UserWithRole {
@@ -288,6 +290,10 @@ const Admin = () => {
               <LayoutDashboard className="h-4 w-4" />
               Sidebar
             </TabsTrigger>
+            <TabsTrigger value="approval" className="gap-2">
+              <UserCheck className="h-4 w-4" />
+              Approval
+            </TabsTrigger>
           </TabsList>
 
           {/* Users Tab */}
@@ -437,6 +443,11 @@ const Admin = () => {
           {/* Sidebar Config Tab */}
           <TabsContent value="sidebar">
             <SidebarConfigManager />
+          </TabsContent>
+
+          {/* User Approval Tab */}
+          <TabsContent value="approval">
+            <UserApprovalManager />
           </TabsContent>
         </Tabs>
       </div>
