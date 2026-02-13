@@ -66,7 +66,9 @@ export function UserApprovalManager() {
     }
   };
 
-  const pendingCount = users.filter(u => !u.is_approved).length;
+  const ADMIN_EMAIL = 'azlin1711@gmail.com';
+  const filteredUsers = users.filter(u => u.email !== ADMIN_EMAIL);
+  const pendingCount = filteredUsers.filter(u => !u.is_approved).length;
 
   return (
     <Card className="bg-card border-border">
@@ -99,7 +101,7 @@ export function UserApprovalManager() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map(u => (
+              {filteredUsers.map(u => (
                 <TableRow key={u.user_id} className={!u.is_approved ? 'bg-amber-500/5' : ''}>
                   <TableCell className="text-sm">{u.email || u.user_id.slice(0, 8) + '...'}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{u.display_name || '—'}</TableCell>
