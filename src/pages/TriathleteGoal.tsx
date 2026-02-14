@@ -18,6 +18,7 @@ export default function TriathleteGoal() {
   const [activeTab, setActiveTab] = useState('dashboard');
   
   const daysToRace = differenceInDays(parseISO(goalInfo.raceDate), new Date());
+  const raceDisplayDate = 'October 27, 2026';
 
   if (isLoading) {
     return (
@@ -42,8 +43,8 @@ export default function TriathleteGoal() {
             <Target className="h-8 w-8 text-primary" />
             Triathlete Goal: Sub-2 Hour Half Marathon
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Track your training progress toward your November 1, 2026 race goal
+           <p className="text-muted-foreground mt-1">
+            Track your training progress toward your {raceDisplayDate} race goal
           </p>
         </div>
         <div className="flex items-center gap-3">

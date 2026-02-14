@@ -32,14 +32,21 @@ const activityToRunType: Record<string, RunningLogInput['run_type']> = {
   'Tempo': 'tempo',
   'Fartlek': 'fartlek',
   'Interval Training': 'interval',
+  'Intervals': 'interval',
   'Long Run': 'long_run',
   'Night Run': 'easy_run',
   'Half Marathon Test': 'race',
   'RACE DAY': 'race',
+  '🏁 RACE DAY': 'race',
   'Taper Run': 'easy_run',
   'Shakeout': 'easy_run',
   'Recovery': 'easy_run',
   'Recovery Week': 'easy_run',
+  'Steady Run': 'easy_run',
+  'Hill Repeats': 'interval',
+  'HM Pace': 'tempo',
+  'Combo': 'tempo',
+  'REST': 'easy_run',
 };
 
 export function RunLogForm({ onSubmit, completedTrainingDates }: RunLogFormProps) {
