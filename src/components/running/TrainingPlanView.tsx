@@ -6,15 +6,19 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { trainingPlan, goalInfo, phaseInfo, TrainingDay, TrainingPhase } from '@/data/trainingPlanData';
 import { format, parseISO, isAfter, isBefore, isToday, differenceInDays } from 'date-fns';
-import { Calendar, Trophy, Moon, CheckCircle2, Circle, Filter, Target, TrendingUp } from 'lucide-react';
+import { Calendar, Trophy, Moon, CheckCircle2, Circle, Filter, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { TrainingDayExpanded } from './TrainingDayExpanded';
+import { RunningLogInput } from '@/hooks/useRunningLogs';
 
 interface TrainingPlanViewProps {
   completedTrainingDates?: Set<string>;
+  onLogRun?: (data: RunningLogInput) => Promise<unknown>;
 }
 
-export function TrainingPlanView({ completedTrainingDates = new Set() }: TrainingPlanViewProps) {
+export function TrainingPlanView({ completedTrainingDates = new Set(), onLogRun }: TrainingPlanViewProps) {
   const [phaseFilter, setPhaseFilter] = useState<string>('all');
+  const [expandedDate, setExpandedDate] = useState<string | null>(null);
   const today = new Date();
   const ramadanStart = parseISO(goalInfo.ramadanStart);
   const ramadanEnd = parseISO(goalInfo.ramadanEnd);
@@ -51,7 +55,6 @@ export function TrainingPlanView({ completedTrainingDates = new Set() }: Trainin
     return isAfter(date, ramadanStart) && isBefore(date, ramadanEnd);
   };
 
-  // Phase stats for scorecard
   const phaseStats = useMemo(() => {
     const phases = Object.keys(phaseInfo) as TrainingPhase[];
     return phases.map(phase => {
@@ -69,7 +72,6 @@ export function TrainingPlanView({ completedTrainingDates = new Set() }: Trainin
     });
   }, [completedTrainingDates]);
 
-  // Filtered plan
   const filteredPlan = useMemo(() => {
     let plan = trainingPlan;
     if (phaseFilter !== 'all') {
@@ -78,7 +80,6 @@ export function TrainingPlanView({ completedTrainingDates = new Set() }: Trainin
     return plan;
   }, [phaseFilter]);
 
-  // Overall stats
   const overallStats = useMemo(() => {
     const pastWorkouts = trainingPlan.filter(d => isBefore(parseISO(d.date), today) && d.type !== 'rest');
     const completed = pastWorkouts.filter(d => completedTrainingDates.has(d.date)).length;
@@ -86,6 +87,12 @@ export function TrainingPlanView({ completedTrainingDates = new Set() }: Trainin
     const totalWorkouts = trainingPlan.filter(d => d.type !== 'rest').length;
     return { completed, missed: pastWorkouts.length - completed, rate, totalWorkouts, pastTotal: pastWorkouts.length };
   }, [completedTrainingDates]);
+
+  const handleRowClick = (day: TrainingDay) => {
+    if (day.type === 'rest') return;
+    if (completedTrainingDates.has(day.date)) return;
+    setExpandedDate(prev => prev === day.date ? null : day.date);
+  };
 
   return (
     <div className="space-y-6">
@@ -98,11 +105,10 @@ export function TrainingPlanView({ completedTrainingDates = new Set() }: Trainin
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Overall Progress */}
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">Overall Adherence</span>
             <span className={cn("text-sm font-bold",
-              overallStats.rate >= 80 ? "text-green-500" : overallStats.rate >= 50 ? "text-yellow-500" : "text-red-500"
+              overallStats.rate >= 80 ? "text-green-500" : overallStats.rate >= 50 ? "text-yellow-500" : "text-destructive"
             )}>{overallStats.rate}%</span>
           </div>
           <Progress value={overallStats.rate} className="h-3 mb-4" />
@@ -112,7 +118,6 @@ export function TrainingPlanView({ completedTrainingDates = new Set() }: Trainin
             <span>{overallStats.totalWorkouts} total workouts</span>
           </div>
 
-          {/* Phase Breakdown */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {phaseStats.map(ps => (
               <div
@@ -140,6 +145,7 @@ export function TrainingPlanView({ completedTrainingDates = new Set() }: Trainin
             <CardTitle className="text-lg flex items-center gap-2">
               <Calendar className="h-5 w-5 text-primary" />
               Day-by-Day Training Plan
+              {onLogRun && <span className="text-xs font-normal text-muted-foreground ml-2">Click a workout to log</span>}
             </CardTitle>
             <div className="flex items-center gap-3">
               <Badge className="bg-orange-500 text-white">
@@ -166,54 +172,62 @@ export function TrainingPlanView({ completedTrainingDates = new Set() }: Trainin
             <div className="space-y-1.5">
               {filteredPlan.map((day, index) => {
                 const isCompleted = completedTrainingDates.has(day.date);
+                const isExpanded = expandedDate === day.date;
                 return (
-                  <div
-                    key={`${day.date}-${index}`}
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-lg border transition-colors",
-                      isCompleted && "bg-green-500/10 border-green-500/30",
-                      !isCompleted && day.type === 'race' && "bg-yellow-500/10 border-yellow-500/30",
-                      !isCompleted && day.type === 'rest' && "bg-muted/30 border-muted",
-                      !isCompleted && day.type === 'workout' && "bg-card border-border hover:bg-muted/50",
-                      isToday(parseISO(day.date)) && "ring-2 ring-primary",
-                      isRamadanPeriod(day.date) && "border-l-4 border-l-purple-500"
-                    )}
-                  >
-                    {/* Checkbox indicator */}
-                    <div className="shrink-0">
-                      {isCompleted ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <Circle className={cn("h-5 w-5",
-                          isBefore(parseISO(day.date), today) && day.type !== 'rest' ? "text-red-400" : "text-muted-foreground"
-                        )} />
+                  <div key={`${day.date}-${index}`} className="space-y-0">
+                    <div
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-lg border transition-colors",
+                        isCompleted && "bg-green-500/10 border-green-500/30",
+                        !isCompleted && day.type === 'race' && "bg-yellow-500/10 border-yellow-500/30",
+                        !isCompleted && day.type === 'rest' && "bg-muted/30 border-muted",
+                        !isCompleted && day.type === 'workout' && "bg-card border-border hover:bg-muted/50",
+                        isToday(parseISO(day.date)) && "ring-2 ring-primary",
+                        isRamadanPeriod(day.date) && "border-l-4 border-l-purple-500",
+                        onLogRun && !isCompleted && day.type !== 'rest' && "cursor-pointer"
                       )}
-                    </div>
-
-                    {/* Date */}
-                    <div className="text-center min-w-[50px]">
-                      <p className="text-[10px] text-muted-foreground uppercase">{day.dayLabel}</p>
-                      <p className="text-xs font-semibold">{format(parseISO(day.date), 'MMM d')}</p>
-                    </div>
-
-                    {/* Workout info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className={cn("text-sm font-medium truncate", isCompleted && "text-green-600")}>
-                          {day.activity}
-                        </p>
-                        {isRamadanPeriod(day.date) && <Moon className="h-3 w-3 text-purple-500 shrink-0" />}
+                      onClick={() => onLogRun && handleRowClick(day)}
+                    >
+                      <div className="shrink-0">
+                        {isCompleted ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <Circle className={cn("h-5 w-5",
+                            isBefore(parseISO(day.date), today) && day.type !== 'rest' ? "text-destructive" : "text-muted-foreground"
+                          )} />
+                        )}
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">{day.details !== 'REST' ? day.details : day.notes}</p>
+
+                      <div className="text-center min-w-[50px]">
+                        <p className="text-[10px] text-muted-foreground uppercase">{day.dayLabel}</p>
+                        <p className="text-xs font-semibold">{format(parseISO(day.date), 'MMM d')}</p>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className={cn("text-sm font-medium truncate", isCompleted && "text-green-600")}>
+                            {day.activity}
+                          </p>
+                          {isRamadanPeriod(day.date) && <Moon className="h-3 w-3 text-purple-500 shrink-0" />}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">{day.details !== 'REST' ? day.details : day.notes}</p>
+                      </div>
+
+                      <Badge variant="outline" className={cn("text-[10px] shrink-0 hidden md:inline-flex", phaseInfo[day.phase].color)}>
+                        {phaseInfo[day.phase].label}
+                      </Badge>
+
+                      {getStatusBadge(day)}
                     </div>
 
-                    {/* Phase badge */}
-                    <Badge variant="outline" className={cn("text-[10px] shrink-0 hidden md:inline-flex", phaseInfo[day.phase].color)}>
-                      {phaseInfo[day.phase].label}
-                    </Badge>
-
-                    {/* Status */}
-                    {getStatusBadge(day)}
+                    {/* Expanded quick-log form */}
+                    {isExpanded && onLogRun && (
+                      <TrainingDayExpanded
+                        day={day}
+                        onSubmit={onLogRun}
+                        onClose={() => setExpandedDate(null)}
+                      />
+                    )}
                   </div>
                 );
               })}
