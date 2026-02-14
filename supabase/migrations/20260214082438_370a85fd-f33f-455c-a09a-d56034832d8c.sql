@@ -1,0 +1,1 @@
+ALTER TABLE public.running_logs ADD COLUMN heart_rate integer DEFAULT NULL;

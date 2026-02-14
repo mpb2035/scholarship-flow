@@ -659,6 +659,7 @@ export type Database = {
           distance: number
           duration_minutes: number
           environment: string
+          heart_rate: number | null
           id: string
           is_planned: boolean
           linked_training_date: string | null
@@ -674,6 +675,7 @@ export type Database = {
           distance: number
           duration_minutes: number
           environment?: string
+          heart_rate?: number | null
           id?: string
           is_planned?: boolean
           linked_training_date?: string | null
@@ -689,6 +691,7 @@ export type Database = {
           distance?: number
           duration_minutes?: number
           environment?: string
+          heart_rate?: number | null
           id?: string
           is_planned?: boolean
           linked_training_date?: string | null

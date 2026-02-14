@@ -6,10 +6,11 @@ import { PerformanceChart } from '@/components/running/PerformanceChart';
 import { TrainingPlanView } from '@/components/running/TrainingPlanView';
 import { RunningStats } from '@/components/running/RunningStats';
 import { RunLogTable } from '@/components/running/RunLogTable';
+import { HeartRateTrendChart } from '@/components/running/HeartRateTrendChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Target, Activity, Calendar, BarChart3, Trophy } from 'lucide-react';
+import { Target, Activity, Calendar, BarChart3, Trophy, Heart } from 'lucide-react';
 import { goalInfo } from '@/data/trainingPlanData';
 import { differenceInDays, parseISO } from 'date-fns';
 
@@ -60,7 +61,7 @@ export default function TriathleteGoal() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-flex">
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-flex">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Dashboard
@@ -76,6 +77,10 @@ export default function TriathleteGoal() {
           <TabsTrigger value="plan" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             Training Plan
+          </TabsTrigger>
+          <TabsTrigger value="heartrate" className="flex items-center gap-2">
+            <Heart className="h-4 w-4" />
+            Heart Rate
           </TabsTrigger>
         </TabsList>
 
@@ -127,7 +132,11 @@ export default function TriathleteGoal() {
         </TabsContent>
 
         <TabsContent value="plan">
-          <TrainingPlanView completedTrainingDates={completedTrainingDates} />
+          <TrainingPlanView completedTrainingDates={completedTrainingDates} onLogRun={addLog} />
+        </TabsContent>
+
+        <TabsContent value="heartrate">
+          <HeartRateTrendChart logs={logs} />
         </TabsContent>
       </Tabs>
     </div>

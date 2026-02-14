@@ -10,6 +10,7 @@ export interface RunningLog {
   distance: number;
   duration_minutes: number;
   pace_per_km: number | null;
+  heart_rate: number | null;
   environment: 'indoor' | 'outdoor';
   run_type: 'easy_run' | 'tempo' | 'fartlek' | 'interval' | 'long_run' | 'race';
   notes: string | null;
@@ -24,6 +25,7 @@ export interface RunningLogInput {
   distance: number;
   duration_minutes: number;
   pace_per_km?: number | null;
+  heart_rate?: number | null;
   environment: 'indoor' | 'outdoor';
   run_type: 'easy_run' | 'tempo' | 'fartlek' | 'interval' | 'long_run' | 'race';
   notes?: string;
@@ -64,6 +66,7 @@ export function useRunningLogs() {
         ...log,
         distance: Number(log.distance),
         pace_per_km: log.pace_per_km ? Number(log.pace_per_km) : null,
+        heart_rate: (log as any).heart_rate ? Number((log as any).heart_rate) : null,
         environment: log.environment as 'indoor' | 'outdoor',
         run_type: log.run_type as 'easy_run' | 'tempo' | 'fartlek' | 'interval' | 'long_run' | 'race',
         linked_training_date: log.linked_training_date as string | null,
@@ -109,7 +112,8 @@ export function useRunningLogs() {
           notes: input.notes || null,
           is_planned: input.is_planned || false,
           linked_training_date: input.linked_training_date || null,
-        })
+          heart_rate: input.heart_rate || null,
+        } as any)
         .select()
         .single();
 
@@ -119,6 +123,7 @@ export function useRunningLogs() {
         ...data,
         distance: Number(data.distance),
         pace_per_km: data.pace_per_km ? Number(data.pace_per_km) : null,
+        heart_rate: (data as any).heart_rate ? Number((data as any).heart_rate) : null,
         environment: data.environment as 'indoor' | 'outdoor',
         run_type: data.run_type as 'easy_run' | 'tempo' | 'fartlek' | 'interval' | 'long_run' | 'race',
         linked_training_date: data.linked_training_date as string | null,
@@ -167,6 +172,7 @@ export function useRunningLogs() {
         ...data,
         distance: Number(data.distance),
         pace_per_km: data.pace_per_km ? Number(data.pace_per_km) : null,
+        heart_rate: (data as any).heart_rate ? Number((data as any).heart_rate) : null,
         environment: data.environment as 'indoor' | 'outdoor',
         run_type: data.run_type as 'easy_run' | 'tempo' | 'fartlek' | 'interval' | 'long_run' | 'race',
         linked_training_date: data.linked_training_date as string | null,
