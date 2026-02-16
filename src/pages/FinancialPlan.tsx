@@ -872,8 +872,9 @@ const FinancialPlan = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="1">Pay Period 1</SelectItem>
-                            <SelectItem value="2">Pay Period 2</SelectItem>
+                            <SelectItem value="0">Both Pay Periods</SelectItem>
+                            <SelectItem value="1">Pay Period 1 Only</SelectItem>
+                            <SelectItem value="2">Pay Period 2 Only</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -886,17 +887,17 @@ const FinancialPlan = () => {
                 {fixedCommitments.length === 0 ? (
                   <p className="text-center text-muted-foreground py-6">No fixed commitments yet. Add your recurring bills like car payment, utilities, phone bills, etc.</p>
                 ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {/* Pay Period 1 */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 1</h4>
-                        <Badge variant="outline" className="text-xs">${getFixedCommitmentTotals(1).toFixed(2)}</Badge>
-                      </div>
-                      {getFixedCommitmentsByPayPeriod(1).length === 0 ? (
-                        <p className="text-xs text-muted-foreground text-center py-3 border rounded-lg border-dashed">No commitments</p>
-                      ) : (
-                        getFixedCommitmentsByPayPeriod(1).map(c => {
+                  <div className="space-y-4">
+                    {/* Both Pay Periods */}
+                    {getFixedCommitmentsByPayPeriod(1).filter(c => c.payPeriod === 0).length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-semibold text-muted-foreground">Both Pay Periods</h4>
+                          <Badge variant="outline" className="text-xs">
+                            ${fixedCommitments.filter(c => c.payPeriod === 0).reduce((sum, c) => sum + c.amount, 0).toFixed(2)} each
+                          </Badge>
+                        </div>
+                        {fixedCommitments.filter(c => c.payPeriod === 0).map(c => {
                           const Icon = getCommitmentIcon(c.category);
                           return (
                             <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
@@ -904,7 +905,7 @@ const FinancialPlan = () => {
                                 <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
                                 <div className="min-w-0">
                                   <p className="text-sm font-medium truncate">{c.description}</p>
-                                  <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category)}</p>
+                                  <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category)} • Both periods</p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
@@ -915,39 +916,72 @@ const FinancialPlan = () => {
                               </div>
                             </div>
                           );
-                        })
-                      )}
-                    </div>
-                    {/* Pay Period 2 */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 2</h4>
-                        <Badge variant="outline" className="text-xs">${getFixedCommitmentTotals(2).toFixed(2)}</Badge>
+                        })}
                       </div>
-                      {getFixedCommitmentsByPayPeriod(2).length === 0 ? (
-                        <p className="text-xs text-muted-foreground text-center py-3 border rounded-lg border-dashed">No commitments</p>
-                      ) : (
-                        getFixedCommitmentsByPayPeriod(2).map(c => {
-                          const Icon = getCommitmentIcon(c.category);
-                          return (
-                            <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                                <div className="min-w-0">
-                                  <p className="text-sm font-medium truncate">{c.description}</p>
-                                  <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category)}</p>
+                    )}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {/* Pay Period 1 */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 1</h4>
+                          <Badge variant="outline" className="text-xs">${getFixedCommitmentTotals(1).toFixed(2)}</Badge>
+                        </div>
+                        {fixedCommitments.filter(c => c.payPeriod === 1).length === 0 ? (
+                          <p className="text-xs text-muted-foreground text-center py-3 border rounded-lg border-dashed">No exclusive commitments</p>
+                        ) : (
+                          fixedCommitments.filter(c => c.payPeriod === 1).map(c => {
+                            const Icon = getCommitmentIcon(c.category);
+                            return (
+                              <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-medium truncate">{c.description}</p>
+                                    <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category)}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <span className="font-semibold text-sm">${c.amount.toFixed(2)}</span>
+                                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteFixedCommitment(c.id)}>
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                <span className="font-semibold text-sm">${c.amount.toFixed(2)}</span>
-                                <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteFixedCommitment(c.id)}>
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
+                            );
+                          })
+                        )}
+                      </div>
+                      {/* Pay Period 2 */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 2</h4>
+                          <Badge variant="outline" className="text-xs">${getFixedCommitmentTotals(2).toFixed(2)}</Badge>
+                        </div>
+                        {fixedCommitments.filter(c => c.payPeriod === 2).length === 0 ? (
+                          <p className="text-xs text-muted-foreground text-center py-3 border rounded-lg border-dashed">No exclusive commitments</p>
+                        ) : (
+                          fixedCommitments.filter(c => c.payPeriod === 2).map(c => {
+                            const Icon = getCommitmentIcon(c.category);
+                            return (
+                              <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-medium truncate">{c.description}</p>
+                                    <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category)}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <span className="font-semibold text-sm">${c.amount.toFixed(2)}</span>
+                                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteFixedCommitment(c.id)}>
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })
-                      )}
+                            );
+                          })
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
