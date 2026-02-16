@@ -30,6 +30,9 @@ import { useNetWorthTracker } from '@/hooks/useNetWorthTracker';
 import NetWorthScorecard from '@/components/finance/NetWorthScorecard';
 import { useLoanTracker } from '@/hooks/useLoanTracker';
 import LoanTrackerScorecard from '@/components/finance/LoanTrackerScorecard';
+import { useRetirementFund } from '@/hooks/useRetirementFund';
+import RetirementFundTracker from '@/components/finance/RetirementFundTracker';
+import FinancialTrendCharts from '@/components/finance/FinancialTrendCharts';
 import { useSectionOrder } from '@/hooks/useSectionOrder';
 
 const MONTHS = [
@@ -116,6 +119,7 @@ const FinancialPlan = () => {
 
   const {
     goals: savingsGoals,
+    contributions: savingsContributions,
     grandTotal: savingsGrandTotal,
     monthTotal: savingsMonthTotal,
     getGoalTotal, getGoalMonthTotal, getGoalMonthContributions,
@@ -139,6 +143,22 @@ const FinancialPlan = () => {
     updateLoan,
     deleteLoan,
   } = useLoanTracker();
+
+  const {
+    funds: retirementFunds,
+    contributions: retirementContributions,
+    grandTotal: retirementGrandTotal,
+    monthTotal: retirementMonthTotal,
+    getFundTotal: getRetirementFundTotal,
+    getFundMonthTotal: getRetirementFundMonthTotal,
+    getFundMonthContributions: getRetirementFundMonthContributions,
+    addFund: addRetirementFund,
+    updateFund: updateRetirementFund,
+    deleteFund: deleteRetirementFund,
+    addContribution: addRetirementContribution,
+    updateContribution: updateRetirementContribution,
+    deleteContribution: deleteRetirementContribution,
+  } = useRetirementFund(selectedMonth, selectedYear);
 
   const { sectionOrder, moveUp, moveDown } = useSectionOrder();
   const [reorderMode, setReorderMode] = useState(false);
@@ -846,6 +866,27 @@ const FinancialPlan = () => {
                 );
                 break;
 
+              case 'retirement_tracker':
+                content = (
+                  <RetirementFundTracker
+                    month={selectedMonth}
+                    year={selectedYear}
+                    funds={retirementFunds}
+                    grandTotal={retirementGrandTotal}
+                    monthTotal={retirementMonthTotal}
+                    getFundTotal={getRetirementFundTotal}
+                    getFundMonthTotal={getRetirementFundMonthTotal}
+                    getFundMonthContributions={getRetirementFundMonthContributions}
+                    addFund={addRetirementFund}
+                    updateFund={updateRetirementFund}
+                    deleteFund={deleteRetirementFund}
+                    addContribution={addRetirementContribution}
+                    updateContribution={updateRetirementContribution}
+                    deleteContribution={deleteRetirementContribution}
+                  />
+                );
+                break;
+
               case 'loan_tracker':
                 content = (
                   <LoanTrackerScorecard
@@ -868,6 +909,19 @@ const FinancialPlan = () => {
                     addEntry={addNetWorthEntry}
                     updateEntry={updateNetWorthEntry}
                     deleteEntry={deleteNetWorthEntry}
+                  />
+                );
+                break;
+
+              case 'financial_trends':
+                content = (
+                  <FinancialTrendCharts
+                    savingsGoals={savingsGoals}
+                    savingsContributions={savingsContributions}
+                    loansWithProjections={loansWithProjections}
+                    retirementFunds={retirementFunds}
+                    retirementContributions={retirementContributions}
+                    netWorthEntries={netWorthEntries}
                   />
                 );
                 break;

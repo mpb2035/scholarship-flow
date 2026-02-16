@@ -849,6 +849,92 @@ export type Database = {
           },
         ]
       }
+      retirement_contributions: {
+        Row: {
+          amount: number
+          created_at: string
+          fund_id: string
+          id: string
+          month: number
+          notes: string | null
+          pay_period: number
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          fund_id: string
+          id?: string
+          month: number
+          notes?: string | null
+          pay_period?: number
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          fund_id?: string
+          id?: string
+          month?: number
+          notes?: string | null
+          pay_period?: number
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retirement_contributions_fund_id_fkey"
+            columns: ["fund_id"]
+            isOneToOne: false
+            referencedRelation: "retirement_fund"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      retirement_fund: {
+        Row: {
+          biweekly_contribution: number
+          created_at: string
+          fund_name: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          start_date: string
+          target_amount: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          biweekly_contribution?: number
+          created_at?: string
+          fund_name?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          start_date?: string
+          target_amount?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          biweekly_contribution?: number
+          created_at?: string
+          fund_name?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          start_date?: string
+          target_amount?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       running_logs: {
         Row: {
           created_at: string
