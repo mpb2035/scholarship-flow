@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PiggyBank, Plus, Trash2, TrendingUp, Target, Wallet } from 'lucide-react';
+import { PiggyBank, Plus, Trash2, TrendingUp, Target, Wallet, ChevronDown } from 'lucide-react';
 import { SavingsGoal, SavingsContribution } from '@/hooks/useSavingsTracker';
 
 const MONTHS = [
@@ -35,6 +36,7 @@ const SavingsTracker = ({
   getGoalTotal, getGoalMonthTotal, getGoalMonthContributions,
   addGoal, deleteGoal, addContribution, deleteContribution,
 }: Props) => {
+  const [isOpen, setIsOpen] = useState(true);
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
   const [contribDialogOpen, setContribDialogOpen] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState('');
@@ -61,10 +63,9 @@ const SavingsTracker = ({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Big Total Savings Scorecard */}
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <Card className="bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 border-emerald-500/30">
-        <CardContent className="p-4 sm:p-6">
+        <CardHeader className="p-4 sm:p-6">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-full bg-emerald-500/20">
@@ -75,15 +76,24 @@ const SavingsTracker = ({
                 <p className="text-2xl sm:text-4xl font-bold text-emerald-600">${grandTotal.toFixed(2)}</p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">{MONTHS[month - 1]} {year}</p>
-              <p className="text-lg sm:text-xl font-semibold text-foreground">+${monthTotal.toFixed(2)}</p>
-              <p className="text-xs text-muted-foreground">this month</p>
+            <div className="flex items-center gap-2">
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">{MONTHS[month - 1]} {year}</p>
+                <p className="text-lg sm:text-xl font-semibold text-foreground">+${monthTotal.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">this month</p>
+              </div>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? '' : '-rotate-90'}`} />
+                </Button>
+              </CollapsibleTrigger>
             </div>
           </div>
-        </CardContent>
+        </CardHeader>
       </Card>
 
+      <CollapsibleContent>
+        <div className="space-y-4 mt-4">
       {/* Savings Goals */}
       <Card>
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
@@ -271,7 +281,9 @@ const SavingsTracker = ({
           )}
         </CardContent>
       </Card>
-    </div>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 };
 
