@@ -13,6 +13,7 @@ export interface CommitmentTrackingItem {
   actualAmount: number | null;
   notes: string | null;
   paidDate: string | null;
+  payPeriod: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -44,6 +45,7 @@ export const useCommitmentTracking = (month: number, year: number, fixedCommitme
         actualAmount: t.actual_amount ? Number(t.actual_amount) : null,
         notes: t.notes,
         paidDate: t.paid_date,
+        payPeriod: t.pay_period,
         createdAt: t.created_at,
         updatedAt: t.updated_at,
       })));
@@ -58,13 +60,16 @@ export const useCommitmentTracking = (month: number, year: number, fixedCommitme
     fetchTracking();
   }, [fetchTracking]);
 
-  const getTrackingForCommitment = (commitmentId: string) => {
+  const getTrackingForCommitment = (commitmentId: string, forPayPeriod?: number) => {
+    if (forPayPeriod != null) {
+      return tracking.find(t => t.commitmentId === commitmentId && t.payPeriod === forPayPeriod) || null;
+    }
     return tracking.find(t => t.commitmentId === commitmentId) || null;
   };
 
-  const togglePaid = async (commitmentId: string, isPaid: boolean, actualAmount?: number) => {
+  const togglePaid = async (commitmentId: string, isPaid: boolean, actualAmount?: number, forPayPeriod: number = 0) => {
     if (!user) return;
-    const existing = getTrackingForCommitment(commitmentId);
+    const existing = getTrackingForCommitment(commitmentId, forPayPeriod);
 
     if (existing) {
       const { error } = await supabase
@@ -87,15 +92,16 @@ export const useCommitmentTracking = (month: number, year: number, fixedCommitme
           is_paid: isPaid,
           actual_amount: actualAmount ?? null,
           paid_date: isPaid ? new Date().toISOString().split('T')[0] : null,
+          pay_period: forPayPeriod,
         });
       if (error) throw error;
     }
     await fetchTracking();
   };
 
-  const updateActualAmount = async (commitmentId: string, amount: number) => {
+  const updateActualAmount = async (commitmentId: string, amount: number, forPayPeriod: number = 0) => {
     if (!user) return;
-    const existing = getTrackingForCommitment(commitmentId);
+    const existing = getTrackingForCommitment(commitmentId, forPayPeriod);
 
     if (existing) {
       const { error } = await supabase
@@ -113,18 +119,33 @@ export const useCommitmentTracking = (month: number, year: number, fixedCommitme
           year,
           is_paid: false,
           actual_amount: amount,
+          pay_period: forPayPeriod,
         });
       if (error) throw error;
     }
     await fetchTracking();
   };
 
-  // Summary stats
+  // Summary stats: for "both" commitments, count as paid only if both periods are paid
+  const getPaidStatus = (c: FixedCommitment) => {
+    if (c.payPeriod === 0) {
+      const t1 = getTrackingForCommitment(c.id, 1);
+      const t2 = getTrackingForCommitment(c.id, 2);
+      return (t1?.isPaid ?? false) && (t2?.isPaid ?? false);
+    }
+    return getTrackingForCommitment(c.id, c.payPeriod)?.isPaid ?? false;
+  };
+
   const totalCommitments = fixedCommitments.length;
-  const paidCount = fixedCommitments.filter(c => getTrackingForCommitment(c.id)?.isPaid).length;
+  const paidCount = fixedCommitments.filter(getPaidStatus).length;
   const totalExpected = fixedCommitments.reduce((sum, c) => sum + c.amount, 0);
   const totalActual = fixedCommitments.reduce((sum, c) => {
-    const t = getTrackingForCommitment(c.id);
+    if (c.payPeriod === 0) {
+      const t1 = getTrackingForCommitment(c.id, 1);
+      const t2 = getTrackingForCommitment(c.id, 2);
+      return sum + (t1?.actualAmount ?? 0) + (t2?.actualAmount ?? 0);
+    }
+    const t = getTrackingForCommitment(c.id, c.payPeriod);
     return sum + (t?.actualAmount ?? 0);
   }, 0);
 
