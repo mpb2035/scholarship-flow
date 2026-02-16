@@ -323,7 +323,7 @@ export const useFinance = (month: number, year: number) => {
 
   // Get fixed commitments by pay period
   const getFixedCommitmentsByPayPeriod = (payPeriod: 1 | 2) => {
-    return fixedCommitments.filter(c => c.payPeriod === payPeriod);
+    return fixedCommitments.filter(c => c.payPeriod === payPeriod || c.payPeriod === 0);
   };
 
   // Fixed commitment totals per pay period
