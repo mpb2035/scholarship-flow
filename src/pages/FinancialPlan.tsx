@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useFinance } from '@/hooks/useFinance';
@@ -18,7 +19,7 @@ import {
   Loader2, Plus, Wallet, TrendingUp, TrendingDown, 
   DollarSign, Calendar, PiggyBank, Receipt, Trash2, Edit2, Settings,
   Car, Zap, Phone, Home, Baby, ShoppingCart, Heart, MoreHorizontal, Tag,
-  ArrowUp, ArrowDown, GripVertical
+  ArrowUp, ArrowDown, GripVertical, ChevronDown
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { useCommitmentTracking } from '@/hooks/useCommitmentTracking';
@@ -119,6 +120,13 @@ const FinancialPlan = () => {
 
   const { sectionOrder, moveUp, moveDown } = useSectionOrder();
   const [reorderMode, setReorderMode] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (sectionId: string) => {
+    setCollapsedSections(prev => ({ ...prev, [sectionId]: !prev[sectionId] }));
+  };
+
+  const isSectionOpen = (sectionId: string) => !collapsedSections[sectionId];
 
   // Dialog states
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
@@ -510,60 +518,71 @@ const FinancialPlan = () => {
               case 'pay_settings':
                 content = (
                   <Card>
-                    <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
-                      <div>
-                        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                          <Wallet className="h-4 w-4 sm:h-5 sm:w-5" />
-                          Biweekly Pay Settings
-                        </CardTitle>
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                          Your salary is paid every two weeks — first half and second half of the month
-                        </p>
-                      </div>
-                      <Dialog open={paySettingsDialogOpen} onOpenChange={setPaySettingsDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button size="sm" className="w-full sm:w-auto"><Edit2 className="h-4 w-4 mr-1" /> Configure</Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-[95vw] sm:max-w-lg">
-                          <DialogHeader>
-                            <DialogTitle>Configure Biweekly Salary</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4 pt-4">
-                            <div className="space-y-2">
-                              <Label>Salary per paycheck ($)</Label>
-                              <Input 
-                                type="number"
-                                value={newPaySettings.payAmount} 
-                                onChange={e => setNewPaySettings({ ...newPaySettings, payAmount: e.target.value })}
-                                placeholder="0.00"
-                              />
-                              <p className="text-xs text-muted-foreground">Enter the fixed amount you receive every two weeks.</p>
-                            </div>
-                            <Button onClick={handleSavePaySettings} className="w-full">Save Settings</Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </CardHeader>
-                    <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-                      {paySettings ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                          <div>
-                            <p className="text-xs sm:text-sm text-muted-foreground">Per Paycheck</p>
-                            <p className="text-lg sm:text-xl font-bold">${paySettings.payAmount.toFixed(2)}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs sm:text-sm text-muted-foreground">Monthly (×2)</p>
-                            <p className="text-lg sm:text-xl font-bold">${(paySettings.payAmount * 2).toFixed(2)}</p>
-                          </div>
-                          <div className="col-span-2 sm:col-span-1">
-                            <p className="text-xs sm:text-sm text-muted-foreground">Fixed Commitments</p>
-                            <p className="text-lg sm:text-xl font-bold text-orange-600">${totalFixedCommitments.toFixed(2)}/mo</p>
-                          </div>
+                    <Collapsible open={isSectionOpen('pay_settings')} onOpenChange={() => toggleSection('pay_settings')}>
+                      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
+                        <div>
+                          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                            <Wallet className="h-4 w-4 sm:h-5 sm:w-5" />
+                            Biweekly Pay Settings
+                          </CardTitle>
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                            Your salary is paid every two weeks — first half and second half of the month
+                          </p>
                         </div>
-                      ) : (
-                        <p className="text-center text-muted-foreground py-4">Configure your biweekly salary to get started.</p>
-                      )}
-                    </CardContent>
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                          <Dialog open={paySettingsDialogOpen} onOpenChange={setPaySettingsDialogOpen}>
+                            <DialogTrigger asChild>
+                              <Button size="sm" className="flex-1 sm:flex-none"><Edit2 className="h-4 w-4 mr-1" /> Configure</Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-[95vw] sm:max-w-lg">
+                              <DialogHeader>
+                                <DialogTitle>Configure Biweekly Salary</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4 pt-4">
+                                <div className="space-y-2">
+                                  <Label>Salary per paycheck ($)</Label>
+                                  <Input 
+                                    type="number"
+                                    value={newPaySettings.payAmount} 
+                                    onChange={e => setNewPaySettings({ ...newPaySettings, payAmount: e.target.value })}
+                                    placeholder="0.00"
+                                  />
+                                  <p className="text-xs text-muted-foreground">Enter the fixed amount you receive every two weeks.</p>
+                                </div>
+                                <Button onClick={handleSavePaySettings} className="w-full">Save Settings</Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+                              <ChevronDown className={`h-4 w-4 transition-transform ${isSectionOpen('pay_settings') ? '' : '-rotate-90'}`} />
+                            </Button>
+                          </CollapsibleTrigger>
+                        </div>
+                      </CardHeader>
+                      <CollapsibleContent>
+                        <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                          {paySettings ? (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                              <div>
+                                <p className="text-xs sm:text-sm text-muted-foreground">Per Paycheck</p>
+                                <p className="text-lg sm:text-xl font-bold">${paySettings.payAmount.toFixed(2)}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs sm:text-sm text-muted-foreground">Monthly (×2)</p>
+                                <p className="text-lg sm:text-xl font-bold">${(paySettings.payAmount * 2).toFixed(2)}</p>
+                              </div>
+                              <div className="col-span-2 sm:col-span-1">
+                                <p className="text-xs sm:text-sm text-muted-foreground">Fixed Commitments</p>
+                                <p className="text-lg sm:text-xl font-bold text-orange-600">${totalFixedCommitments.toFixed(2)}/mo</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-center text-muted-foreground py-4">Configure your biweekly salary to get started.</p>
+                          )}
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </Card>
                 );
                 break;
@@ -571,6 +590,7 @@ const FinancialPlan = () => {
               case 'fixed_commitments':
                 content = (
                   <Card>
+                    <Collapsible open={isSectionOpen('fixed_commitments')} onOpenChange={() => toggleSection('fixed_commitments')}>
                     <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
                       <div>
                         <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -581,10 +601,11 @@ const FinancialPlan = () => {
                           Recurring bills split between pay periods • Total: ${totalFixedCommitments.toFixed(2)}/month
                         </p>
                       </div>
-                      <Dialog open={fixedCommitmentDialogOpen} onOpenChange={setFixedCommitmentDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button size="sm" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /> Add</Button>
-                        </DialogTrigger>
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <Dialog open={fixedCommitmentDialogOpen} onOpenChange={setFixedCommitmentDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" className="flex-1 sm:flex-none"><Plus className="h-4 w-4 mr-1" /> Add</Button>
+                          </DialogTrigger>
                         <DialogContent className="max-w-[95vw] sm:max-w-lg">
                           <DialogHeader>
                             <DialogTitle>Add Fixed Commitment</DialogTitle>
@@ -651,9 +672,16 @@ const FinancialPlan = () => {
                             <Button onClick={handleAddFixedCommitment} className="w-full">Add Commitment</Button>
                           </div>
                         </DialogContent>
-                      </Dialog>
+                        </Dialog>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+                            <ChevronDown className={`h-4 w-4 transition-transform ${isSectionOpen('fixed_commitments') ? '' : '-rotate-90'}`} />
+                          </Button>
+                        </CollapsibleTrigger>
+                      </div>
                     </CardHeader>
-                    <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                    <CollapsibleContent>
+                      <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
                       {fixedCommitments.length === 0 ? (
                         <p className="text-center text-muted-foreground py-6">No fixed commitments yet. Add your recurring bills like car payment, utilities, phone bills, etc.</p>
                       ) : (
@@ -753,6 +781,8 @@ const FinancialPlan = () => {
                         </div>
                       )}
                     </CardContent>
+                    </CollapsibleContent>
+                    </Collapsible>
                   </Card>
                 );
                 break;
@@ -796,77 +826,115 @@ const FinancialPlan = () => {
               case 'biweekly_overview':
                 if (!biweeklyBreakdown) return null;
                 content = (
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                    <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
-                      <CardContent className="p-3 sm:pt-6">
-                        <div className="flex items-center justify-between">
-                          <div className="min-w-0">
-                            <p className="text-xs sm:text-sm text-muted-foreground">Paychecks</p>
-                            <p className="text-lg sm:text-2xl font-bold text-foreground">{biweeklyBreakdown.paychecksThisMonth}</p>
+                  <Card>
+                    <Collapsible open={isSectionOpen('biweekly_overview')} onOpenChange={() => toggleSection('biweekly_overview')}>
+                      <CardHeader className="flex items-center justify-between p-4 sm:p-6">
+                        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                          <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+                          Biweekly Overview
+                        </CardTitle>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+                            <ChevronDown className={`h-4 w-4 transition-transform ${isSectionOpen('biweekly_overview') ? '' : '-rotate-90'}`} />
+                          </Button>
+                        </CollapsibleTrigger>
+                      </CardHeader>
+                      <CollapsibleContent>
+                        <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                            <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+                              <CardContent className="p-3 sm:pt-6">
+                                <div className="flex items-center justify-between">
+                                  <div className="min-w-0">
+                                    <p className="text-xs sm:text-sm text-muted-foreground">Paychecks</p>
+                                    <p className="text-lg sm:text-2xl font-bold text-foreground">{biweeklyBreakdown.paychecksThisMonth}</p>
+                                  </div>
+                                  <Calendar className="h-5 w-5 sm:h-8 sm:w-8 text-blue-500 shrink-0" />
+                                </div>
+                              </CardContent>
+                            </Card>
+                            <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
+                              <CardContent className="p-3 sm:pt-6">
+                                <div className="flex items-center justify-between">
+                                  <div className="min-w-0">
+                                    <p className="text-xs sm:text-sm text-muted-foreground">Total Income</p>
+                                    <p className="text-lg sm:text-2xl font-bold text-green-600">${biweeklyBreakdown.totalIncome.toFixed(2)}</p>
+                                  </div>
+                                  <DollarSign className="h-5 w-5 sm:h-8 sm:w-8 text-green-500 shrink-0" />
+                                </div>
+                              </CardContent>
+                            </Card>
+                            <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-purple-500/20">
+                              <CardContent className="p-3 sm:pt-6">
+                                <div className="flex items-center justify-between">
+                                  <div className="min-w-0">
+                                    <p className="text-xs sm:text-sm text-muted-foreground">Budget (80%)</p>
+                                    <p className="text-lg sm:text-2xl font-bold text-purple-600">${biweeklyBreakdown.recommendedBudget.toFixed(2)}</p>
+                                  </div>
+                                  <Wallet className="h-5 w-5 sm:h-8 sm:w-8 text-purple-500 shrink-0" />
+                                </div>
+                              </CardContent>
+                            </Card>
+                            <Card className={`bg-gradient-to-br col-span-2 lg:col-span-1 ${biweeklyBreakdown.savings >= 0 ? 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20' : 'from-red-500/10 to-red-500/5 border-red-500/20'}`}>
+                              <CardContent className="p-3 sm:pt-6">
+                                <div className="flex items-center justify-between">
+                                  <div className="min-w-0">
+                                    <p className="text-xs sm:text-sm text-muted-foreground">Net Savings</p>
+                                    <p className={`text-lg sm:text-2xl font-bold ${biweeklyBreakdown.savings >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                      ${Math.abs(biweeklyBreakdown.savings).toFixed(2)}
+                                      {biweeklyBreakdown.savings < 0 && ' deficit'}
+                                    </p>
+                                  </div>
+                                  <PiggyBank className="h-5 w-5 sm:h-8 sm:w-8 text-emerald-500 shrink-0" />
+                                </div>
+                              </CardContent>
+                            </Card>
                           </div>
-                          <Calendar className="h-5 w-5 sm:h-8 sm:w-8 text-blue-500 shrink-0" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
-                      <CardContent className="p-3 sm:pt-6">
-                        <div className="flex items-center justify-between">
-                          <div className="min-w-0">
-                            <p className="text-xs sm:text-sm text-muted-foreground">Total Income</p>
-                            <p className="text-lg sm:text-2xl font-bold text-green-600">${biweeklyBreakdown.totalIncome.toFixed(2)}</p>
-                          </div>
-                          <DollarSign className="h-5 w-5 sm:h-8 sm:w-8 text-green-500 shrink-0" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-purple-500/20">
-                      <CardContent className="p-3 sm:pt-6">
-                        <div className="flex items-center justify-between">
-                          <div className="min-w-0">
-                            <p className="text-xs sm:text-sm text-muted-foreground">Budget (80%)</p>
-                            <p className="text-lg sm:text-2xl font-bold text-purple-600">${biweeklyBreakdown.recommendedBudget.toFixed(2)}</p>
-                          </div>
-                          <Wallet className="h-5 w-5 sm:h-8 sm:w-8 text-purple-500 shrink-0" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card className={`bg-gradient-to-br col-span-2 lg:col-span-1 ${biweeklyBreakdown.savings >= 0 ? 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20' : 'from-red-500/10 to-red-500/5 border-red-500/20'}`}>
-                      <CardContent className="p-3 sm:pt-6">
-                        <div className="flex items-center justify-between">
-                          <div className="min-w-0">
-                            <p className="text-xs sm:text-sm text-muted-foreground">Net Savings</p>
-                            <p className={`text-lg sm:text-2xl font-bold ${biweeklyBreakdown.savings >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                              ${Math.abs(biweeklyBreakdown.savings).toFixed(2)}
-                              {biweeklyBreakdown.savings < 0 && ' deficit'}
-                            </p>
-                          </div>
-                          <PiggyBank className="h-5 w-5 sm:h-8 sm:w-8 text-emerald-500 shrink-0" />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </Card>
                 );
                 break;
 
               case 'pay_period_tabs':
                 if (!paySettings) return null;
                 content = (
-                  <Tabs defaultValue="period1" className="space-y-4">
-                    <TabsList className="grid w-full max-w-[400px] grid-cols-2">
-                      <TabsTrigger value="period1" className="text-xs sm:text-sm" onClick={() => setActivePayPeriod(1)}>
-                        Pay Period 1
-                      </TabsTrigger>
-                      <TabsTrigger value="period2" className="text-xs sm:text-sm" onClick={() => setActivePayPeriod(2)}>
-                        Pay Period 2
-                      </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="period1" className="space-y-4">
-                      {renderPayPeriodContent(1)}
-                    </TabsContent>
-                    <TabsContent value="period2" className="space-y-4">
-                      {renderPayPeriodContent(2)}
-                    </TabsContent>
-                  </Tabs>
+                  <Card>
+                    <Collapsible open={isSectionOpen('pay_period_tabs')} onOpenChange={() => toggleSection('pay_period_tabs')}>
+                      <CardHeader className="flex items-center justify-between p-4 sm:p-6">
+                        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                          <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
+                          Pay Period Breakdown
+                        </CardTitle>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+                            <ChevronDown className={`h-4 w-4 transition-transform ${isSectionOpen('pay_period_tabs') ? '' : '-rotate-90'}`} />
+                          </Button>
+                        </CollapsibleTrigger>
+                      </CardHeader>
+                      <CollapsibleContent>
+                        <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                          <Tabs defaultValue="period1" className="space-y-4">
+                            <TabsList className="grid w-full max-w-[400px] grid-cols-2">
+                              <TabsTrigger value="period1" className="text-xs sm:text-sm" onClick={() => setActivePayPeriod(1)}>
+                                Pay Period 1
+                              </TabsTrigger>
+                              <TabsTrigger value="period2" className="text-xs sm:text-sm" onClick={() => setActivePayPeriod(2)}>
+                                Pay Period 2
+                              </TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="period1" className="space-y-4">
+                              {renderPayPeriodContent(1)}
+                            </TabsContent>
+                            <TabsContent value="period2" className="space-y-4">
+                              {renderPayPeriodContent(2)}
+                            </TabsContent>
+                          </Tabs>
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </Card>
                 );
                 break;
 
