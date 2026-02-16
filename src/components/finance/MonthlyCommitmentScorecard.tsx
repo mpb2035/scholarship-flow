@@ -141,6 +141,38 @@ const MonthlyCommitmentScorecard = ({
 
   if (fixedCommitments.length === 0) return null;
 
+  const period1Items = fixedCommitments.filter(c => c.payPeriod === 1 || c.payPeriod === 0);
+  const period2Items = fixedCommitments.filter(c => c.payPeriod === 2 || c.payPeriod === 0);
+
+  const getPeriodPaidCount = (items: FixedCommitment[]) =>
+    items.filter(c => getTrackingForCommitment(c.id)?.isPaid).length;
+
+  const renderPeriodSection = (title: string, items: FixedCommitment[]) => {
+    const periodPaid = getPeriodPaidCount(items);
+    const periodTotal = items.reduce((sum, c) => sum + c.amount, 0);
+
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-semibold text-muted-foreground">{title}</h4>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">${periodTotal.toFixed(2)}</Badge>
+            <Badge variant={periodPaid === items.length ? 'default' : 'secondary'} className="text-[10px]">
+              {periodPaid}/{items.length}
+            </Badge>
+          </div>
+        </div>
+        {items.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center py-3 border rounded-lg border-dashed">No commitments</p>
+        ) : (
+          <div className="space-y-2">
+            {items.map(renderCommitmentRow)}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <Card>
       <CardHeader className="p-4 sm:p-6">
@@ -160,7 +192,6 @@ const MonthlyCommitmentScorecard = ({
           </div>
           <Progress value={progressPercent} className="h-2" />
         </div>
-        {/* Summary row */}
         <div className="grid grid-cols-2 gap-3 mt-3">
           <div className="p-2 rounded-lg bg-muted/50 text-center">
             <p className="text-xs text-muted-foreground">Expected</p>
@@ -173,8 +204,9 @@ const MonthlyCommitmentScorecard = ({
         </div>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-        <div className="space-y-2">
-          {fixedCommitments.map(renderCommitmentRow)}
+        <div className="space-y-5">
+          {renderPeriodSection('Pay Period 1', period1Items)}
+          {renderPeriodSection('Pay Period 2', period2Items)}
         </div>
       </CardContent>
     </Card>
