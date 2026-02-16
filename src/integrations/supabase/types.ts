@@ -549,6 +549,7 @@ export type Database = {
           month: number
           notes: string | null
           paid_date: string | null
+          pay_period: number
           updated_at: string
           user_id: string
           year: number
@@ -562,6 +563,7 @@ export type Database = {
           month: number
           notes?: string | null
           paid_date?: string | null
+          pay_period?: number
           updated_at?: string
           user_id: string
           year: number
@@ -575,6 +577,7 @@ export type Database = {
           month?: number
           notes?: string | null
           paid_date?: string | null
+          pay_period?: number
           updated_at?: string
           user_id?: string
           year?: number

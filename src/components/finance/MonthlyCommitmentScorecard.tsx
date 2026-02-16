@@ -47,9 +47,9 @@ interface Props {
   month: number;
   year: number;
   fixedCommitments: FixedCommitment[];
-  getTrackingForCommitment: (id: string) => CommitmentTrackingItem | null;
-  togglePaid: (commitmentId: string, isPaid: boolean, actualAmount?: number) => Promise<void>;
-  updateActualAmount: (commitmentId: string, amount: number) => Promise<void>;
+  getTrackingForCommitment: (id: string, forPayPeriod?: number) => CommitmentTrackingItem | null;
+  togglePaid: (commitmentId: string, isPaid: boolean, actualAmount?: number, forPayPeriod?: number) => Promise<void>;
+  updateActualAmount: (commitmentId: string, amount: number, forPayPeriod?: number) => Promise<void>;
   paidCount: number;
   totalCommitments: number;
   totalExpected: number;
@@ -66,31 +66,32 @@ const MonthlyCommitmentScorecard = ({
 
   const progressPercent = totalCommitments > 0 ? (paidCount / totalCommitments) * 100 : 0;
 
-  const handleAmountSave = async (commitmentId: string) => {
+  const handleAmountSave = async (commitmentId: string, forPayPeriod: number) => {
     if (tempAmount) {
-      await updateActualAmount(commitmentId, parseFloat(tempAmount));
+      await updateActualAmount(commitmentId, parseFloat(tempAmount), forPayPeriod);
     }
     setEditingAmount(null);
     setTempAmount('');
   };
 
-  const renderCommitmentRow = (commitment: FixedCommitment) => {
-    const tracking = getTrackingForCommitment(commitment.id);
+  const renderCommitmentRow = (commitment: FixedCommitment, displayPayPeriod: number) => {
+    const tracking = getTrackingForCommitment(commitment.id, displayPayPeriod);
     const isPaid = tracking?.isPaid ?? false;
     const actualAmount = tracking?.actualAmount;
     const Icon = getIcon(commitment.category);
-    const isEditing = editingAmount === commitment.id;
+    const rowKey = `${commitment.id}-p${displayPayPeriod}`;
+    const isEditing = editingAmount === rowKey;
 
     return (
       <div
-        key={commitment.id}
+        key={rowKey}
         className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
           isPaid ? 'bg-green-500/5 border-green-500/20' : 'border-border'
         }`}
       >
         <Checkbox
           checked={isPaid}
-          onCheckedChange={(checked) => togglePaid(commitment.id, !!checked)}
+          onCheckedChange={(checked) => togglePaid(commitment.id, !!checked, undefined, displayPayPeriod)}
           className="shrink-0"
         />
         <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -114,9 +115,9 @@ const MonthlyCommitmentScorecard = ({
                 className="w-20 h-7 text-xs"
                 placeholder="0.00"
                 autoFocus
-                onKeyDown={e => e.key === 'Enter' && handleAmountSave(commitment.id)}
+                onKeyDown={e => e.key === 'Enter' && handleAmountSave(commitment.id, displayPayPeriod)}
               />
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleAmountSave(commitment.id)}>
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleAmountSave(commitment.id, displayPayPeriod)}>
                 <Check className="h-3 w-3" />
               </Button>
             </div>
@@ -126,7 +127,7 @@ const MonthlyCommitmentScorecard = ({
               variant={actualAmount ? 'outline' : 'ghost'}
               className="h-7 text-xs px-2"
               onClick={() => {
-                setEditingAmount(commitment.id);
+                setEditingAmount(rowKey);
                 setTempAmount(actualAmount?.toString() || commitment.amount.toString());
               }}
             >
@@ -148,11 +149,11 @@ const MonthlyCommitmentScorecard = ({
   const period1Items = fixedCommitments.filter(c => c.payPeriod === 1 || c.payPeriod === 0);
   const period2Items = fixedCommitments.filter(c => c.payPeriod === 2 || c.payPeriod === 0);
 
-  const getPeriodPaidCount = (items: FixedCommitment[]) =>
-    items.filter(c => getTrackingForCommitment(c.id)?.isPaid).length;
+  const getPeriodPaidCount = (items: FixedCommitment[], period: number) =>
+    items.filter(c => getTrackingForCommitment(c.id, period)?.isPaid).length;
 
-  const p1Paid = getPeriodPaidCount(period1Items);
-  const p2Paid = getPeriodPaidCount(period2Items);
+  const p1Paid = getPeriodPaidCount(period1Items, 1);
+  const p2Paid = getPeriodPaidCount(period2Items, 2);
   const p1Total = period1Items.reduce((sum, c) => sum + c.amount, 0);
   const p2Total = period2Items.reduce((sum, c) => sum + c.amount, 0);
 
@@ -230,12 +231,12 @@ const MonthlyCommitmentScorecard = ({
           {rows.map((row, i) => (
             <div key={i} className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
               <div>
-                {row.left ? renderCommitmentRow(row.left) : (
+                {row.left ? renderCommitmentRow(row.left, 1) : (
                   <div className="hidden lg:block h-full" />
                 )}
               </div>
               <div>
-                {row.right ? renderCommitmentRow(row.right) : (
+                {row.right ? renderCommitmentRow(row.right, 2) : (
                   <div className="hidden lg:block h-full" />
                 )}
               </div>
