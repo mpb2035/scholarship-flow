@@ -72,13 +72,26 @@ export function TrainingPlanView({ completedTrainingDates = new Set(), onLogRun 
     });
   }, [completedTrainingDates]);
 
-  const filteredPlan = useMemo(() => {
+  const groupedByMonth = useMemo(() => {
     let plan = trainingPlan;
     if (phaseFilter !== 'all') {
       plan = plan.filter(d => d.phase === phaseFilter);
     }
-    return plan;
-  }, [phaseFilter]);
+    const groups: { label: string; key: string; days: TrainingDay[]; completed: number; workouts: number; pastWorkouts: number }[] = [];
+    const map = new Map<string, TrainingDay[]>();
+    for (const day of plan) {
+      const key = format(parseISO(day.date), 'yyyy-MM');
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(day);
+    }
+    for (const [key, days] of map) {
+      const workouts = days.filter(d => d.type !== 'rest');
+      const pastWorkouts = workouts.filter(d => isBefore(parseISO(d.date), today));
+      const completed = pastWorkouts.filter(d => completedTrainingDates.has(d.date)).length;
+      groups.push({ label: format(parseISO(key + '-01'), 'MMMM yyyy'), key, days, completed, workouts: workouts.length, pastWorkouts: pastWorkouts.length });
+    }
+    return groups;
+  }, [phaseFilter, completedTrainingDates]);
 
   const overallStats = useMemo(() => {
     const pastWorkouts = trainingPlan.filter(d => isBefore(parseISO(d.date), today) && d.type !== 'rest');
@@ -168,66 +181,95 @@ export function TrainingPlanView({ completedTrainingDates = new Set(), onLogRun 
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[500px] pr-4">
-            <div className="space-y-1.5">
-              {filteredPlan.map((day, index) => {
-                const isCompleted = completedTrainingDates.has(day.date);
-                const isExpanded = expandedDate === day.date;
+          <ScrollArea className="h-[600px] pr-4">
+            <div className="space-y-6">
+              {groupedByMonth.map((group) => {
+                const rate = group.pastWorkouts > 0 ? Math.round((group.completed / group.pastWorkouts) * 100) : 0;
                 return (
-                  <div key={`${day.date}-${index}`} className="space-y-0">
-                    <div
-                      className={cn(
-                        "flex items-center gap-3 p-3 rounded-lg border transition-colors",
-                        isCompleted && "bg-green-500/10 border-green-500/30",
-                        !isCompleted && day.type === 'race' && "bg-yellow-500/10 border-yellow-500/30",
-                        !isCompleted && day.type === 'rest' && "bg-muted/30 border-muted",
-                        !isCompleted && day.type === 'workout' && "bg-card border-border hover:bg-muted/50",
-                        isToday(parseISO(day.date)) && "ring-2 ring-primary",
-                        isRamadanPeriod(day.date) && "border-l-4 border-l-purple-500",
-                        onLogRun && !isCompleted && day.type !== 'rest' && "cursor-pointer"
-                      )}
-                      onClick={() => onLogRun && handleRowClick(day)}
-                    >
-                      <div className="shrink-0">
-                        {isCompleted ? (
-                          <CheckCircle2 className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <Circle className={cn("h-5 w-5",
-                            isBefore(parseISO(day.date), today) && day.type !== 'rest' ? "text-destructive" : "text-muted-foreground"
-                          )} />
+                  <div key={group.key} className="space-y-1.5">
+                    {/* Month header scorecard */}
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border sticky top-0 z-10 backdrop-blur-sm">
+                      <div className="flex items-center gap-3">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <span className="font-semibold text-sm">{group.label}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs">
+                        <span className="text-muted-foreground">{group.workouts} workouts</span>
+                        {group.pastWorkouts > 0 && (
+                          <>
+                            <span className="flex items-center gap-1">
+                              <CheckCircle2 className="h-3 w-3 text-green-500" />
+                              {group.completed}/{group.pastWorkouts}
+                            </span>
+                            <Badge variant={rate >= 80 ? "default" : rate >= 50 ? "secondary" : "destructive"} className="text-[10px]">
+                              {rate}%
+                            </Badge>
+                          </>
                         )}
                       </div>
-
-                      <div className="text-center min-w-[50px]">
-                        <p className="text-[10px] text-muted-foreground uppercase">{day.dayLabel}</p>
-                        <p className="text-xs font-semibold">{format(parseISO(day.date), 'MMM d')}</p>
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className={cn("text-sm font-medium truncate", isCompleted && "text-green-600")}>
-                            {day.activity}
-                          </p>
-                          {isRamadanPeriod(day.date) && <Moon className="h-3 w-3 text-purple-500 shrink-0" />}
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate">{day.details !== 'REST' ? day.details : day.notes}</p>
-                      </div>
-
-                      <Badge variant="outline" className={cn("text-[10px] shrink-0 hidden md:inline-flex", phaseInfo[day.phase].color)}>
-                        {phaseInfo[day.phase].label}
-                      </Badge>
-
-                      {getStatusBadge(day)}
                     </div>
 
-                    {/* Expanded quick-log form */}
-                    {isExpanded && onLogRun && (
-                      <TrainingDayExpanded
-                        day={day}
-                        onSubmit={onLogRun}
-                        onClose={() => setExpandedDate(null)}
-                      />
-                    )}
+                    {/* Days */}
+                    {group.days.map((day, index) => {
+                      const isCompleted = completedTrainingDates.has(day.date);
+                      const isExpanded = expandedDate === day.date;
+                      return (
+                        <div key={`${day.date}-${index}`} className="space-y-0">
+                          <div
+                            className={cn(
+                              "flex items-center gap-3 p-3 rounded-lg border transition-colors",
+                              isCompleted && "bg-green-500/10 border-green-500/30",
+                              !isCompleted && day.type === 'race' && "bg-yellow-500/10 border-yellow-500/30",
+                              !isCompleted && day.type === 'rest' && "bg-muted/30 border-muted",
+                              !isCompleted && day.type === 'workout' && "bg-card border-border hover:bg-muted/50",
+                              isToday(parseISO(day.date)) && "ring-2 ring-primary",
+                              isRamadanPeriod(day.date) && "border-l-4 border-l-purple-500",
+                              onLogRun && !isCompleted && day.type !== 'rest' && "cursor-pointer"
+                            )}
+                            onClick={() => onLogRun && handleRowClick(day)}
+                          >
+                            <div className="shrink-0">
+                              {isCompleted ? (
+                                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                              ) : (
+                                <Circle className={cn("h-5 w-5",
+                                  isBefore(parseISO(day.date), today) && day.type !== 'rest' ? "text-destructive" : "text-muted-foreground"
+                                )} />
+                              )}
+                            </div>
+
+                            <div className="text-center min-w-[50px]">
+                              <p className="text-[10px] text-muted-foreground uppercase">{day.dayLabel}</p>
+                              <p className="text-xs font-semibold">{format(parseISO(day.date), 'MMM d')}</p>
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className={cn("text-sm font-medium truncate", isCompleted && "text-green-600")}>
+                                  {day.activity}
+                                </p>
+                                {isRamadanPeriod(day.date) && <Moon className="h-3 w-3 text-purple-500 shrink-0" />}
+                              </div>
+                              <p className="text-xs text-muted-foreground truncate">{day.details !== 'REST' ? day.details : day.notes}</p>
+                            </div>
+
+                            <Badge variant="outline" className={cn("text-[10px] shrink-0 hidden md:inline-flex", phaseInfo[day.phase].color)}>
+                              {phaseInfo[day.phase].label}
+                            </Badge>
+
+                            {getStatusBadge(day)}
+                          </div>
+
+                          {isExpanded && onLogRun && (
+                            <TrainingDayExpanded
+                              day={day}
+                              onSubmit={onLogRun}
+                              onClose={() => setExpandedDate(null)}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })}
