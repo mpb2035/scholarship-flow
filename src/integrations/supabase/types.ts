@@ -592,6 +592,42 @@ export type Database = {
           },
         ]
       }
+      net_worth_entries: {
+        Row: {
+          amount: number
+          created_at: string
+          entry_type: string
+          id: string
+          label: string
+          logged_at: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          entry_type: string
+          id?: string
+          label: string
+          logged_at?: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          entry_type?: string
+          id?: string
+          label?: string
+          logged_at?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           color: string

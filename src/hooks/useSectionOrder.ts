@@ -7,6 +7,7 @@ const DEFAULT_ORDER = [
   'fixed_commitments',
   'monthly_scorecard',
   'savings_tracker',
+  'net_worth_tracker',
   'biweekly_overview',
   'pay_period_tabs',
 ];

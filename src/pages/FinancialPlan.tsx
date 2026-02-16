@@ -26,6 +26,8 @@ import { useCommitmentTracking } from '@/hooks/useCommitmentTracking';
 import MonthlyCommitmentScorecard from '@/components/finance/MonthlyCommitmentScorecard';
 import { useSavingsTracker } from '@/hooks/useSavingsTracker';
 import SavingsTracker from '@/components/finance/SavingsTracker';
+import { useNetWorthTracker } from '@/hooks/useNetWorthTracker';
+import NetWorthScorecard from '@/components/finance/NetWorthScorecard';
 import { useSectionOrder } from '@/hooks/useSectionOrder';
 
 const MONTHS = [
@@ -117,6 +119,15 @@ const FinancialPlan = () => {
     getGoalTotal, getGoalMonthTotal, getGoalMonthContributions,
     addGoal, deleteGoal, addContribution, deleteContribution, updateContribution,
   } = useSavingsTracker(selectedMonth, selectedYear);
+
+  const {
+    entries: netWorthEntries,
+    totals: netWorthTotals,
+    getEntriesByType,
+    addEntry: addNetWorthEntry,
+    updateEntry: updateNetWorthEntry,
+    deleteEntry: deleteNetWorthEntry,
+  } = useNetWorthTracker();
 
   const { sectionOrder, moveUp, moveDown } = useSectionOrder();
   const [reorderMode, setReorderMode] = useState(false);
@@ -820,6 +831,19 @@ const FinancialPlan = () => {
                     addContribution={addContribution}
                     deleteContribution={deleteContribution}
                     updateContribution={updateContribution}
+                  />
+                );
+                break;
+
+              case 'net_worth_tracker':
+                content = (
+                  <NetWorthScorecard
+                    entries={netWorthEntries}
+                    totals={netWorthTotals}
+                    getEntriesByType={getEntriesByType}
+                    addEntry={addNetWorthEntry}
+                    updateEntry={updateNetWorthEntry}
+                    deleteEntry={deleteNetWorthEntry}
                   />
                 );
                 break;
