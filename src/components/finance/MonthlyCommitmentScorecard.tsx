@@ -141,37 +141,36 @@ const MonthlyCommitmentScorecard = ({
 
   if (fixedCommitments.length === 0) return null;
 
+  const bothItems = fixedCommitments.filter(c => c.payPeriod === 0);
+  const period1Only = fixedCommitments.filter(c => c.payPeriod === 1);
+  const period2Only = fixedCommitments.filter(c => c.payPeriod === 2);
+
   const period1Items = fixedCommitments.filter(c => c.payPeriod === 1 || c.payPeriod === 0);
   const period2Items = fixedCommitments.filter(c => c.payPeriod === 2 || c.payPeriod === 0);
 
   const getPeriodPaidCount = (items: FixedCommitment[]) =>
     items.filter(c => getTrackingForCommitment(c.id)?.isPaid).length;
 
-  const renderPeriodSection = (title: string, items: FixedCommitment[]) => {
-    const periodPaid = getPeriodPaidCount(items);
-    const periodTotal = items.reduce((sum, c) => sum + c.amount, 0);
+  const p1Paid = getPeriodPaidCount(period1Items);
+  const p2Paid = getPeriodPaidCount(period2Items);
+  const p1Total = period1Items.reduce((sum, c) => sum + c.amount, 0);
+  const p2Total = period2Items.reduce((sum, c) => sum + c.amount, 0);
 
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <h4 className="text-sm font-semibold text-muted-foreground">{title}</h4>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs">${periodTotal.toFixed(2)}</Badge>
-            <Badge variant={periodPaid === items.length ? 'default' : 'secondary'} className="text-[10px]">
-              {periodPaid}/{items.length}
-            </Badge>
-          </div>
-        </div>
-        {items.length === 0 ? (
-          <p className="text-xs text-muted-foreground text-center py-3 border rounded-lg border-dashed">No commitments</p>
-        ) : (
-          <div className="space-y-2">
-            {items.map(renderCommitmentRow)}
-          </div>
-        )}
-      </div>
-    );
-  };
+  // Build aligned rows: shared items first, then exclusive items padded with nulls
+  type Row = { left: FixedCommitment | null; right: FixedCommitment | null };
+  const rows: Row[] = [];
+
+  // Shared commitments on the same row
+  bothItems.forEach(c => rows.push({ left: c, right: c }));
+
+  // Exclusive items - interleave into rows
+  const maxExclusive = Math.max(period1Only.length, period2Only.length);
+  for (let i = 0; i < maxExclusive; i++) {
+    rows.push({
+      left: period1Only[i] || null,
+      right: period2Only[i] || null,
+    });
+  }
 
   return (
     <Card>
@@ -204,9 +203,56 @@ const MonthlyCommitmentScorecard = ({
         </div>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-          {renderPeriodSection('Pay Period 1', period1Items)}
-          {renderPeriodSection('Pay Period 2', period2Items)}
+        {/* Column headers */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+          <div className="hidden lg:flex items-center justify-between mb-1">
+            <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 1</h4>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs">${p1Total.toFixed(2)}</Badge>
+              <Badge variant={p1Paid === period1Items.length ? 'default' : 'secondary'} className="text-[10px]">
+                {p1Paid}/{period1Items.length}
+              </Badge>
+            </div>
+          </div>
+          <div className="hidden lg:flex items-center justify-between mb-1">
+            <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 2</h4>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-xs">${p2Total.toFixed(2)}</Badge>
+              <Badge variant={p2Paid === period2Items.length ? 'default' : 'secondary'} className="text-[10px]">
+                {p2Paid}/{period2Items.length}
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        {/* Aligned rows */}
+        <div className="space-y-2">
+          {rows.map((row, i) => (
+            <div key={i} className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
+              <div>
+                {row.left ? renderCommitmentRow(row.left) : (
+                  <div className="hidden lg:block h-full" />
+                )}
+              </div>
+              <div>
+                {row.right ? renderCommitmentRow(row.right) : (
+                  <div className="hidden lg:block h-full" />
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile-only period headers */}
+        <div className="lg:hidden mt-3 grid grid-cols-2 gap-2">
+          <div className="p-2 rounded-lg bg-muted/30 text-center">
+            <p className="text-[10px] text-muted-foreground">Period 1</p>
+            <p className="text-xs font-bold">{p1Paid}/{period1Items.length} • ${p1Total.toFixed(2)}</p>
+          </div>
+          <div className="p-2 rounded-lg bg-muted/30 text-center">
+            <p className="text-[10px] text-muted-foreground">Period 2</p>
+            <p className="text-xs font-bold">{p2Paid}/{period2Items.length} • ${p2Total.toFixed(2)}</p>
+          </div>
         </div>
       </CardContent>
     </Card>
