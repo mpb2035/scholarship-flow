@@ -37,7 +37,7 @@ export default function TodoPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -50,17 +50,17 @@ export default function TodoPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <Input
             placeholder="New task title..."
             value={newTodoTitle}
             onChange={(e) => setNewTodoTitle(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreateTodo()}
-            className="w-64"
+            className="flex-1 sm:w-64"
           />
-          <Button onClick={handleCreateTodo} disabled={!newTodoTitle.trim()}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Task
+          <Button onClick={handleCreateTodo} disabled={!newTodoTitle.trim()} className="shrink-0">
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Add Task</span>
           </Button>
         </div>
       </div>

@@ -194,7 +194,7 @@ export function Header({ onAddNew, onRefresh, matters = [] }: HeaderProps) {
           </p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {user && (
             <span className="text-sm text-muted-foreground hidden sm:inline">
               {user.email}
@@ -206,8 +206,8 @@ export function Header({ onAddNew, onRefresh, matters = [] }: HeaderProps) {
             onClick={handleExportReport}
             className="border-border/50 hover:border-primary/50 hover:bg-secondary/50"
           >
-            <FileText className="h-4 w-4 mr-2" />
-            Export Report
+            <FileText className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Export Report</span>
           </Button>
           <Button 
             variant="outline" 
@@ -215,15 +215,17 @@ export function Header({ onAddNew, onRefresh, matters = [] }: HeaderProps) {
             onClick={onRefresh}
             className="border-border/50 hover:border-primary/50 hover:bg-secondary/50"
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            <RefreshCw className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
           <Button 
             onClick={onAddNew}
+            size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 gold-glow"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Log New Matter
+            <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Log New Matter</span>
+            <span className="sm:hidden">New</span>
           </Button>
           <Button 
             variant="outline" 
@@ -231,8 +233,8 @@ export function Header({ onAddNew, onRefresh, matters = [] }: HeaderProps) {
             onClick={handleSignOut}
             className="border-border/50 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
           >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
+            <LogOut className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Sign Out</span>
           </Button>
         </div>
       </div>

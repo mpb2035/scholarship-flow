@@ -36,21 +36,22 @@ export default function TriathleteGoal() {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="px-3 sm:container sm:mx-auto py-4 sm:py-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Target className="h-8 w-8 text-primary" />
-            Triathlete Goal: Sub-2 Hour Half Marathon
+          <h1 className="text-xl sm:text-3xl font-bold flex items-center gap-2 sm:gap-3">
+            <Target className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <span className="sm:hidden">Sub-2 Half Marathon</span>
+            <span className="hidden sm:inline">Triathlete Goal: Sub-2 Hour Half Marathon</span>
           </h1>
-           <p className="text-muted-foreground mt-1">
-            Track your training progress toward your {raceDisplayDate} race goal
+           <p className="text-sm text-muted-foreground mt-1">
+            Track your training toward {raceDisplayDate}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="text-lg px-4 py-2 bg-primary/10 border-primary/30">
-            <Trophy className="h-4 w-4 mr-2" />
+          <Badge variant="outline" className="text-sm sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2 bg-primary/10 border-primary/30">
+            <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
             {daysToRace} days to race
           </Badge>
         </div>
@@ -61,28 +62,30 @@ export default function TriathleteGoal() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-flex">
-          <TabsTrigger value="dashboard" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Dashboard
-          </TabsTrigger>
-          <TabsTrigger value="log" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            Log Run
-          </TabsTrigger>
-          <TabsTrigger value="history" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            History
-          </TabsTrigger>
-          <TabsTrigger value="plan" className="flex items-center gap-2">
-            <Target className="h-4 w-4" />
-            Training Plan
-          </TabsTrigger>
-          <TabsTrigger value="heartrate" className="flex items-center gap-2">
-            <Heart className="h-4 w-4" />
-            Heart Rate
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+          <TabsList className="inline-flex w-auto min-w-full sm:min-w-0 sm:grid sm:grid-cols-5 lg:w-auto lg:inline-flex">
+            <TabsTrigger value="dashboard" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap">
+              <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="log" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap">
+              <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Log Run
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap">
+              <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              History
+            </TabsTrigger>
+            <TabsTrigger value="plan" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap">
+              <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Plan
+            </TabsTrigger>
+            <TabsTrigger value="heartrate" className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm whitespace-nowrap">
+              <Heart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              HR
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="dashboard" className="space-y-6">
           <PerformanceChart logs={logs} completedTrainingDates={completedTrainingDates} />

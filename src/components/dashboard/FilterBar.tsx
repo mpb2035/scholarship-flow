@@ -158,7 +158,6 @@ export function FilterBar({
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Matters');
 
-    // Generate filename based on filters
     let filename = 'matters';
     if (filters.year !== 'all') {
       filename += `_${filters.year}`;
@@ -173,8 +172,8 @@ export function FilterBar({
   };
 
   return (
-    <div className="glass-card p-4">
-      <div className="flex flex-wrap gap-4 items-center">
+    <div className="glass-card p-3 sm:p-4">
+      <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-4 sm:items-center">
         {/* Status Toggle Buttons */}
         <ToggleGroup 
           type="single" 
@@ -182,12 +181,12 @@ export function FilterBar({
           onValueChange={(value) => {
             if (value) onStatusToggleChange?.(value as StatusToggle);
           }}
-          className="border border-border/50 rounded-lg p-1 bg-input"
+          className="border border-border/50 rounded-lg p-1 bg-input w-full sm:w-auto"
         >
           <ToggleGroupItem 
             value="in-process" 
             aria-label="In Process"
-            className="data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-400 px-3 py-1.5 text-sm"
+            className="data-[state=on]:bg-amber-500/20 data-[state=on]:text-amber-400 px-3 py-1.5 text-sm flex-1 sm:flex-none"
           >
             <Clock className="h-4 w-4 mr-2" />
             In Process
@@ -195,14 +194,14 @@ export function FilterBar({
           <ToggleGroupItem 
             value="completed" 
             aria-label="Completed"
-            className="data-[state=on]:bg-emerald-500/20 data-[state=on]:text-emerald-400 px-3 py-1.5 text-sm"
+            className="data-[state=on]:bg-emerald-500/20 data-[state=on]:text-emerald-400 px-3 py-1.5 text-sm flex-1 sm:flex-none"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             Completed
           </ToggleGroupItem>
         </ToggleGroup>
 
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative w-full sm:flex-1 sm:min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by Case ID or Title..."
@@ -212,122 +211,96 @@ export function FilterBar({
           />
         </div>
 
-        <Select
-          value={filters.month}
-          onValueChange={(value) => updateFilter('month', value)}
-        >
-          <SelectTrigger className="w-[140px] bg-input border-border/50">
-            <SelectValue placeholder="Month" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border">
-            {months.map((month) => (
-              <SelectItem key={month.value} value={month.value}>
-                {month.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-4">
+          <Select value={filters.month} onValueChange={(value) => updateFilter('month', value)}>
+            <SelectTrigger className="w-full sm:w-[140px] bg-input border-border/50">
+              <SelectValue placeholder="Month" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border">
+              {months.map((month) => (
+                <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select
-          value={filters.year}
-          onValueChange={(value) => updateFilter('year', value)}
-        >
-          <SelectTrigger className="w-[120px] bg-input border-border/50">
-            <SelectValue placeholder="Year" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border">
-            {years.map((year) => (
-              <SelectItem key={year.value} value={year.value}>
-                {year.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select value={filters.year} onValueChange={(value) => updateFilter('year', value)}>
+            <SelectTrigger className="w-full sm:w-[120px] bg-input border-border/50">
+              <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border">
+              {years.map((year) => (
+                <SelectItem key={year.value} value={year.value}>{year.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select
-          value={filters.status}
-          onValueChange={(value) => updateFilter('status', value as Filters['status'])}
-        >
-          <SelectTrigger className="w-[180px] bg-input border-border/50">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border">
-            {statuses.map((status) => (
-              <SelectItem key={status} value={status}>
-                {status === 'all' ? 'All Statuses' : status}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select value={filters.status} onValueChange={(value) => updateFilter('status', value as Filters['status'])}>
+            <SelectTrigger className="w-full sm:w-[180px] bg-input border-border/50">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border">
+              {statuses.map((status) => (
+                <SelectItem key={status} value={status}>{status === 'all' ? 'All Statuses' : status}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select
-          value={filters.priority}
-          onValueChange={(value) => updateFilter('priority', value as Filters['priority'])}
-        >
-          <SelectTrigger className="w-[140px] bg-input border-border/50">
-            <SelectValue placeholder="Priority" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border">
-            {priorities.map((priority) => (
-              <SelectItem key={priority} value={priority}>
-                {priority === 'all' ? 'All Priorities' : priority}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select value={filters.priority} onValueChange={(value) => updateFilter('priority', value as Filters['priority'])}>
+            <SelectTrigger className="w-full sm:w-[140px] bg-input border-border/50">
+              <SelectValue placeholder="Priority" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border">
+              {priorities.map((priority) => (
+                <SelectItem key={priority} value={priority}>{priority === 'all' ? 'All Priorities' : priority}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select
-          value={filters.caseType}
-          onValueChange={(value) => updateFilter('caseType', value as Filters['caseType'])}
-        >
-          <SelectTrigger className="w-[180px] bg-input border-border/50">
-            <SelectValue placeholder="Case Type" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border">
-            {caseTypes.map((type) => (
-              <SelectItem key={type} value={type}>
-                {type === 'all' ? 'All Types' : type}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select value={filters.caseType} onValueChange={(value) => updateFilter('caseType', value as Filters['caseType'])}>
+            <SelectTrigger className="w-full sm:w-[180px] bg-input border-border/50">
+              <SelectValue placeholder="Case Type" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border">
+              {caseTypes.map((type) => (
+                <SelectItem key={type} value={type}>{type === 'all' ? 'All Types' : type}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Select
-          value={filters.slaStatus}
-          onValueChange={(value) => updateFilter('slaStatus', value as Filters['slaStatus'])}
-        >
-          <SelectTrigger className="w-[140px] bg-input border-border/50">
-            <SelectValue placeholder="SLA Status" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border">
-            {slaStatuses.map((sla) => (
-              <SelectItem key={sla} value={sla}>
-                {sla === 'all' ? 'All SLA' : sla}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <Select value={filters.slaStatus} onValueChange={(value) => updateFilter('slaStatus', value as Filters['slaStatus'])}>
+            <SelectTrigger className="w-full sm:w-[140px] bg-input border-border/50">
+              <SelectValue placeholder="SLA Status" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border">
+              {slaStatuses.map((sla) => (
+                <SelectItem key={sla} value={sla}>{sla === 'all' ? 'All SLA' : sla}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        {hasActiveFilters && (
+        <div className="flex gap-2 w-full sm:w-auto">
+          {hasActiveFilters && (
+            <Button
+              onClick={handleClearFilters}
+              variant="outline"
+              className="flex-1 sm:flex-none bg-destructive/10 border-destructive/30 hover:bg-destructive/20 text-destructive"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Clear
+            </Button>
+          )}
+
           <Button
-            onClick={handleClearFilters}
+            onClick={handleDownloadExcel}
             variant="outline"
-            className="bg-destructive/10 border-destructive/30 hover:bg-destructive/20 text-destructive"
+            className="flex-1 sm:flex-none bg-primary/10 border-primary/30 hover:bg-primary/20 text-primary"
+            disabled={!filteredMatters || filteredMatters.length === 0}
           >
-            <X className="h-4 w-4 mr-2" />
-            Clear Filters
+            <Download className="h-4 w-4 mr-2" />
+            Export ({filteredMatters?.length || 0})
           </Button>
-        )}
-
-        <Button
-          onClick={handleDownloadExcel}
-          variant="outline"
-          className="bg-primary/10 border-primary/30 hover:bg-primary/20 text-primary"
-          disabled={!filteredMatters || filteredMatters.length === 0}
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Export Excel ({filteredMatters?.length || 0})
-        </Button>
+        </div>
       </div>
     </div>
   );
