@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { FixedCommitment } from '@/types/finance';
 import { CommitmentTrackingItem } from '@/hooks/useCommitmentTracking';
 import { 
-  ClipboardCheck, Check, DollarSign,
+  ClipboardCheck, Check, DollarSign, ChevronDown,
   Car, Zap, Phone, Home, Baby, ShoppingCart, Heart, MoreHorizontal, Tag
 } from 'lucide-react';
 
@@ -61,6 +62,7 @@ const MonthlyCommitmentScorecard = ({
   getTrackingForCommitment, togglePaid, updateActualAmount,
   paidCount, totalCommitments, totalExpected, totalActual,
 }: Props) => {
+  const [isOpen, setIsOpen] = useState(true);
   const [editingAmount, setEditingAmount] = useState<string | null>(null);
   const [tempAmount, setTempAmount] = useState('');
 
@@ -175,87 +177,98 @@ const MonthlyCommitmentScorecard = ({
 
   return (
     <Card>
-      <CardHeader className="p-4 sm:p-6">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <ClipboardCheck className="h-4 w-4 sm:h-5 sm:w-5" />
-            {MONTHS[month - 1]} {year} Scorecard
-          </CardTitle>
-          <Badge variant={paidCount === totalCommitments ? 'default' : 'secondary'} className="text-xs">
-            {paidCount}/{totalCommitments} Paid
-          </Badge>
-        </div>
-        <div className="space-y-2 mt-2">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Completion</span>
-            <span>{progressPercent.toFixed(0)}%</span>
-          </div>
-          <Progress value={progressPercent} className="h-2" />
-        </div>
-        <div className="grid grid-cols-2 gap-3 mt-3">
-          <div className="p-2 rounded-lg bg-muted/50 text-center">
-            <p className="text-xs text-muted-foreground">Expected</p>
-            <p className="text-sm font-bold">${totalExpected.toFixed(2)}</p>
-          </div>
-          <div className="p-2 rounded-lg bg-muted/50 text-center">
-            <p className="text-xs text-muted-foreground">Actual Logged</p>
-            <p className="text-sm font-bold">${totalActual.toFixed(2)}</p>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-        {/* Column headers */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
-          <div className="hidden lg:flex items-center justify-between mb-1">
-            <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 1</h4>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <ClipboardCheck className="h-4 w-4 sm:h-5 sm:w-5" />
+              {MONTHS[month - 1]} {year} Scorecard
+            </CardTitle>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">${p1Total.toFixed(2)}</Badge>
-              <Badge variant={p1Paid === period1Items.length ? 'default' : 'secondary'} className="text-[10px]">
-                {p1Paid}/{period1Items.length}
+              <Badge variant={paidCount === totalCommitments ? 'default' : 'secondary'} className="text-xs">
+                {paidCount}/{totalCommitments} Paid
               </Badge>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7">
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? '' : '-rotate-90'}`} />
+                </Button>
+              </CollapsibleTrigger>
             </div>
           </div>
-          <div className="hidden lg:flex items-center justify-between mb-1">
-            <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 2</h4>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">${p2Total.toFixed(2)}</Badge>
-              <Badge variant={p2Paid === period2Items.length ? 'default' : 'secondary'} className="text-[10px]">
-                {p2Paid}/{period2Items.length}
-              </Badge>
+          <div className="space-y-2 mt-2">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Completion</span>
+              <span>{progressPercent.toFixed(0)}%</span>
+            </div>
+            <Progress value={progressPercent} className="h-2" />
+          </div>
+          <div className="grid grid-cols-2 gap-3 mt-3">
+            <div className="p-2 rounded-lg bg-muted/50 text-center">
+              <p className="text-xs text-muted-foreground">Expected</p>
+              <p className="text-sm font-bold">${totalExpected.toFixed(2)}</p>
+            </div>
+            <div className="p-2 rounded-lg bg-muted/50 text-center">
+              <p className="text-xs text-muted-foreground">Actual Logged</p>
+              <p className="text-sm font-bold">${totalActual.toFixed(2)}</p>
             </div>
           </div>
-        </div>
-
-        {/* Aligned rows */}
-        <div className="space-y-2">
-          {rows.map((row, i) => (
-            <div key={i} className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
-              <div>
-                {row.left ? renderCommitmentRow(row.left, 1) : (
-                  <div className="hidden lg:block h-full" />
-                )}
+        </CardHeader>
+        <CollapsibleContent>
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+            {/* Column headers */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
+              <div className="hidden lg:flex items-center justify-between mb-1">
+                <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 1</h4>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">${p1Total.toFixed(2)}</Badge>
+                  <Badge variant={p1Paid === period1Items.length ? 'default' : 'secondary'} className="text-[10px]">
+                    {p1Paid}/{period1Items.length}
+                  </Badge>
+                </div>
               </div>
-              <div>
-                {row.right ? renderCommitmentRow(row.right, 2) : (
-                  <div className="hidden lg:block h-full" />
-                )}
+              <div className="hidden lg:flex items-center justify-between mb-1">
+                <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 2</h4>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">${p2Total.toFixed(2)}</Badge>
+                  <Badge variant={p2Paid === period2Items.length ? 'default' : 'secondary'} className="text-[10px]">
+                    {p2Paid}/{period2Items.length}
+                  </Badge>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
 
-        {/* Mobile-only period headers */}
-        <div className="lg:hidden mt-3 grid grid-cols-2 gap-2">
-          <div className="p-2 rounded-lg bg-muted/30 text-center">
-            <p className="text-[10px] text-muted-foreground">Period 1</p>
-            <p className="text-xs font-bold">{p1Paid}/{period1Items.length} • ${p1Total.toFixed(2)}</p>
-          </div>
-          <div className="p-2 rounded-lg bg-muted/30 text-center">
-            <p className="text-[10px] text-muted-foreground">Period 2</p>
-            <p className="text-xs font-bold">{p2Paid}/{period2Items.length} • ${p2Total.toFixed(2)}</p>
-          </div>
-        </div>
-      </CardContent>
+            {/* Aligned rows */}
+            <div className="space-y-2">
+              {rows.map((row, i) => (
+                <div key={i} className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-4">
+                  <div>
+                    {row.left ? renderCommitmentRow(row.left, 1) : (
+                      <div className="hidden lg:block h-full" />
+                    )}
+                  </div>
+                  <div>
+                    {row.right ? renderCommitmentRow(row.right, 2) : (
+                      <div className="hidden lg:block h-full" />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile-only period headers */}
+            <div className="lg:hidden mt-3 grid grid-cols-2 gap-2">
+              <div className="p-2 rounded-lg bg-muted/30 text-center">
+                <p className="text-[10px] text-muted-foreground">Period 1</p>
+                <p className="text-xs font-bold">{p1Paid}/{period1Items.length} • ${p1Total.toFixed(2)}</p>
+              </div>
+              <div className="p-2 rounded-lg bg-muted/30 text-center">
+                <p className="text-[10px] text-muted-foreground">Period 2</p>
+                <p className="text-xs font-bold">{p2Paid}/{period2Items.length} • ${p2Total.toFixed(2)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 };
