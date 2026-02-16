@@ -17,13 +17,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Loader2, Plus, Wallet, TrendingUp, TrendingDown, 
   DollarSign, Calendar, PiggyBank, Receipt, Trash2, Edit2, Settings,
-  Car, Zap, Phone, Home, Baby, ShoppingCart, Heart, MoreHorizontal, Tag
+  Car, Zap, Phone, Home, Baby, ShoppingCart, Heart, MoreHorizontal, Tag,
+  ArrowUp, ArrowDown, GripVertical
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { useCommitmentTracking } from '@/hooks/useCommitmentTracking';
 import MonthlyCommitmentScorecard from '@/components/finance/MonthlyCommitmentScorecard';
 import { useSavingsTracker } from '@/hooks/useSavingsTracker';
 import SavingsTracker from '@/components/finance/SavingsTracker';
+import { useSectionOrder } from '@/hooks/useSectionOrder';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -115,6 +117,10 @@ const FinancialPlan = () => {
     addGoal, deleteGoal, addContribution, deleteContribution,
   } = useSavingsTracker(selectedMonth, selectedYear);
 
+  const { sectionOrder, moveUp, moveDown } = useSectionOrder();
+  const [reorderMode, setReorderMode] = useState(false);
+
+  // Dialog states
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
   const [biweeklyExpenseDialogOpen, setBiweeklyExpenseDialogOpen] = useState(false);
@@ -464,6 +470,15 @@ const FinancialPlan = () => {
             <p className="text-sm text-muted-foreground">Track your biweekly pay and expenses</p>
           </div>
           <div className="flex items-center gap-2">
+            <Button 
+              size="sm" 
+              variant={reorderMode ? 'default' : 'outline'}
+              onClick={() => setReorderMode(!reorderMode)}
+              className="gap-1"
+            >
+              <GripVertical className="h-4 w-4" />
+              {reorderMode ? 'Done' : 'Reorder'}
+            </Button>
             <Select value={selectedMonth.toString()} onValueChange={v => setSelectedMonth(parseInt(v))}>
               <SelectTrigger className="w-[120px] sm:w-[140px]">
                 <SelectValue />
@@ -488,360 +503,409 @@ const FinancialPlan = () => {
         </div>
 
         <div className="space-y-4 sm:space-y-6">
-            {/* Biweekly Pay Settings - Persistent Scorecard */}
-            <Card>
-              <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <Wallet className="h-4 w-4 sm:h-5 sm:w-5" />
-                    Biweekly Pay Settings
-                  </CardTitle>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    Your salary is paid every two weeks — first half and second half of the month
-                  </p>
-                </div>
-                <Dialog open={paySettingsDialogOpen} onOpenChange={setPaySettingsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="sm" className="w-full sm:w-auto"><Edit2 className="h-4 w-4 mr-1" /> Configure</Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-[95vw] sm:max-w-lg">
-                    <DialogHeader>
-                      <DialogTitle>Configure Biweekly Salary</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 pt-4">
-                      <div className="space-y-2">
-                        <Label>Salary per paycheck ($)</Label>
-                        <Input 
-                          type="number"
-                          value={newPaySettings.payAmount} 
-                          onChange={e => setNewPaySettings({ ...newPaySettings, payAmount: e.target.value })}
-                          placeholder="0.00"
-                        />
-                        <p className="text-xs text-muted-foreground">Enter the fixed amount you receive every two weeks.</p>
-                      </div>
-                      <Button onClick={handleSavePaySettings} className="w-full">Save Settings</Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-                {paySettings ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <div>
-                      <p className="text-xs sm:text-sm text-muted-foreground">Per Paycheck</p>
-                      <p className="text-lg sm:text-xl font-bold">${paySettings.payAmount.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs sm:text-sm text-muted-foreground">Monthly (×2)</p>
-                      <p className="text-lg sm:text-xl font-bold">${(paySettings.payAmount * 2).toFixed(2)}</p>
-                    </div>
-                    <div className="col-span-2 sm:col-span-1">
-                      <p className="text-xs sm:text-sm text-muted-foreground">Fixed Commitments</p>
-                      <p className="text-lg sm:text-xl font-bold text-orange-600">${totalFixedCommitments.toFixed(2)}/mo</p>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-4">Configure your biweekly salary to get started.</p>
-                )}
-              </CardContent>
-            </Card>
+          {sectionOrder.map((sectionId, index) => {
+            let content: React.ReactNode = null;
 
-            {/* Fixed Commitments */}
-            <Card>
-              <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <Receipt className="h-4 w-4 sm:h-5 sm:w-5" />
-                    Fixed Commitments
-                  </CardTitle>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    Recurring bills split between pay periods • Total: ${totalFixedCommitments.toFixed(2)}/month
-                  </p>
-                </div>
-                <Dialog open={fixedCommitmentDialogOpen} onOpenChange={setFixedCommitmentDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="sm" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /> Add</Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-[95vw] sm:max-w-lg">
-                    <DialogHeader>
-                      <DialogTitle>Add Fixed Commitment</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 pt-4">
-                      <div className="space-y-2">
-                        <Label>Type</Label>
-                        <Select value={newFixedCommitment.category} onValueChange={v => setNewFixedCommitment({ ...newFixedCommitment, category: v })}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {COMMITMENT_CATEGORIES.map(c => (
-                              <SelectItem key={c.value} value={c.value}>
-                                <span className="flex items-center gap-2">
-                                  <c.icon className="h-4 w-4" />
-                                  {c.label}
-                                </span>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {newFixedCommitment.category === 'custom' && (
-                        <div className="space-y-2">
-                          <Label>Custom Type Name</Label>
-                          <Input 
-                            value={newFixedCommitment.customLabel}
-                            onChange={e => setNewFixedCommitment({ ...newFixedCommitment, customLabel: e.target.value })}
-                            placeholder="e.g., Insurance, Subscription, Gym"
-                          />
-                        </div>
-                      )}
-                      <div className="space-y-2">
-                        <Label>Description</Label>
-                        <Input 
-                          value={newFixedCommitment.description}
-                          onChange={e => setNewFixedCommitment({ ...newFixedCommitment, description: e.target.value })}
-                          placeholder="e.g., Car loan payment"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Amount ($)</Label>
-                        <Input 
-                          type="number"
-                          value={newFixedCommitment.amount}
-                          onChange={e => setNewFixedCommitment({ ...newFixedCommitment, amount: e.target.value })}
-                          placeholder="0.00"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Pay Period</Label>
-                        <Select value={newFixedCommitment.payPeriod} onValueChange={v => setNewFixedCommitment({ ...newFixedCommitment, payPeriod: v })}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="0">Both Pay Periods</SelectItem>
-                            <SelectItem value="1">Pay Period 1 Only</SelectItem>
-                            <SelectItem value="2">Pay Period 2 Only</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button onClick={handleAddFixedCommitment} className="w-full">Add Commitment</Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-                {fixedCommitments.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-6">No fixed commitments yet. Add your recurring bills like car payment, utilities, phone bills, etc.</p>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Both Pay Periods */}
-                    {getFixedCommitmentsByPayPeriod(1).filter(c => c.payPeriod === 0).length > 0 && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-semibold text-muted-foreground">Both Pay Periods</h4>
-                          <Badge variant="outline" className="text-xs">
-                            ${fixedCommitments.filter(c => c.payPeriod === 0).reduce((sum, c) => sum + c.amount, 0).toFixed(2)} each
-                          </Badge>
-                        </div>
-                        {fixedCommitments.filter(c => c.payPeriod === 0).map(c => {
-                          const Icon = getCommitmentIcon(c.category);
-                          return (
-                            <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                                <div className="min-w-0">
-                                  <p className="text-sm font-medium truncate">{c.description}</p>
-                                  <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category, c.customLabel)} • Both periods</p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                <span className="font-semibold text-sm">${c.amount.toFixed(2)}</span>
-                                <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteFixedCommitment(c.id)}>
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      {/* Pay Period 1 */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 1</h4>
-                          <Badge variant="outline" className="text-xs">${getFixedCommitmentTotals(1).toFixed(2)}</Badge>
-                        </div>
-                        {fixedCommitments.filter(c => c.payPeriod === 1).length === 0 ? (
-                          <p className="text-xs text-muted-foreground text-center py-3 border rounded-lg border-dashed">No exclusive commitments</p>
-                        ) : (
-                          fixedCommitments.filter(c => c.payPeriod === 1).map(c => {
-                            const Icon = getCommitmentIcon(c.category);
-                            return (
-                              <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                                  <div className="min-w-0">
-                                    <p className="text-sm font-medium truncate">{c.description}</p>
-                                    <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category, c.customLabel)}</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                  <span className="font-semibold text-sm">${c.amount.toFixed(2)}</span>
-                                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteFixedCommitment(c.id)}>
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                      {/* Pay Period 2 */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 2</h4>
-                          <Badge variant="outline" className="text-xs">${getFixedCommitmentTotals(2).toFixed(2)}</Badge>
-                        </div>
-                        {fixedCommitments.filter(c => c.payPeriod === 2).length === 0 ? (
-                          <p className="text-xs text-muted-foreground text-center py-3 border rounded-lg border-dashed">No exclusive commitments</p>
-                        ) : (
-                          fixedCommitments.filter(c => c.payPeriod === 2).map(c => {
-                            const Icon = getCommitmentIcon(c.category);
-                            return (
-                              <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                                  <div className="min-w-0">
-                                    <p className="text-sm font-medium truncate">{c.description}</p>
-                                    <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category, c.customLabel)}</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                  <span className="font-semibold text-sm">${c.amount.toFixed(2)}</span>
-                                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteFixedCommitment(c.id)}>
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Monthly Commitment Scorecard */}
-            <MonthlyCommitmentScorecard
-              month={selectedMonth}
-              year={selectedYear}
-              fixedCommitments={fixedCommitments}
-              getTrackingForCommitment={getTrackingForCommitment}
-              togglePaid={togglePaid}
-              updateActualAmount={updateActualAmount}
-              paidCount={paidCount}
-              totalCommitments={trackingTotalCommitments}
-              totalExpected={totalExpected}
-              totalActual={totalActual}
-            />
-
-            {/* Savings Tracker */}
-            <SavingsTracker
-              month={selectedMonth}
-              year={selectedYear}
-              goals={savingsGoals}
-              grandTotal={savingsGrandTotal}
-              monthTotal={savingsMonthTotal}
-              getGoalTotal={getGoalTotal}
-              getGoalMonthTotal={getGoalMonthTotal}
-              getGoalMonthContributions={getGoalMonthContributions}
-              addGoal={addGoal}
-              deleteGoal={deleteGoal}
-              addContribution={addContribution}
-              deleteContribution={deleteContribution}
-            />
-
-            {biweeklyBreakdown && (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
-                  <CardContent className="p-3 sm:pt-6">
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0">
-                        <p className="text-xs sm:text-sm text-muted-foreground">Paychecks</p>
-                        <p className="text-lg sm:text-2xl font-bold text-foreground">{biweeklyBreakdown.paychecksThisMonth}</p>
-                      </div>
-                      <Calendar className="h-5 w-5 sm:h-8 sm:w-8 text-blue-500 shrink-0" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
-                  <CardContent className="p-3 sm:pt-6">
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0">
-                        <p className="text-xs sm:text-sm text-muted-foreground">Total Income</p>
-                        <p className="text-lg sm:text-2xl font-bold text-green-600">${biweeklyBreakdown.totalIncome.toFixed(2)}</p>
-                      </div>
-                      <DollarSign className="h-5 w-5 sm:h-8 sm:w-8 text-green-500 shrink-0" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-purple-500/20">
-                  <CardContent className="p-3 sm:pt-6">
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0">
-                        <p className="text-xs sm:text-sm text-muted-foreground">Budget (80%)</p>
-                        <p className="text-lg sm:text-2xl font-bold text-purple-600">${biweeklyBreakdown.recommendedBudget.toFixed(2)}</p>
-                      </div>
-                      <Wallet className="h-5 w-5 sm:h-8 sm:w-8 text-purple-500 shrink-0" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className={`bg-gradient-to-br col-span-2 lg:col-span-1 ${biweeklyBreakdown.savings >= 0 ? 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20' : 'from-red-500/10 to-red-500/5 border-red-500/20'}`}>
-                  <CardContent className="p-3 sm:pt-6">
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0">
-                        <p className="text-xs sm:text-sm text-muted-foreground">Net Savings</p>
-                        <p className={`text-lg sm:text-2xl font-bold ${biweeklyBreakdown.savings >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                          ${Math.abs(biweeklyBreakdown.savings).toFixed(2)}
-                          {biweeklyBreakdown.savings < 0 && ' deficit'}
+            switch (sectionId) {
+              case 'pay_settings':
+                content = (
+                  <Card>
+                    <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                          <Wallet className="h-4 w-4 sm:h-5 sm:w-5" />
+                          Biweekly Pay Settings
+                        </CardTitle>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                          Your salary is paid every two weeks — first half and second half of the month
                         </p>
                       </div>
-                      <PiggyBank className="h-5 w-5 sm:h-8 sm:w-8 text-emerald-500 shrink-0" />
-                    </div>
-                  </CardContent>
-                </Card>
+                      <Dialog open={paySettingsDialogOpen} onOpenChange={setPaySettingsDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button size="sm" className="w-full sm:w-auto"><Edit2 className="h-4 w-4 mr-1" /> Configure</Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-[95vw] sm:max-w-lg">
+                          <DialogHeader>
+                            <DialogTitle>Configure Biweekly Salary</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4 pt-4">
+                            <div className="space-y-2">
+                              <Label>Salary per paycheck ($)</Label>
+                              <Input 
+                                type="number"
+                                value={newPaySettings.payAmount} 
+                                onChange={e => setNewPaySettings({ ...newPaySettings, payAmount: e.target.value })}
+                                placeholder="0.00"
+                              />
+                              <p className="text-xs text-muted-foreground">Enter the fixed amount you receive every two weeks.</p>
+                            </div>
+                            <Button onClick={handleSavePaySettings} className="w-full">Save Settings</Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                      {paySettings ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                          <div>
+                            <p className="text-xs sm:text-sm text-muted-foreground">Per Paycheck</p>
+                            <p className="text-lg sm:text-xl font-bold">${paySettings.payAmount.toFixed(2)}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs sm:text-sm text-muted-foreground">Monthly (×2)</p>
+                            <p className="text-lg sm:text-xl font-bold">${(paySettings.payAmount * 2).toFixed(2)}</p>
+                          </div>
+                          <div className="col-span-2 sm:col-span-1">
+                            <p className="text-xs sm:text-sm text-muted-foreground">Fixed Commitments</p>
+                            <p className="text-lg sm:text-xl font-bold text-orange-600">${totalFixedCommitments.toFixed(2)}/mo</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-center text-muted-foreground py-4">Configure your biweekly salary to get started.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+                break;
+
+              case 'fixed_commitments':
+                content = (
+                  <Card>
+                    <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                          <Receipt className="h-4 w-4 sm:h-5 sm:w-5" />
+                          Fixed Commitments
+                        </CardTitle>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                          Recurring bills split between pay periods • Total: ${totalFixedCommitments.toFixed(2)}/month
+                        </p>
+                      </div>
+                      <Dialog open={fixedCommitmentDialogOpen} onOpenChange={setFixedCommitmentDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button size="sm" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /> Add</Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-[95vw] sm:max-w-lg">
+                          <DialogHeader>
+                            <DialogTitle>Add Fixed Commitment</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4 pt-4">
+                            <div className="space-y-2">
+                              <Label>Type</Label>
+                              <Select value={newFixedCommitment.category} onValueChange={v => setNewFixedCommitment({ ...newFixedCommitment, category: v })}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {COMMITMENT_CATEGORIES.map(c => (
+                                    <SelectItem key={c.value} value={c.value}>
+                                      <span className="flex items-center gap-2">
+                                        <c.icon className="h-4 w-4" />
+                                        {c.label}
+                                      </span>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            {newFixedCommitment.category === 'custom' && (
+                              <div className="space-y-2">
+                                <Label>Custom Type Name</Label>
+                                <Input 
+                                  value={newFixedCommitment.customLabel}
+                                  onChange={e => setNewFixedCommitment({ ...newFixedCommitment, customLabel: e.target.value })}
+                                  placeholder="e.g., Insurance, Subscription, Gym"
+                                />
+                              </div>
+                            )}
+                            <div className="space-y-2">
+                              <Label>Description</Label>
+                              <Input 
+                                value={newFixedCommitment.description}
+                                onChange={e => setNewFixedCommitment({ ...newFixedCommitment, description: e.target.value })}
+                                placeholder="e.g., Car loan payment"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Amount ($)</Label>
+                              <Input 
+                                type="number"
+                                value={newFixedCommitment.amount}
+                                onChange={e => setNewFixedCommitment({ ...newFixedCommitment, amount: e.target.value })}
+                                placeholder="0.00"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Pay Period</Label>
+                              <Select value={newFixedCommitment.payPeriod} onValueChange={v => setNewFixedCommitment({ ...newFixedCommitment, payPeriod: v })}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="0">Both Pay Periods</SelectItem>
+                                  <SelectItem value="1">Pay Period 1 Only</SelectItem>
+                                  <SelectItem value="2">Pay Period 2 Only</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <Button onClick={handleAddFixedCommitment} className="w-full">Add Commitment</Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                      {fixedCommitments.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-6">No fixed commitments yet. Add your recurring bills like car payment, utilities, phone bills, etc.</p>
+                      ) : (
+                        <div className="space-y-4">
+                          {getFixedCommitmentsByPayPeriod(1).filter(c => c.payPeriod === 0).length > 0 && (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-sm font-semibold text-muted-foreground">Both Pay Periods</h4>
+                                <Badge variant="outline" className="text-xs">
+                                  ${fixedCommitments.filter(c => c.payPeriod === 0).reduce((sum, c) => sum + c.amount, 0).toFixed(2)} each
+                                </Badge>
+                              </div>
+                              {fixedCommitments.filter(c => c.payPeriod === 0).map(c => {
+                                const Icon = getCommitmentIcon(c.category);
+                                return (
+                                  <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                                      <div className="min-w-0">
+                                        <p className="text-sm font-medium truncate">{c.description}</p>
+                                        <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category, c.customLabel)} • Both periods</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <span className="font-semibold text-sm">${c.amount.toFixed(2)}</span>
+                                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteFixedCommitment(c.id)}>
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 1</h4>
+                                <Badge variant="outline" className="text-xs">${getFixedCommitmentTotals(1).toFixed(2)}</Badge>
+                              </div>
+                              {fixedCommitments.filter(c => c.payPeriod === 1).length === 0 ? (
+                                <p className="text-xs text-muted-foreground text-center py-3 border rounded-lg border-dashed">No exclusive commitments</p>
+                              ) : (
+                                fixedCommitments.filter(c => c.payPeriod === 1).map(c => {
+                                  const Icon = getCommitmentIcon(c.category);
+                                  return (
+                                    <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                                        <div className="min-w-0">
+                                          <p className="text-sm font-medium truncate">{c.description}</p>
+                                          <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category, c.customLabel)}</p>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        <span className="font-semibold text-sm">${c.amount.toFixed(2)}</span>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteFixedCommitment(c.id)}>
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 2</h4>
+                                <Badge variant="outline" className="text-xs">${getFixedCommitmentTotals(2).toFixed(2)}</Badge>
+                              </div>
+                              {fixedCommitments.filter(c => c.payPeriod === 2).length === 0 ? (
+                                <p className="text-xs text-muted-foreground text-center py-3 border rounded-lg border-dashed">No exclusive commitments</p>
+                              ) : (
+                                fixedCommitments.filter(c => c.payPeriod === 2).map(c => {
+                                  const Icon = getCommitmentIcon(c.category);
+                                  return (
+                                    <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                                        <div className="min-w-0">
+                                          <p className="text-sm font-medium truncate">{c.description}</p>
+                                          <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category, c.customLabel)}</p>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2 shrink-0">
+                                        <span className="font-semibold text-sm">${c.amount.toFixed(2)}</span>
+                                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteFixedCommitment(c.id)}>
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+                break;
+
+              case 'monthly_scorecard':
+                content = (
+                  <MonthlyCommitmentScorecard
+                    month={selectedMonth}
+                    year={selectedYear}
+                    fixedCommitments={fixedCommitments}
+                    getTrackingForCommitment={getTrackingForCommitment}
+                    togglePaid={togglePaid}
+                    updateActualAmount={updateActualAmount}
+                    paidCount={paidCount}
+                    totalCommitments={trackingTotalCommitments}
+                    totalExpected={totalExpected}
+                    totalActual={totalActual}
+                  />
+                );
+                break;
+
+              case 'savings_tracker':
+                content = (
+                  <SavingsTracker
+                    month={selectedMonth}
+                    year={selectedYear}
+                    goals={savingsGoals}
+                    grandTotal={savingsGrandTotal}
+                    monthTotal={savingsMonthTotal}
+                    getGoalTotal={getGoalTotal}
+                    getGoalMonthTotal={getGoalMonthTotal}
+                    getGoalMonthContributions={getGoalMonthContributions}
+                    addGoal={addGoal}
+                    deleteGoal={deleteGoal}
+                    addContribution={addContribution}
+                    deleteContribution={deleteContribution}
+                  />
+                );
+                break;
+
+              case 'biweekly_overview':
+                if (!biweeklyBreakdown) return null;
+                content = (
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+                      <CardContent className="p-3 sm:pt-6">
+                        <div className="flex items-center justify-between">
+                          <div className="min-w-0">
+                            <p className="text-xs sm:text-sm text-muted-foreground">Paychecks</p>
+                            <p className="text-lg sm:text-2xl font-bold text-foreground">{biweeklyBreakdown.paychecksThisMonth}</p>
+                          </div>
+                          <Calendar className="h-5 w-5 sm:h-8 sm:w-8 text-blue-500 shrink-0" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
+                      <CardContent className="p-3 sm:pt-6">
+                        <div className="flex items-center justify-between">
+                          <div className="min-w-0">
+                            <p className="text-xs sm:text-sm text-muted-foreground">Total Income</p>
+                            <p className="text-lg sm:text-2xl font-bold text-green-600">${biweeklyBreakdown.totalIncome.toFixed(2)}</p>
+                          </div>
+                          <DollarSign className="h-5 w-5 sm:h-8 sm:w-8 text-green-500 shrink-0" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-purple-500/20">
+                      <CardContent className="p-3 sm:pt-6">
+                        <div className="flex items-center justify-between">
+                          <div className="min-w-0">
+                            <p className="text-xs sm:text-sm text-muted-foreground">Budget (80%)</p>
+                            <p className="text-lg sm:text-2xl font-bold text-purple-600">${biweeklyBreakdown.recommendedBudget.toFixed(2)}</p>
+                          </div>
+                          <Wallet className="h-5 w-5 sm:h-8 sm:w-8 text-purple-500 shrink-0" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card className={`bg-gradient-to-br col-span-2 lg:col-span-1 ${biweeklyBreakdown.savings >= 0 ? 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20' : 'from-red-500/10 to-red-500/5 border-red-500/20'}`}>
+                      <CardContent className="p-3 sm:pt-6">
+                        <div className="flex items-center justify-between">
+                          <div className="min-w-0">
+                            <p className="text-xs sm:text-sm text-muted-foreground">Net Savings</p>
+                            <p className={`text-lg sm:text-2xl font-bold ${biweeklyBreakdown.savings >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                              ${Math.abs(biweeklyBreakdown.savings).toFixed(2)}
+                              {biweeklyBreakdown.savings < 0 && ' deficit'}
+                            </p>
+                          </div>
+                          <PiggyBank className="h-5 w-5 sm:h-8 sm:w-8 text-emerald-500 shrink-0" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                );
+                break;
+
+              case 'pay_period_tabs':
+                if (!paySettings) return null;
+                content = (
+                  <Tabs defaultValue="period1" className="space-y-4">
+                    <TabsList className="grid w-full max-w-[400px] grid-cols-2">
+                      <TabsTrigger value="period1" className="text-xs sm:text-sm" onClick={() => setActivePayPeriod(1)}>
+                        Pay Period 1
+                      </TabsTrigger>
+                      <TabsTrigger value="period2" className="text-xs sm:text-sm" onClick={() => setActivePayPeriod(2)}>
+                        Pay Period 2
+                      </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="period1" className="space-y-4">
+                      {renderPayPeriodContent(1)}
+                    </TabsContent>
+                    <TabsContent value="period2" className="space-y-4">
+                      {renderPayPeriodContent(2)}
+                    </TabsContent>
+                  </Tabs>
+                );
+                break;
+
+              default:
+                return null;
+            }
+
+            if (!content) return null;
+
+            return (
+              <div key={sectionId} className="relative">
+                {reorderMode && (
+                  <div className="absolute -left-1 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-0.5 sm:-left-10">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-6 w-6 rounded-full"
+                      onClick={() => moveUp(sectionId)}
+                      disabled={index === 0}
+                    >
+                      <ArrowUp className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-6 w-6 rounded-full"
+                      onClick={() => moveDown(sectionId)}
+                      disabled={index === sectionOrder.length - 1}
+                    >
+                      <ArrowDown className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+                <div className={reorderMode ? 'ml-8 sm:ml-0 ring-1 ring-primary/20 rounded-lg transition-all' : ''}>
+                  {content}
+                </div>
               </div>
-            )}
-
-            {/* Pay Period Tabs */}
-            {paySettings && (
-              <Tabs defaultValue="period1" className="space-y-4">
-                <TabsList className="grid w-full max-w-[400px] grid-cols-2">
-                  <TabsTrigger value="period1" className="text-xs sm:text-sm" onClick={() => setActivePayPeriod(1)}>
-                    Pay Period 1
-                  </TabsTrigger>
-                  <TabsTrigger value="period2" className="text-xs sm:text-sm" onClick={() => setActivePayPeriod(2)}>
-                    Pay Period 2
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="period1" className="space-y-4">
-                  {renderPayPeriodContent(1)}
-                </TabsContent>
-
-                <TabsContent value="period2" className="space-y-4">
-                  {renderPayPeriodContent(2)}
-                </TabsContent>
-              </Tabs>
-            )}
-
+            );
+          })}
 
             {/* Add Biweekly Expense Dialog */}
             <Dialog open={biweeklyExpenseDialogOpen} onOpenChange={setBiweeklyExpenseDialogOpen}>
