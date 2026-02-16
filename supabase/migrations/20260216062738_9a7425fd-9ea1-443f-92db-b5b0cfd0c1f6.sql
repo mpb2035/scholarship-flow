@@ -1,0 +1,1 @@
+ALTER TABLE public.fixed_commitments ADD COLUMN custom_label text;

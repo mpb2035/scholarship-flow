@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Loader2, Plus, Wallet, TrendingUp, TrendingDown, 
   DollarSign, Calendar, PiggyBank, Receipt, Trash2, Edit2, Settings,
-  Car, Zap, Phone, Home, Baby, ShoppingCart, Heart, MoreHorizontal
+  Car, Zap, Phone, Home, Baby, ShoppingCart, Heart, MoreHorizontal, Tag
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
@@ -44,6 +44,7 @@ const COMMITMENT_CATEGORIES = [
   { value: 'baby', label: 'Diapers/Baby', icon: Baby },
   { value: 'grocery', label: 'Grocery', icon: ShoppingCart },
   { value: 'wife', label: 'Wife Pocket Money', icon: Heart },
+  { value: 'custom', label: 'Custom', icon: Tag },
   { value: 'other', label: 'Other', icon: MoreHorizontal },
 ] as const;
 
@@ -52,7 +53,8 @@ const getCommitmentIcon = (category: string) => {
   return found ? found.icon : MoreHorizontal;
 };
 
-const getCommitmentLabel = (category: string) => {
+const getCommitmentLabel = (category: string, customLabel?: string | null) => {
+  if (category === 'custom' && customLabel) return customLabel;
   const found = COMMITMENT_CATEGORIES.find(c => c.value === category);
   return found ? found.label : 'Other';
 };
@@ -87,6 +89,7 @@ const FinancialPlan = () => {
     deleteExpense,
     updatePaySettings,
     addFixedCommitment,
+    updateFixedCommitment,
     deleteFixedCommitment,
   } = useFinance(selectedMonth, selectedYear);
 
@@ -123,6 +126,7 @@ const FinancialPlan = () => {
     amount: '',
     payPeriod: '1',
     category: 'other',
+    customLabel: '',
   });
 
   useEffect(() => {
@@ -226,8 +230,9 @@ const FinancialPlan = () => {
         amount: parseFloat(newFixedCommitment.amount),
         payPeriod: parseInt(newFixedCommitment.payPeriod),
         category: newFixedCommitment.category,
+        customLabel: newFixedCommitment.category === 'custom' ? newFixedCommitment.customLabel : undefined,
       });
-      setNewFixedCommitment({ description: '', amount: '', payPeriod: '1', category: 'other' });
+      setNewFixedCommitment({ description: '', amount: '', payPeriod: '1', category: 'other', customLabel: '' });
       setFixedCommitmentDialogOpen(false);
       toast({ title: 'Fixed commitment added' });
     } catch {
@@ -559,6 +564,16 @@ const FinancialPlan = () => {
                           </SelectContent>
                         </Select>
                       </div>
+                      {newFixedCommitment.category === 'custom' && (
+                        <div className="space-y-2">
+                          <Label>Custom Type Name</Label>
+                          <Input 
+                            value={newFixedCommitment.customLabel}
+                            onChange={e => setNewFixedCommitment({ ...newFixedCommitment, customLabel: e.target.value })}
+                            placeholder="e.g., Insurance, Subscription, Gym"
+                          />
+                        </div>
+                      )}
                       <div className="space-y-2">
                         <Label>Description</Label>
                         <Input 
@@ -616,7 +631,7 @@ const FinancialPlan = () => {
                                 <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
                                 <div className="min-w-0">
                                   <p className="text-sm font-medium truncate">{c.description}</p>
-                                  <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category)} • Both periods</p>
+                                  <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category, c.customLabel)} • Both periods</p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
@@ -648,7 +663,7 @@ const FinancialPlan = () => {
                                   <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
                                   <div className="min-w-0">
                                     <p className="text-sm font-medium truncate">{c.description}</p>
-                                    <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category)}</p>
+                                    <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category, c.customLabel)}</p>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
@@ -679,7 +694,7 @@ const FinancialPlan = () => {
                                   <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
                                   <div className="min-w-0">
                                     <p className="text-sm font-medium truncate">{c.description}</p>
-                                    <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category)}</p>
+                                    <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category, c.customLabel)}</p>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">

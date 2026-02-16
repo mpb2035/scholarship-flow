@@ -84,6 +84,7 @@ export const useFinance = (month: number, year: number) => {
           amount: Number(c.amount),
           payPeriod: c.pay_period,
           category: c.category,
+          customLabel: c.custom_label || null,
           isActive: c.is_active,
           createdAt: c.created_at,
           updatedAt: c.updated_at,
@@ -302,7 +303,7 @@ export const useFinance = (month: number, year: number) => {
   };
 
   // Fixed Commitments CRUD
-  const addFixedCommitment = async (data: { description: string; amount: number; payPeriod: number; category?: string }) => {
+  const addFixedCommitment = async (data: { description: string; amount: number; payPeriod: number; category?: string; customLabel?: string }) => {
     if (!user) return;
     const { error } = await supabase.from('fixed_commitments').insert({
       user_id: user.id,
@@ -310,7 +311,20 @@ export const useFinance = (month: number, year: number) => {
       amount: data.amount,
       pay_period: data.payPeriod,
       category: data.category || 'other',
+      custom_label: data.customLabel || null,
     });
+    if (error) throw error;
+    await fetchData();
+  };
+
+  const updateFixedCommitment = async (id: string, updates: Partial<{ description: string; amount: number; payPeriod: number; category: string; customLabel: string }>) => {
+    const updateData: any = {};
+    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.amount !== undefined) updateData.amount = updates.amount;
+    if (updates.payPeriod !== undefined) updateData.pay_period = updates.payPeriod;
+    if (updates.category !== undefined) updateData.category = updates.category;
+    if (updates.customLabel !== undefined) updateData.custom_label = updates.customLabel;
+    const { error } = await supabase.from('fixed_commitments').update(updateData).eq('id', id);
     if (error) throw error;
     await fetchData();
   };
@@ -358,6 +372,7 @@ export const useFinance = (month: number, year: number) => {
     deleteExpense,
     updatePaySettings,
     addFixedCommitment,
+    updateFixedCommitment,
     deleteFixedCommitment,
     refresh: fetchData,
   };
