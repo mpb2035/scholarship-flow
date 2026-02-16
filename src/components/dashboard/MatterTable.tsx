@@ -258,10 +258,69 @@ export function MatterTable({ matters, onEdit, onDelete, onView, onConvertToProj
           disabled={inProcessCount === 0}
         >
           <FileSpreadsheet className="h-4 w-4 mr-2" />
-          Export In Process ({inProcessCount})
+          <span className="hidden sm:inline">Export In Process</span> ({inProcessCount})
         </Button>
       </div>
-      <div className="overflow-x-auto scrollbar-gold">
+
+      {/* Mobile Card View */}
+      <div className="sm:hidden divide-y divide-border/30">
+        {sortedMatters.map((matter) => (
+          <div
+            key={matter.id}
+            className="p-4 active:bg-secondary/30 transition-colors cursor-pointer"
+            onClick={() => onView(matter)}
+          >
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div className="min-w-0 flex-1">
+                <span className="font-mono text-sm text-primary">{matter.caseId}</span>
+                <p className="font-medium text-sm truncate mt-0.5">{matter.caseTitle}</p>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-popover border-border">
+                  <DropdownMenuItem onClick={() => onView(matter)} className="cursor-pointer">
+                    <Eye className="mr-2 h-4 w-4" /> View
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onEdit(matter)} className="cursor-pointer">
+                    <Edit2 className="mr-2 h-4 w-4" /> Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onDelete(matter.id)} className="cursor-pointer text-destructive focus:text-destructive">
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                  </DropdownMenuItem>
+                  {onConvertToProject && (
+                    <DropdownMenuItem onClick={() => onConvertToProject(matter)} className="cursor-pointer text-primary focus:text-primary">
+                      <FolderKanban className="mr-2 h-4 w-4" /> Convert to Project
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className={cn('text-xs', getPriorityStyle(matter.priority))}>
+                {matter.priority}
+              </Badge>
+              <Badge variant="outline" className={cn('text-xs', getSlaStatusStyle(matter.slaStatus))}>
+                {matter.slaStatus}
+              </Badge>
+              <span className="text-xs text-muted-foreground">{matter.caseType}</span>
+              <span className={cn(
+                'text-xs font-mono ml-auto',
+                matter.daysInProcess > 30 ? 'text-destructive' : 
+                matter.daysInProcess > 14 ? 'text-warning' : 'text-muted-foreground'
+              )}>
+                {matter.daysInProcess}d
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden sm:block overflow-x-auto scrollbar-gold">
         <Table>
           <TableHeader>
             <TableRow className="border-border/50 hover:bg-transparent">
