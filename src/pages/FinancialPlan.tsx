@@ -20,6 +20,8 @@ import {
   Car, Zap, Phone, Home, Baby, ShoppingCart, Heart, MoreHorizontal, Tag
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import { useCommitmentTracking } from '@/hooks/useCommitmentTracking';
+import MonthlyCommitmentScorecard from '@/components/finance/MonthlyCommitmentScorecard';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -92,6 +94,16 @@ const FinancialPlan = () => {
     updateFixedCommitment,
     deleteFixedCommitment,
   } = useFinance(selectedMonth, selectedYear);
+
+  const {
+    getTrackingForCommitment,
+    togglePaid,
+    updateActualAmount,
+    paidCount,
+    totalCommitments: trackingTotalCommitments,
+    totalExpected,
+    totalActual,
+  } = useCommitmentTracking(selectedMonth, selectedYear, fixedCommitments);
 
   // Dialog states
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
@@ -714,7 +726,20 @@ const FinancialPlan = () => {
               </CardContent>
             </Card>
 
-            {/* Biweekly Overview Breakdown */}
+            {/* Monthly Commitment Scorecard */}
+            <MonthlyCommitmentScorecard
+              month={selectedMonth}
+              year={selectedYear}
+              fixedCommitments={fixedCommitments}
+              getTrackingForCommitment={getTrackingForCommitment}
+              togglePaid={togglePaid}
+              updateActualAmount={updateActualAmount}
+              paidCount={paidCount}
+              totalCommitments={trackingTotalCommitments}
+              totalExpected={totalExpected}
+              totalActual={totalActual}
+            />
+
             {biweeklyBreakdown && (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">

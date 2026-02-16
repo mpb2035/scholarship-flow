@@ -515,6 +515,56 @@ export type Database = {
           },
         ]
       }
+      monthly_commitment_tracking: {
+        Row: {
+          actual_amount: number | null
+          commitment_id: string
+          created_at: string
+          id: string
+          is_paid: boolean
+          month: number
+          notes: string | null
+          paid_date: string | null
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          actual_amount?: number | null
+          commitment_id: string
+          created_at?: string
+          id?: string
+          is_paid?: boolean
+          month: number
+          notes?: string | null
+          paid_date?: string | null
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          actual_amount?: number | null
+          commitment_id?: string
+          created_at?: string
+          id?: string
+          is_paid?: boolean
+          month?: number
+          notes?: string | null
+          paid_date?: string | null
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_commitment_tracking_commitment_id_fkey"
+            columns: ["commitment_id"]
+            isOneToOne: false
+            referencedRelation: "fixed_commitments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           color: string
