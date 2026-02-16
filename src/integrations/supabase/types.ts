@@ -171,6 +171,42 @@ export type Database = {
           },
         ]
       }
+      fixed_commitments: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean
+          pay_period: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean
+          pay_period?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          pay_period?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       gtci_strategic_analysis: {
         Row: {
           created_at: string
