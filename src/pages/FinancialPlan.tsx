@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Loader2, Plus, Wallet, TrendingUp, TrendingDown, 
   DollarSign, Calendar, PiggyBank, Receipt, Trash2, Edit2, Settings
@@ -183,7 +184,45 @@ const FinancialPlan = () => {
     }
   };
 
-  // Render pay period content (expenses and summary for each period)
+  // Mobile-friendly expense card for small screens
+  const renderExpenseCard = (expense: typeof monthlyExpenses[0], showDelete = true) => {
+    const category = categories.find(c => c.id === expense.categoryId);
+    return (
+      <div key={expense.id} className="flex items-center justify-between p-3 border rounded-lg">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-medium truncate">{expense.description}</span>
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs text-muted-foreground font-mono">
+              {format(parseISO(expense.expenseDate), 'MMM d')}
+            </span>
+            {category && (
+              <div className="flex items-center gap-1">
+                <div className={`w-2 h-2 rounded-full ${CATEGORY_COLORS[category.color] || 'bg-gray-500'}`} />
+                <span className="text-xs text-muted-foreground">{category.name}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="font-semibold">${expense.amount.toFixed(2)}</span>
+          {showDelete && (
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              className="h-7 w-7 text-destructive"
+              onClick={() => deleteExpense(expense.id)}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Render pay period content
   const renderPayPeriodContent = (period: 1 | 2) => {
     const periodExpenses = getExpensesByPayPeriod(period);
     const periodTotals = getPayPeriodTotals(period);
@@ -193,42 +232,42 @@ const FinancialPlan = () => {
     return (
       <>
         {/* Period Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-            <CardContent className="pt-6">
+            <CardContent className="p-4 sm:pt-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Period Budget</p>
-                  <p className="text-2xl font-bold text-foreground">${perPaycheckBudget.toFixed(2)}</p>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Period Budget</p>
+                  <p className="text-xl sm:text-2xl font-bold text-foreground">${perPaycheckBudget.toFixed(2)}</p>
                 </div>
-                <Wallet className="h-8 w-8 text-primary" />
+                <Wallet className="h-6 w-6 sm:h-8 sm:w-8 text-primary shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/20">
-            <CardContent className="pt-6">
+            <CardContent className="p-4 sm:pt-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Committed</p>
-                  <p className="text-2xl font-bold text-foreground">${periodTotals.spent.toFixed(2)}</p>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Committed</p>
+                  <p className="text-xl sm:text-2xl font-bold text-foreground">${periodTotals.spent.toFixed(2)}</p>
                 </div>
-                <TrendingDown className="h-8 w-8 text-destructive" />
+                <TrendingDown className="h-6 w-6 sm:h-8 sm:w-8 text-destructive shrink-0" />
               </div>
             </CardContent>
           </Card>
 
           <Card className={`bg-gradient-to-br ${periodTotals.remaining >= 0 ? 'from-green-500/10 to-green-500/5 border-green-500/20' : 'from-red-500/10 to-red-500/5 border-red-500/20'}`}>
-            <CardContent className="pt-6">
+            <CardContent className="p-4 sm:pt-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Remaining</p>
-                  <p className={`text-2xl font-bold ${periodTotals.remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Remaining</p>
+                  <p className={`text-xl sm:text-2xl font-bold ${periodTotals.remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     ${Math.abs(periodTotals.remaining).toFixed(2)}
                     {periodTotals.remaining < 0 && ' over'}
                   </p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-green-500" />
+                <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 shrink-0" />
               </div>
             </CardContent>
           </Card>
@@ -236,7 +275,7 @@ const FinancialPlan = () => {
 
         {/* Usage Progress */}
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="p-4 sm:pt-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-muted-foreground">Budget Usage</p>
               <span className="text-sm font-medium">{spentPercent.toFixed(0)}%</span>
@@ -247,64 +286,75 @@ const FinancialPlan = () => {
 
         {/* Commitments List */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Receipt className="h-5 w-5" />
-              Commitments - Pay Period {period}
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Receipt className="h-4 w-4 sm:h-5 sm:w-5" />
+              Commitments - Period {period}
             </CardTitle>
-            <Button size="sm" onClick={() => { setActivePayPeriod(period); setBiweeklyExpenseDialogOpen(true); }}>
+            <Button size="sm" className="w-full sm:w-auto" onClick={() => { setActivePayPeriod(period); setBiweeklyExpenseDialogOpen(true); }}>
               <Plus className="h-4 w-4 mr-1" /> Add Commitment
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
             {periodExpenses.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">No commitments for this pay period yet.</p>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {periodExpenses.map(expense => {
-                    const category = categories.find(c => c.id === expense.categoryId);
-                    return (
-                      <TableRow key={expense.id}>
-                        <TableCell className="font-mono text-sm">
-                          {format(parseISO(expense.expenseDate), 'MMM d')}
-                        </TableCell>
-                        <TableCell>{expense.description}</TableCell>
-                        <TableCell>
-                          {category ? (
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${CATEGORY_COLORS[category.color] || 'bg-gray-500'}`} />
-                              <span className="text-sm">{category.name}</span>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">${expense.amount.toFixed(2)}</TableCell>
-                        <TableCell>
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
-                            className="h-7 w-7 text-destructive"
-                            onClick={() => deleteExpense(expense.id)}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+              <>
+                {/* Mobile card layout */}
+                <div className="space-y-2 sm:hidden">
+                  {periodExpenses.map(expense => renderExpenseCard(expense))}
+                </div>
+                {/* Desktop table layout */}
+                <div className="hidden sm:block">
+                  <ScrollArea className="w-full">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Description</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead className="text-right">Amount</TableHead>
+                          <TableHead></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {periodExpenses.map(expense => {
+                          const category = categories.find(c => c.id === expense.categoryId);
+                          return (
+                            <TableRow key={expense.id}>
+                              <TableCell className="font-mono text-sm">
+                                {format(parseISO(expense.expenseDate), 'MMM d')}
+                              </TableCell>
+                              <TableCell>{expense.description}</TableCell>
+                              <TableCell>
+                                {category ? (
+                                  <div className="flex items-center gap-2">
+                                    <div className={`w-2 h-2 rounded-full ${CATEGORY_COLORS[category.color] || 'bg-gray-500'}`} />
+                                    <span className="text-sm">{category.name}</span>
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground">—</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-right font-medium">${expense.amount.toFixed(2)}</TableCell>
+                              <TableCell>
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-7 w-7 text-destructive"
+                                  onClick={() => deleteExpense(expense.id)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </ScrollArea>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -325,17 +375,17 @@ const FinancialPlan = () => {
   const spentPercentage = totals.budget > 0 ? Math.min((totals.spent / totals.budget) * 100, 100) : 0;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8">
-      <div className="max-w-[1800px] mx-auto space-y-6">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8">
+      <div className="max-w-[1800px] mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center sm:gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Financial Plan</h1>
-            <p className="text-muted-foreground">Track your monthly expenses and budget</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Financial Plan</h1>
+            <p className="text-sm text-muted-foreground">Track your monthly expenses and budget</p>
           </div>
           <div className="flex items-center gap-2">
             <Select value={selectedMonth.toString()} onValueChange={v => setSelectedMonth(parseInt(v))}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-[120px] sm:w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -345,7 +395,7 @@ const FinancialPlan = () => {
               </SelectContent>
             </Select>
             <Select value={selectedYear.toString()} onValueChange={v => setSelectedYear(parseInt(v))}>
-              <SelectTrigger className="w-[100px]">
+              <SelectTrigger className="w-[90px] sm:w-[100px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -357,60 +407,60 @@ const FinancialPlan = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="monthly" className="space-y-6">
+        <Tabs defaultValue="monthly" className="space-y-4 sm:space-y-6">
           <TabsList className="grid w-full max-w-[400px] grid-cols-2">
-            <TabsTrigger value="monthly">Monthly Budget</TabsTrigger>
-            <TabsTrigger value="biweekly">Biweekly Pay</TabsTrigger>
+            <TabsTrigger value="monthly" className="text-xs sm:text-sm">Monthly Budget</TabsTrigger>
+            <TabsTrigger value="biweekly" className="text-xs sm:text-sm">Biweekly Pay</TabsTrigger>
           </TabsList>
 
           {/* Monthly Budget Tab */}
-          <TabsContent value="monthly" className="space-y-6">
+          <TabsContent value="monthly" className="space-y-4 sm:space-y-6">
             {/* Scorecards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-                <CardContent className="pt-6">
+                <CardContent className="p-3 sm:pt-6">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total Budget</p>
-                      <p className="text-2xl font-bold text-foreground">${totals.budget.toFixed(2)}</p>
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm text-muted-foreground">Total Budget</p>
+                      <p className="text-lg sm:text-2xl font-bold text-foreground">${totals.budget.toFixed(2)}</p>
                     </div>
-                    <Wallet className="h-8 w-8 text-primary" />
+                    <Wallet className="h-5 w-5 sm:h-8 sm:w-8 text-primary shrink-0" />
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/20">
-                <CardContent className="pt-6">
+                <CardContent className="p-3 sm:pt-6">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Amount Spent</p>
-                      <p className="text-2xl font-bold text-foreground">${totals.spent.toFixed(2)}</p>
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm text-muted-foreground">Amount Spent</p>
+                      <p className="text-lg sm:text-2xl font-bold text-foreground">${totals.spent.toFixed(2)}</p>
                     </div>
-                    <TrendingDown className="h-8 w-8 text-destructive" />
+                    <TrendingDown className="h-5 w-5 sm:h-8 sm:w-8 text-destructive shrink-0" />
                   </div>
                 </CardContent>
               </Card>
 
               <Card className={`bg-gradient-to-br ${totals.remaining >= 0 ? 'from-green-500/10 to-green-500/5 border-green-500/20' : 'from-red-500/10 to-red-500/5 border-red-500/20'}`}>
-                <CardContent className="pt-6">
+                <CardContent className="p-3 sm:pt-6">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Remaining</p>
-                      <p className={`text-2xl font-bold ${totals.remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm text-muted-foreground">Remaining</p>
+                      <p className={`text-lg sm:text-2xl font-bold ${totals.remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         ${Math.abs(totals.remaining).toFixed(2)}
                         {totals.remaining < 0 && ' over'}
                       </p>
                     </div>
-                    <TrendingUp className="h-8 w-8 text-green-500" />
+                    <TrendingUp className="h-5 w-5 sm:h-8 sm:w-8 text-green-500 shrink-0" />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardContent className="pt-6">
+              <Card className="col-span-2 lg:col-span-1">
+                <CardContent className="p-3 sm:pt-6">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-muted-foreground">Budget Usage</p>
-                    <span className="text-sm font-medium">{spentPercentage.toFixed(0)}%</span>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Budget Usage</p>
+                    <span className="text-xs sm:text-sm font-medium">{spentPercentage.toFixed(0)}%</span>
                   </div>
                   <Progress value={spentPercentage} className="h-2" />
                 </CardContent>
@@ -418,19 +468,19 @@ const FinancialPlan = () => {
             </div>
 
             {/* Category Budgets & Expenses */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Categories with Budget */}
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Receipt className="h-5 w-5" />
+                <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <Receipt className="h-4 w-4 sm:h-5 sm:w-5" />
                     Categories & Budgets
                   </CardTitle>
                   <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Add Category</Button>
+                      <Button size="sm" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /> Add Category</Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-[95vw] sm:max-w-lg">
                       <DialogHeader>
                         <DialogTitle>Add Expense Category</DialogTitle>
                       </DialogHeader>
@@ -445,7 +495,7 @@ const FinancialPlan = () => {
                         </div>
                         <div className="space-y-2">
                           <Label>Color</Label>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-wrap">
                             {Object.keys(CATEGORY_COLORS).map(color => (
                               <button
                                 key={color}
@@ -460,33 +510,33 @@ const FinancialPlan = () => {
                     </DialogContent>
                   </Dialog>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
                   {categorySummaries.length === 0 ? (
                     <p className="text-center text-muted-foreground py-8">No categories yet. Add one to get started!</p>
                   ) : (
                     <div className="space-y-3">
                       {categorySummaries.map(cat => (
                         <div key={cat.id} className="p-3 border rounded-lg space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-3 h-3 rounded-full ${CATEGORY_COLORS[cat.color] || 'bg-gray-500'}`} />
-                              <span className="font-medium">{cat.name}</span>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className={`w-3 h-3 rounded-full shrink-0 ${CATEGORY_COLORS[cat.color] || 'bg-gray-500'}`} />
+                              <span className="font-medium truncate">{cat.name}</span>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                               {budgetEditCategory === cat.id ? (
                                 <>
                                   <Input
                                     type="number"
                                     value={budgetAmount}
                                     onChange={e => setBudgetAmount(e.target.value)}
-                                    className="w-24 h-8"
+                                    className="w-20 sm:w-24 h-8"
                                     placeholder="Budget"
                                   />
                                   <Button size="sm" onClick={() => handleSaveBudget(cat.id)}>Save</Button>
                                 </>
                               ) : (
                                 <>
-                                  <Badge variant="outline">${cat.budget.toFixed(2)}</Badge>
+                                  <Badge variant="outline" className="text-xs">${cat.budget.toFixed(2)}</Badge>
                                   <Button 
                                     size="icon" 
                                     variant="ghost" 
@@ -507,7 +557,7 @@ const FinancialPlan = () => {
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center justify-between text-sm text-muted-foreground">
+                          <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground">
                             <span>Spent: ${cat.spent.toFixed(2)}</span>
                             <span className={cat.remaining >= 0 ? 'text-green-600' : 'text-red-600'}>
                               {cat.remaining >= 0 ? 'Remaining' : 'Over'}: ${Math.abs(cat.remaining).toFixed(2)}
@@ -525,16 +575,16 @@ const FinancialPlan = () => {
 
               {/* Expenses List */}
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5" />
+                <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
                     Expenses ({MONTHS[selectedMonth - 1]})
                   </CardTitle>
                   <Dialog open={expenseDialogOpen} onOpenChange={setExpenseDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button size="sm"><Plus className="h-4 w-4 mr-1" /> Add Expense</Button>
+                      <Button size="sm" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /> Add Expense</Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-[95vw] sm:max-w-lg">
                       <DialogHeader>
                         <DialogTitle>Add Expense</DialogTitle>
                       </DialogHeader>
@@ -582,53 +632,64 @@ const FinancialPlan = () => {
                     </DialogContent>
                   </Dialog>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
                   {monthlyExpenses.length === 0 ? (
                     <p className="text-center text-muted-foreground py-8">No expenses recorded this month.</p>
                   ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Category</TableHead>
-                          <TableHead className="text-right">Amount</TableHead>
-                          <TableHead></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {monthlyExpenses.map(expense => {
-                          const category = categories.find(c => c.id === expense.categoryId);
-                          return (
-                            <TableRow key={expense.id}>
-                              <TableCell>{format(parseISO(expense.expenseDate), 'MMM d')}</TableCell>
-                              <TableCell>{expense.description}</TableCell>
-                              <TableCell>
-                                {category ? (
-                                  <div className="flex items-center gap-1.5">
-                                    <div className={`w-2 h-2 rounded-full ${CATEGORY_COLORS[category.color] || 'bg-gray-500'}`} />
-                                    <span className="text-sm">{category.name}</span>
-                                  </div>
-                                ) : (
-                                  <span className="text-muted-foreground">—</span>
-                                )}
-                              </TableCell>
-                              <TableCell className="text-right font-medium">${expense.amount.toFixed(2)}</TableCell>
-                              <TableCell>
-                                <Button 
-                                  size="icon" 
-                                  variant="ghost" 
-                                  className="h-7 w-7 text-destructive"
-                                  onClick={() => deleteExpense(expense.id)}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
+                    <>
+                      {/* Mobile card layout */}
+                      <div className="space-y-2 sm:hidden">
+                        {monthlyExpenses.map(expense => renderExpenseCard(expense))}
+                      </div>
+                      {/* Desktop table layout */}
+                      <div className="hidden sm:block">
+                        <ScrollArea className="w-full">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Description</TableHead>
+                                <TableHead>Category</TableHead>
+                                <TableHead className="text-right">Amount</TableHead>
+                                <TableHead></TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {monthlyExpenses.map(expense => {
+                                const category = categories.find(c => c.id === expense.categoryId);
+                                return (
+                                  <TableRow key={expense.id}>
+                                    <TableCell>{format(parseISO(expense.expenseDate), 'MMM d')}</TableCell>
+                                    <TableCell>{expense.description}</TableCell>
+                                    <TableCell>
+                                      {category ? (
+                                        <div className="flex items-center gap-1.5">
+                                          <div className={`w-2 h-2 rounded-full ${CATEGORY_COLORS[category.color] || 'bg-gray-500'}`} />
+                                          <span className="text-sm">{category.name}</span>
+                                        </div>
+                                      ) : (
+                                        <span className="text-muted-foreground">—</span>
+                                      )}
+                                    </TableCell>
+                                    <TableCell className="text-right font-medium">${expense.amount.toFixed(2)}</TableCell>
+                                    <TableCell>
+                                      <Button 
+                                        size="icon" 
+                                        variant="ghost" 
+                                        className="h-7 w-7 text-destructive"
+                                        onClick={() => deleteExpense(expense.id)}
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </ScrollArea>
+                      </div>
+                    </>
                   )}
                 </CardContent>
               </Card>
@@ -636,19 +697,19 @@ const FinancialPlan = () => {
           </TabsContent>
 
           {/* Biweekly Pay Tab */}
-          <TabsContent value="biweekly" className="space-y-6">
+          <TabsContent value="biweekly" className="space-y-4 sm:space-y-6">
             {/* Pay Settings */}
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
+              <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
                   Biweekly Pay Settings
                 </CardTitle>
                 <Dialog open={paySettingsDialogOpen} onOpenChange={setPaySettingsDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button size="sm"><Edit2 className="h-4 w-4 mr-1" /> Configure</Button>
+                    <Button size="sm" className="w-full sm:w-auto"><Edit2 className="h-4 w-4 mr-1" /> Configure</Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="max-w-[95vw] sm:max-w-lg">
                     <DialogHeader>
                       <DialogTitle>Configure Biweekly Pay</DialogTitle>
                     </DialogHeader>
@@ -676,16 +737,16 @@ const FinancialPlan = () => {
                   </DialogContent>
                 </Dialog>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
                 {paySettings ? (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Pay Amount</p>
-                      <p className="text-xl font-bold">${paySettings.payAmount.toFixed(2)}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">Pay Amount</p>
+                      <p className="text-lg sm:text-xl font-bold">${paySettings.payAmount.toFixed(2)}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">First Pay Date</p>
-                      <p className="text-xl font-bold">{format(parseISO(paySettings.firstPayDate), 'MMM d, yyyy')}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">First Pay Date</p>
+                      <p className="text-lg sm:text-xl font-bold">{format(parseISO(paySettings.firstPayDate), 'MMM d, yyyy')}</p>
                     </div>
                   </div>
                 ) : (
@@ -696,54 +757,54 @@ const FinancialPlan = () => {
 
             {/* Biweekly Overview Breakdown */}
             {biweeklyBreakdown && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
-                  <CardContent className="pt-6">
+                  <CardContent className="p-3 sm:pt-6">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Paychecks This Month</p>
-                        <p className="text-2xl font-bold text-foreground">{biweeklyBreakdown.paychecksThisMonth}</p>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-muted-foreground">Paychecks</p>
+                        <p className="text-lg sm:text-2xl font-bold text-foreground">{biweeklyBreakdown.paychecksThisMonth}</p>
                       </div>
-                      <Calendar className="h-8 w-8 text-blue-500" />
+                      <Calendar className="h-5 w-5 sm:h-8 sm:w-8 text-blue-500 shrink-0" />
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
-                  <CardContent className="pt-6">
+                  <CardContent className="p-3 sm:pt-6">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Total Income</p>
-                        <p className="text-2xl font-bold text-green-600">${biweeklyBreakdown.totalIncome.toFixed(2)}</p>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-muted-foreground">Total Income</p>
+                        <p className="text-lg sm:text-2xl font-bold text-green-600">${biweeklyBreakdown.totalIncome.toFixed(2)}</p>
                       </div>
-                      <DollarSign className="h-8 w-8 text-green-500" />
+                      <DollarSign className="h-5 w-5 sm:h-8 sm:w-8 text-green-500 shrink-0" />
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-purple-500/20">
-                  <CardContent className="pt-6">
+                  <CardContent className="p-3 sm:pt-6">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Recommended Budget (80%)</p>
-                        <p className="text-2xl font-bold text-purple-600">${biweeklyBreakdown.recommendedBudget.toFixed(2)}</p>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-muted-foreground">Budget (80%)</p>
+                        <p className="text-lg sm:text-2xl font-bold text-purple-600">${biweeklyBreakdown.recommendedBudget.toFixed(2)}</p>
                       </div>
-                      <Wallet className="h-8 w-8 text-purple-500" />
+                      <Wallet className="h-5 w-5 sm:h-8 sm:w-8 text-purple-500 shrink-0" />
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className={`bg-gradient-to-br ${biweeklyBreakdown.savings >= 0 ? 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20' : 'from-red-500/10 to-red-500/5 border-red-500/20'}`}>
-                  <CardContent className="pt-6">
+                <Card className={`bg-gradient-to-br col-span-2 lg:col-span-1 ${biweeklyBreakdown.savings >= 0 ? 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20' : 'from-red-500/10 to-red-500/5 border-red-500/20'}`}>
+                  <CardContent className="p-3 sm:pt-6">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Net Savings</p>
-                        <p className={`text-2xl font-bold ${biweeklyBreakdown.savings >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm text-muted-foreground">Net Savings</p>
+                        <p className={`text-lg sm:text-2xl font-bold ${biweeklyBreakdown.savings >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                           ${Math.abs(biweeklyBreakdown.savings).toFixed(2)}
                           {biweeklyBreakdown.savings < 0 && ' deficit'}
                         </p>
                       </div>
-                      <PiggyBank className="h-8 w-8 text-emerald-500" />
+                      <PiggyBank className="h-5 w-5 sm:h-8 sm:w-8 text-emerald-500 shrink-0" />
                     </div>
                   </CardContent>
                 </Card>
@@ -754,20 +815,18 @@ const FinancialPlan = () => {
             {paySettings && (
               <Tabs defaultValue="period1" className="space-y-4">
                 <TabsList className="grid w-full max-w-[400px] grid-cols-2">
-                  <TabsTrigger value="period1" onClick={() => setActivePayPeriod(1)}>
+                  <TabsTrigger value="period1" className="text-xs sm:text-sm" onClick={() => setActivePayPeriod(1)}>
                     Pay Period 1
                   </TabsTrigger>
-                  <TabsTrigger value="period2" onClick={() => setActivePayPeriod(2)}>
+                  <TabsTrigger value="period2" className="text-xs sm:text-sm" onClick={() => setActivePayPeriod(2)}>
                     Pay Period 2
                   </TabsTrigger>
                 </TabsList>
 
-                {/* Pay Period 1 */}
                 <TabsContent value="period1" className="space-y-4">
                   {renderPayPeriodContent(1)}
                 </TabsContent>
 
-                {/* Pay Period 2 */}
                 <TabsContent value="period2" className="space-y-4">
                   {renderPayPeriodContent(2)}
                 </TabsContent>
@@ -777,50 +836,75 @@ const FinancialPlan = () => {
             {/* Budget Allocation per Paycheck */}
             {biweeklyBreakdown && biweeklyBreakdown.paychecksThisMonth > 0 && categorySummaries.length > 0 && (
               <Card>
-                <CardHeader>
-                  <CardTitle>Budget Allocation per Paycheck</CardTitle>
-                  <p className="text-sm text-muted-foreground">How much to set aside from each paycheck for your budget categories</p>
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-base sm:text-lg">Budget Allocation per Paycheck</CardTitle>
+                  <p className="text-xs sm:text-sm text-muted-foreground">How much to set aside from each paycheck for your budget categories</p>
                 </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Category</TableHead>
-                        <TableHead className="text-right">Monthly Budget</TableHead>
-                        <TableHead className="text-right">Per Paycheck</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {categorySummaries.filter(c => c.budget > 0).map(cat => (
-                        <TableRow key={cat.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <div className={`w-3 h-3 rounded-full ${CATEGORY_COLORS[cat.color] || 'bg-gray-500'}`} />
-                              {cat.name}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">${cat.budget.toFixed(2)}</TableCell>
-                          <TableCell className="text-right font-medium">
-                            ${(cat.budget / biweeklyBreakdown.paychecksThisMonth).toFixed(2)}
+                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                  {/* Mobile card layout */}
+                  <div className="space-y-2 sm:hidden">
+                    {categorySummaries.filter(c => c.budget > 0).map(cat => (
+                      <div key={cat.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={`w-3 h-3 rounded-full shrink-0 ${CATEGORY_COLORS[cat.color] || 'bg-gray-500'}`} />
+                          <span className="truncate text-sm">{cat.name}</span>
+                        </div>
+                        <div className="text-right shrink-0 ml-2">
+                          <p className="font-semibold text-sm">${(cat.budget / biweeklyBreakdown.paychecksThisMonth).toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">${cat.budget.toFixed(2)}/mo</p>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/50 font-bold">
+                      <span className="text-sm">Total</span>
+                      <div className="text-right">
+                        <p className="text-sm">${(totals.budget / biweeklyBreakdown.paychecksThisMonth).toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground font-normal">${totals.budget.toFixed(2)}/mo</p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Desktop table layout */}
+                  <div className="hidden sm:block">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Category</TableHead>
+                          <TableHead className="text-right">Monthly Budget</TableHead>
+                          <TableHead className="text-right">Per Paycheck</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {categorySummaries.filter(c => c.budget > 0).map(cat => (
+                          <TableRow key={cat.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div className={`w-3 h-3 rounded-full ${CATEGORY_COLORS[cat.color] || 'bg-gray-500'}`} />
+                                {cat.name}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">${cat.budget.toFixed(2)}</TableCell>
+                            <TableCell className="text-right font-medium">
+                              ${(cat.budget / biweeklyBreakdown.paychecksThisMonth).toFixed(2)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        <TableRow className="font-bold bg-muted/50">
+                          <TableCell>Total</TableCell>
+                          <TableCell className="text-right">${totals.budget.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">
+                            ${(totals.budget / biweeklyBreakdown.paychecksThisMonth).toFixed(2)}
                           </TableCell>
                         </TableRow>
-                      ))}
-                      <TableRow className="font-bold bg-muted/50">
-                        <TableCell>Total</TableCell>
-                        <TableCell className="text-right">${totals.budget.toFixed(2)}</TableCell>
-                        <TableCell className="text-right">
-                          ${(totals.budget / biweeklyBreakdown.paychecksThisMonth).toFixed(2)}
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
+                      </TableBody>
+                    </Table>
+                  </div>
                 </CardContent>
               </Card>
             )}
 
             {/* Add Biweekly Expense Dialog */}
             <Dialog open={biweeklyExpenseDialogOpen} onOpenChange={setBiweeklyExpenseDialogOpen}>
-              <DialogContent>
+              <DialogContent className="max-w-[95vw] sm:max-w-lg">
                 <DialogHeader>
                   <DialogTitle>Add Commitment - Pay Period {activePayPeriod}</DialogTitle>
                 </DialogHeader>
