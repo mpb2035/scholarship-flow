@@ -176,6 +176,7 @@ export type Database = {
           amount: number
           category: string
           created_at: string
+          custom_label: string | null
           description: string
           id: string
           is_active: boolean
@@ -187,6 +188,7 @@ export type Database = {
           amount: number
           category?: string
           created_at?: string
+          custom_label?: string | null
           description: string
           id?: string
           is_active?: boolean
@@ -198,6 +200,7 @@ export type Database = {
           amount?: number
           category?: string
           created_at?: string
+          custom_label?: string | null
           description?: string
           id?: string
           is_active?: boolean

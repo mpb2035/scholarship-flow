@@ -54,6 +54,7 @@ export interface FixedCommitment {
   amount: number;
   payPeriod: number;
   category: string;
+  customLabel: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
