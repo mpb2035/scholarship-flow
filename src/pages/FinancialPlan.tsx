@@ -209,7 +209,7 @@ const FinancialPlan = () => {
   };
 
   const handleSavePaySettings = async () => {
-    if (!newPaySettings.payAmount || !newPaySettings.firstPayDate) return;
+    if (!newPaySettings.payAmount) return;
     try {
       await updatePaySettings(parseFloat(newPaySettings.payAmount), newPaySettings.firstPayDate);
       setPaySettingsDialogOpen(false);
@@ -435,7 +435,7 @@ const FinancialPlan = () => {
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center sm:gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-foreground">Financial Plan</h1>
-            <p className="text-sm text-muted-foreground">Track your monthly expenses and budget</p>
+            <p className="text-sm text-muted-foreground">Track your biweekly pay and expenses</p>
           </div>
           <div className="flex items-center gap-2">
             <Select value={selectedMonth.toString()} onValueChange={v => setSelectedMonth(parseInt(v))}>
@@ -461,330 +461,37 @@ const FinancialPlan = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="monthly" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full max-w-[400px] grid-cols-2">
-            <TabsTrigger value="monthly" className="text-xs sm:text-sm">Monthly Budget</TabsTrigger>
-            <TabsTrigger value="biweekly" className="text-xs sm:text-sm">Biweekly Pay</TabsTrigger>
-          </TabsList>
-
-          {/* Monthly Budget Tab */}
-          <TabsContent value="monthly" className="space-y-4 sm:space-y-6">
-            {/* Scorecards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-                <CardContent className="p-3 sm:pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0">
-                      <p className="text-xs sm:text-sm text-muted-foreground">Total Budget</p>
-                      <p className="text-lg sm:text-2xl font-bold text-foreground">${totals.budget.toFixed(2)}</p>
-                    </div>
-                    <Wallet className="h-5 w-5 sm:h-8 sm:w-8 text-primary shrink-0" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/20">
-                <CardContent className="p-3 sm:pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0">
-                      <p className="text-xs sm:text-sm text-muted-foreground">Amount Spent</p>
-                      <p className="text-lg sm:text-2xl font-bold text-foreground">${totals.spent.toFixed(2)}</p>
-                    </div>
-                    <TrendingDown className="h-5 w-5 sm:h-8 sm:w-8 text-destructive shrink-0" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className={`bg-gradient-to-br ${totals.remaining >= 0 ? 'from-green-500/10 to-green-500/5 border-green-500/20' : 'from-red-500/10 to-red-500/5 border-red-500/20'}`}>
-                <CardContent className="p-3 sm:pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="min-w-0">
-                      <p className="text-xs sm:text-sm text-muted-foreground">Remaining</p>
-                      <p className={`text-lg sm:text-2xl font-bold ${totals.remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        ${Math.abs(totals.remaining).toFixed(2)}
-                        {totals.remaining < 0 && ' over'}
-                      </p>
-                    </div>
-                    <TrendingUp className="h-5 w-5 sm:h-8 sm:w-8 text-green-500 shrink-0" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="col-span-2 lg:col-span-1">
-                <CardContent className="p-3 sm:pt-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs sm:text-sm text-muted-foreground">Budget Usage</p>
-                    <span className="text-xs sm:text-sm font-medium">{spentPercentage.toFixed(0)}%</span>
-                  </div>
-                  <Progress value={spentPercentage} className="h-2" />
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Category Budgets & Expenses */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-              {/* Categories with Budget */}
-              <Card>
-                <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
-                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <Receipt className="h-4 w-4 sm:h-5 sm:w-5" />
-                    Categories & Budgets
-                  </CardTitle>
-                  <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button size="sm" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /> Add Category</Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-[95vw] sm:max-w-lg">
-                      <DialogHeader>
-                        <DialogTitle>Add Expense Category</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-4">
-                        <div className="space-y-2">
-                          <Label>Category Name</Label>
-                          <Input 
-                            value={newCategory.name} 
-                            onChange={e => setNewCategory({ ...newCategory, name: e.target.value })}
-                            placeholder="e.g., Groceries, Utilities"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Color</Label>
-                          <div className="flex gap-2 flex-wrap">
-                            {Object.keys(CATEGORY_COLORS).map(color => (
-                              <button
-                                key={color}
-                                className={`w-8 h-8 rounded-full ${CATEGORY_COLORS[color]} ${newCategory.color === color ? 'ring-2 ring-offset-2 ring-primary' : ''}`}
-                                onClick={() => setNewCategory({ ...newCategory, color })}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        <Button onClick={handleAddCategory} className="w-full">Add Category</Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-                  {categorySummaries.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">No categories yet. Add one to get started!</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {categorySummaries.map(cat => (
-                        <div key={cat.id} className="p-3 border rounded-lg space-y-2">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <div className={`w-3 h-3 rounded-full shrink-0 ${CATEGORY_COLORS[cat.color] || 'bg-gray-500'}`} />
-                              <span className="font-medium truncate">{cat.name}</span>
-                            </div>
-                            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                              {budgetEditCategory === cat.id ? (
-                                <>
-                                  <Input
-                                    type="number"
-                                    value={budgetAmount}
-                                    onChange={e => setBudgetAmount(e.target.value)}
-                                    className="w-20 sm:w-24 h-8"
-                                    placeholder="Budget"
-                                  />
-                                  <Button size="sm" onClick={() => handleSaveBudget(cat.id)}>Save</Button>
-                                </>
-                              ) : (
-                                <>
-                                  <Badge variant="outline" className="text-xs">${cat.budget.toFixed(2)}</Badge>
-                                  <Button 
-                                    size="icon" 
-                                    variant="ghost" 
-                                    className="h-7 w-7"
-                                    onClick={() => { setBudgetEditCategory(cat.id); setBudgetAmount(cat.budget.toString()); }}
-                                  >
-                                    <Edit2 className="h-3 w-3" />
-                                  </Button>
-                                  <Button 
-                                    size="icon" 
-                                    variant="ghost" 
-                                    className="h-7 w-7 text-destructive"
-                                    onClick={() => deleteCategory(cat.id)}
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground">
-                            <span>Spent: ${cat.spent.toFixed(2)}</span>
-                            <span className={cat.remaining >= 0 ? 'text-green-600' : 'text-red-600'}>
-                              {cat.remaining >= 0 ? 'Remaining' : 'Over'}: ${Math.abs(cat.remaining).toFixed(2)}
-                            </span>
-                          </div>
-                          {cat.budget > 0 && (
-                            <Progress value={Math.min((cat.spent / cat.budget) * 100, 100)} className="h-1.5" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Expenses List */}
-              <Card>
-                <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
-                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
-                    Expenses ({MONTHS[selectedMonth - 1]})
-                  </CardTitle>
-                  <Dialog open={expenseDialogOpen} onOpenChange={setExpenseDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button size="sm" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /> Add Expense</Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-[95vw] sm:max-w-lg">
-                      <DialogHeader>
-                        <DialogTitle>Add Expense</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-4">
-                        <div className="space-y-2">
-                          <Label>Category</Label>
-                          <Select value={newExpense.categoryId} onValueChange={v => setNewExpense({ ...newExpense, categoryId: v })}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {categories.map(c => (
-                                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Description</Label>
-                          <Input 
-                            value={newExpense.description} 
-                            onChange={e => setNewExpense({ ...newExpense, description: e.target.value })}
-                            placeholder="What did you spend on?"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Amount ($)</Label>
-                          <Input 
-                            type="number"
-                            value={newExpense.amount} 
-                            onChange={e => setNewExpense({ ...newExpense, amount: e.target.value })}
-                            placeholder="0.00"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Date</Label>
-                          <Input 
-                            type="date"
-                            value={newExpense.expenseDate} 
-                            onChange={e => setNewExpense({ ...newExpense, expenseDate: e.target.value })}
-                          />
-                        </div>
-                        <Button onClick={handleAddExpense} className="w-full">Add Expense</Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-                  {monthlyExpenses.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">No expenses recorded this month.</p>
-                  ) : (
-                    <>
-                      {/* Mobile card layout */}
-                      <div className="space-y-2 sm:hidden">
-                        {monthlyExpenses.map(expense => renderExpenseCard(expense))}
-                      </div>
-                      {/* Desktop table layout */}
-                      <div className="hidden sm:block">
-                        <ScrollArea className="w-full">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Description</TableHead>
-                                <TableHead>Category</TableHead>
-                                <TableHead className="text-right">Amount</TableHead>
-                                <TableHead></TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {monthlyExpenses.map(expense => {
-                                const category = categories.find(c => c.id === expense.categoryId);
-                                return (
-                                  <TableRow key={expense.id}>
-                                    <TableCell>{format(parseISO(expense.expenseDate), 'MMM d')}</TableCell>
-                                    <TableCell>{expense.description}</TableCell>
-                                    <TableCell>
-                                      {category ? (
-                                        <div className="flex items-center gap-1.5">
-                                          <div className={`w-2 h-2 rounded-full ${CATEGORY_COLORS[category.color] || 'bg-gray-500'}`} />
-                                          <span className="text-sm">{category.name}</span>
-                                        </div>
-                                      ) : (
-                                        <span className="text-muted-foreground">—</span>
-                                      )}
-                                    </TableCell>
-                                    <TableCell className="text-right font-medium">${expense.amount.toFixed(2)}</TableCell>
-                                    <TableCell>
-                                      <Button 
-                                        size="icon" 
-                                        variant="ghost" 
-                                        className="h-7 w-7 text-destructive"
-                                        onClick={() => deleteExpense(expense.id)}
-                                      >
-                                        <Trash2 className="h-3 w-3" />
-                                      </Button>
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              })}
-                            </TableBody>
-                          </Table>
-                        </ScrollArea>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Biweekly Pay Tab */}
-          <TabsContent value="biweekly" className="space-y-4 sm:space-y-6">
-            {/* Pay Settings */}
+        <div className="space-y-4 sm:space-y-6">
+            {/* Biweekly Pay Settings - Persistent Scorecard */}
             <Card>
               <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Biweekly Pay Settings
-                </CardTitle>
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <Wallet className="h-4 w-4 sm:h-5 sm:w-5" />
+                    Biweekly Pay Settings
+                  </CardTitle>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                    Your salary is paid every two weeks — first half and second half of the month
+                  </p>
+                </div>
                 <Dialog open={paySettingsDialogOpen} onOpenChange={setPaySettingsDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" className="w-full sm:w-auto"><Edit2 className="h-4 w-4 mr-1" /> Configure</Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-[95vw] sm:max-w-lg">
                     <DialogHeader>
-                      <DialogTitle>Configure Biweekly Pay</DialogTitle>
+                      <DialogTitle>Configure Biweekly Salary</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 pt-4">
                       <div className="space-y-2">
-                        <Label>Pay Amount (per paycheck)</Label>
+                        <Label>Salary per paycheck ($)</Label>
                         <Input 
                           type="number"
                           value={newPaySettings.payAmount} 
                           onChange={e => setNewPaySettings({ ...newPaySettings, payAmount: e.target.value })}
                           placeholder="0.00"
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>First Pay Date</Label>
-                        <Input 
-                          type="date"
-                          value={newPaySettings.firstPayDate} 
-                          onChange={e => setNewPaySettings({ ...newPaySettings, firstPayDate: e.target.value })}
-                        />
-                        <p className="text-xs text-muted-foreground">Enter any past or upcoming pay date. We'll calculate all pay dates from this.</p>
+                        <p className="text-xs text-muted-foreground">Enter the fixed amount you receive every two weeks.</p>
                       </div>
                       <Button onClick={handleSavePaySettings} className="w-full">Save Settings</Button>
                     </div>
@@ -793,18 +500,22 @@ const FinancialPlan = () => {
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
                 {paySettings ? (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <div>
-                      <p className="text-xs sm:text-sm text-muted-foreground">Pay Amount</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">Per Paycheck</p>
                       <p className="text-lg sm:text-xl font-bold">${paySettings.payAmount.toFixed(2)}</p>
                     </div>
                     <div>
-                      <p className="text-xs sm:text-sm text-muted-foreground">First Pay Date</p>
-                      <p className="text-lg sm:text-xl font-bold">{format(parseISO(paySettings.firstPayDate), 'MMM d, yyyy')}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">Monthly (×2)</p>
+                      <p className="text-lg sm:text-xl font-bold">${(paySettings.payAmount * 2).toFixed(2)}</p>
+                    </div>
+                    <div className="col-span-2 sm:col-span-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground">Fixed Commitments</p>
+                      <p className="text-lg sm:text-xl font-bold text-orange-600">${totalFixedCommitments.toFixed(2)}/mo</p>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-center text-muted-foreground py-4">Configure your biweekly pay settings to get started.</p>
+                  <p className="text-center text-muted-foreground py-4">Configure your biweekly salary to get started.</p>
                 )}
               </CardContent>
             </Card>
@@ -1184,8 +895,7 @@ const FinancialPlan = () => {
                 </div>
               </DialogContent>
             </Dialog>
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
     </div>
   );
