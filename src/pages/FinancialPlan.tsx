@@ -22,6 +22,8 @@ import {
 import { format, parseISO } from 'date-fns';
 import { useCommitmentTracking } from '@/hooks/useCommitmentTracking';
 import MonthlyCommitmentScorecard from '@/components/finance/MonthlyCommitmentScorecard';
+import { useSavingsTracker } from '@/hooks/useSavingsTracker';
+import SavingsTracker from '@/components/finance/SavingsTracker';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -105,7 +107,14 @@ const FinancialPlan = () => {
     totalActual,
   } = useCommitmentTracking(selectedMonth, selectedYear, fixedCommitments);
 
-  // Dialog states
+  const {
+    goals: savingsGoals,
+    grandTotal: savingsGrandTotal,
+    monthTotal: savingsMonthTotal,
+    getGoalTotal, getGoalMonthTotal, getGoalMonthContributions,
+    addGoal, deleteGoal, addContribution, deleteContribution,
+  } = useSavingsTracker(selectedMonth, selectedYear);
+
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
   const [biweeklyExpenseDialogOpen, setBiweeklyExpenseDialogOpen] = useState(false);
@@ -738,6 +747,22 @@ const FinancialPlan = () => {
               totalCommitments={trackingTotalCommitments}
               totalExpected={totalExpected}
               totalActual={totalActual}
+            />
+
+            {/* Savings Tracker */}
+            <SavingsTracker
+              month={selectedMonth}
+              year={selectedYear}
+              goals={savingsGoals}
+              grandTotal={savingsGrandTotal}
+              monthTotal={savingsMonthTotal}
+              getGoalTotal={getGoalTotal}
+              getGoalMonthTotal={getGoalMonthTotal}
+              getGoalMonthContributions={getGoalMonthContributions}
+              addGoal={addGoal}
+              deleteGoal={deleteGoal}
+              addContribution={addContribution}
+              deleteContribution={deleteContribution}
             />
 
             {biweeklyBreakdown && (
