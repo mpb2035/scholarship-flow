@@ -360,6 +360,51 @@ export type Database = {
         }
         Relationships: []
       }
+      loan_tracker: {
+        Row: {
+          biweekly_repayment: number
+          created_at: string
+          current_balance: number
+          id: string
+          initial_amount: number
+          is_active: boolean
+          label: string
+          loan_type: string
+          notes: string | null
+          start_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          biweekly_repayment?: number
+          created_at?: string
+          current_balance?: number
+          id?: string
+          initial_amount?: number
+          is_active?: boolean
+          label: string
+          loan_type?: string
+          notes?: string | null
+          start_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          biweekly_repayment?: number
+          created_at?: string
+          current_balance?: number
+          id?: string
+          initial_amount?: number
+          is_active?: boolean
+          label?: string
+          loan_type?: string
+          notes?: string | null
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       matters: {
         Row: {
           assigned_to: string | null

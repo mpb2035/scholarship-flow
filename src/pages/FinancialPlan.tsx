@@ -28,6 +28,8 @@ import { useSavingsTracker } from '@/hooks/useSavingsTracker';
 import SavingsTracker from '@/components/finance/SavingsTracker';
 import { useNetWorthTracker } from '@/hooks/useNetWorthTracker';
 import NetWorthScorecard from '@/components/finance/NetWorthScorecard';
+import { useLoanTracker } from '@/hooks/useLoanTracker';
+import LoanTrackerScorecard from '@/components/finance/LoanTrackerScorecard';
 import { useSectionOrder } from '@/hooks/useSectionOrder';
 
 const MONTHS = [
@@ -128,6 +130,15 @@ const FinancialPlan = () => {
     updateEntry: updateNetWorthEntry,
     deleteEntry: deleteNetWorthEntry,
   } = useNetWorthTracker();
+
+  const {
+    loansWithProjections,
+    totalDebt,
+    totalMonthlyRepayment,
+    addLoan,
+    updateLoan,
+    deleteLoan,
+  } = useLoanTracker();
 
   const { sectionOrder, moveUp, moveDown } = useSectionOrder();
   const [reorderMode, setReorderMode] = useState(false);
@@ -831,6 +842,19 @@ const FinancialPlan = () => {
                     addContribution={addContribution}
                     deleteContribution={deleteContribution}
                     updateContribution={updateContribution}
+                  />
+                );
+                break;
+
+              case 'loan_tracker':
+                content = (
+                  <LoanTrackerScorecard
+                    loansWithProjections={loansWithProjections}
+                    totalDebt={totalDebt}
+                    totalMonthlyRepayment={totalMonthlyRepayment}
+                    addLoan={addLoan}
+                    updateLoan={updateLoan}
+                    deleteLoan={deleteLoan}
                   />
                 );
                 break;
