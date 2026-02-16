@@ -16,7 +16,8 @@ import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Loader2, Plus, Wallet, TrendingUp, TrendingDown, 
-  DollarSign, Calendar, PiggyBank, Receipt, Trash2, Edit2, Settings
+  DollarSign, Calendar, PiggyBank, Receipt, Trash2, Edit2, Settings,
+  Car, Zap, Phone, Home, Baby, ShoppingCart, Heart, MoreHorizontal
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
@@ -35,6 +36,27 @@ const CATEGORY_COLORS: Record<string, string> = {
   pink: 'bg-pink-500',
 };
 
+const COMMITMENT_CATEGORIES = [
+  { value: 'car', label: 'Car Payment', icon: Car },
+  { value: 'utilities', label: 'Utilities', icon: Zap },
+  { value: 'phone', label: 'Phone Bill', icon: Phone },
+  { value: 'home', label: 'Home/Lawn', icon: Home },
+  { value: 'baby', label: 'Diapers/Baby', icon: Baby },
+  { value: 'grocery', label: 'Grocery', icon: ShoppingCart },
+  { value: 'wife', label: 'Wife Pocket Money', icon: Heart },
+  { value: 'other', label: 'Other', icon: MoreHorizontal },
+] as const;
+
+const getCommitmentIcon = (category: string) => {
+  const found = COMMITMENT_CATEGORIES.find(c => c.value === category);
+  return found ? found.icon : MoreHorizontal;
+};
+
+const getCommitmentLabel = (category: string) => {
+  const found = COMMITMENT_CATEGORIES.find(c => c.value === category);
+  return found ? found.label : 'Other';
+};
+
 const FinancialPlan = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -48,18 +70,24 @@ const FinancialPlan = () => {
     categories,
     monthlyExpenses,
     paySettings,
+    fixedCommitments,
     loading,
     categorySummaries,
     totals,
     biweeklyBreakdown,
+    totalFixedCommitments,
     getExpensesByPayPeriod,
     getPayPeriodTotals,
+    getFixedCommitmentsByPayPeriod,
+    getFixedCommitmentTotals,
     addCategory,
     deleteCategory,
     setBudget,
     addExpense,
     deleteExpense,
     updatePaySettings,
+    addFixedCommitment,
+    deleteFixedCommitment,
   } = useFinance(selectedMonth, selectedYear);
 
   // Dialog states
@@ -68,6 +96,7 @@ const FinancialPlan = () => {
   const [biweeklyExpenseDialogOpen, setBiweeklyExpenseDialogOpen] = useState(false);
   const [activePayPeriod, setActivePayPeriod] = useState<1 | 2>(1);
   const [paySettingsDialogOpen, setPaySettingsDialogOpen] = useState(false);
+  const [fixedCommitmentDialogOpen, setFixedCommitmentDialogOpen] = useState(false);
   const [budgetEditCategory, setBudgetEditCategory] = useState<string | null>(null);
   const [budgetAmount, setBudgetAmount] = useState('');
 
@@ -88,6 +117,12 @@ const FinancialPlan = () => {
   const [newPaySettings, setNewPaySettings] = useState({
     payAmount: '',
     firstPayDate: format(new Date(), 'yyyy-MM-dd'),
+  });
+  const [newFixedCommitment, setNewFixedCommitment] = useState({
+    description: '',
+    amount: '',
+    payPeriod: '1',
+    category: 'other',
   });
 
   useEffect(() => {
@@ -183,6 +218,22 @@ const FinancialPlan = () => {
       toast({ title: 'Error', description: 'Failed to update pay settings.', variant: 'destructive' });
     }
   };
+  const handleAddFixedCommitment = async () => {
+    if (!newFixedCommitment.description.trim() || !newFixedCommitment.amount) return;
+    try {
+      await addFixedCommitment({
+        description: newFixedCommitment.description,
+        amount: parseFloat(newFixedCommitment.amount),
+        payPeriod: parseInt(newFixedCommitment.payPeriod),
+        category: newFixedCommitment.category,
+      });
+      setNewFixedCommitment({ description: '', amount: '', payPeriod: '1', category: 'other' });
+      setFixedCommitmentDialogOpen(false);
+      toast({ title: 'Fixed commitment added' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to add fixed commitment.', variant: 'destructive' });
+    }
+  };
 
   // Mobile-friendly expense card for small screens
   const renderExpenseCard = (expense: typeof monthlyExpenses[0], showDelete = true) => {
@@ -226,48 +277,51 @@ const FinancialPlan = () => {
   const renderPayPeriodContent = (period: 1 | 2) => {
     const periodExpenses = getExpensesByPayPeriod(period);
     const periodTotals = getPayPeriodTotals(period);
-    const perPaycheckBudget = totals.budget / 2;
-    const spentPercent = perPaycheckBudget > 0 ? Math.min((periodTotals.spent / perPaycheckBudget) * 100, 100) : 0;
+    const fixedTotal = getFixedCommitmentTotals(period);
+    const totalCommitted = periodTotals.spent + fixedTotal;
+    const payAmount = paySettings?.payAmount || 0;
+    const remaining = payAmount - totalCommitted;
+    const spentPercent = payAmount > 0 ? Math.min((totalCommitted / payAmount) * 100, 100) : 0;
 
     return (
       <>
         {/* Period Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-            <CardContent className="p-4 sm:pt-6">
-              <div className="flex items-center justify-between">
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm text-muted-foreground">Period Budget</p>
-                  <p className="text-xl sm:text-2xl font-bold text-foreground">${perPaycheckBudget.toFixed(2)}</p>
-                </div>
-                <Wallet className="h-6 w-6 sm:h-8 sm:w-8 text-primary shrink-0" />
+            <CardContent className="p-3 sm:pt-6">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-muted-foreground">Salary</p>
+                <p className="text-lg sm:text-2xl font-bold text-foreground">${payAmount.toFixed(2)}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-orange-500/20">
+            <CardContent className="p-3 sm:pt-6">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-muted-foreground">Fixed Bills</p>
+                <p className="text-lg sm:text-2xl font-bold text-foreground">${fixedTotal.toFixed(2)}</p>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/20">
-            <CardContent className="p-4 sm:pt-6">
-              <div className="flex items-center justify-between">
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm text-muted-foreground">Committed</p>
-                  <p className="text-xl sm:text-2xl font-bold text-foreground">${periodTotals.spent.toFixed(2)}</p>
-                </div>
-                <TrendingDown className="h-6 w-6 sm:h-8 sm:w-8 text-destructive shrink-0" />
+            <CardContent className="p-3 sm:pt-6">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-muted-foreground">+ Expenses</p>
+                <p className="text-lg sm:text-2xl font-bold text-foreground">${periodTotals.spent.toFixed(2)}</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className={`bg-gradient-to-br ${periodTotals.remaining >= 0 ? 'from-green-500/10 to-green-500/5 border-green-500/20' : 'from-red-500/10 to-red-500/5 border-red-500/20'}`}>
-            <CardContent className="p-4 sm:pt-6">
-              <div className="flex items-center justify-between">
-                <div className="min-w-0">
-                  <p className="text-xs sm:text-sm text-muted-foreground">Remaining</p>
-                  <p className={`text-xl sm:text-2xl font-bold ${periodTotals.remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    ${Math.abs(periodTotals.remaining).toFixed(2)}
-                    {periodTotals.remaining < 0 && ' over'}
-                  </p>
-                </div>
-                <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-green-500 shrink-0" />
+          <Card className={`bg-gradient-to-br ${remaining >= 0 ? 'from-green-500/10 to-green-500/5 border-green-500/20' : 'from-red-500/10 to-red-500/5 border-red-500/20'}`}>
+            <CardContent className="p-3 sm:pt-6">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-muted-foreground">Remaining</p>
+                <p className={`text-lg sm:text-2xl font-bold ${remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  ${Math.abs(remaining).toFixed(2)}
+                  {remaining < 0 && ' over'}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -751,6 +805,151 @@ const FinancialPlan = () => {
                   </div>
                 ) : (
                   <p className="text-center text-muted-foreground py-4">Configure your biweekly pay settings to get started.</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Fixed Commitments */}
+            <Card>
+              <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 sm:p-6">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <Receipt className="h-4 w-4 sm:h-5 sm:w-5" />
+                    Fixed Commitments
+                  </CardTitle>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                    Recurring bills split between pay periods • Total: ${totalFixedCommitments.toFixed(2)}/month
+                  </p>
+                </div>
+                <Dialog open={fixedCommitmentDialogOpen} onOpenChange={setFixedCommitmentDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /> Add</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-[95vw] sm:max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>Add Fixed Commitment</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-4">
+                      <div className="space-y-2">
+                        <Label>Type</Label>
+                        <Select value={newFixedCommitment.category} onValueChange={v => setNewFixedCommitment({ ...newFixedCommitment, category: v })}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {COMMITMENT_CATEGORIES.map(c => (
+                              <SelectItem key={c.value} value={c.value}>
+                                <span className="flex items-center gap-2">
+                                  <c.icon className="h-4 w-4" />
+                                  {c.label}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Input 
+                          value={newFixedCommitment.description}
+                          onChange={e => setNewFixedCommitment({ ...newFixedCommitment, description: e.target.value })}
+                          placeholder="e.g., Car loan payment"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Amount ($)</Label>
+                        <Input 
+                          type="number"
+                          value={newFixedCommitment.amount}
+                          onChange={e => setNewFixedCommitment({ ...newFixedCommitment, amount: e.target.value })}
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Pay Period</Label>
+                        <Select value={newFixedCommitment.payPeriod} onValueChange={v => setNewFixedCommitment({ ...newFixedCommitment, payPeriod: v })}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">Pay Period 1</SelectItem>
+                            <SelectItem value="2">Pay Period 2</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button onClick={handleAddFixedCommitment} className="w-full">Add Commitment</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+                {fixedCommitments.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-6">No fixed commitments yet. Add your recurring bills like car payment, utilities, phone bills, etc.</p>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Pay Period 1 */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 1</h4>
+                        <Badge variant="outline" className="text-xs">${getFixedCommitmentTotals(1).toFixed(2)}</Badge>
+                      </div>
+                      {getFixedCommitmentsByPayPeriod(1).length === 0 ? (
+                        <p className="text-xs text-muted-foreground text-center py-3 border rounded-lg border-dashed">No commitments</p>
+                      ) : (
+                        getFixedCommitmentsByPayPeriod(1).map(c => {
+                          const Icon = getCommitmentIcon(c.category);
+                          return (
+                            <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium truncate">{c.description}</p>
+                                  <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category)}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="font-semibold text-sm">${c.amount.toFixed(2)}</span>
+                                <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteFixedCommitment(c.id)}>
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                    {/* Pay Period 2 */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-muted-foreground">Pay Period 2</h4>
+                        <Badge variant="outline" className="text-xs">${getFixedCommitmentTotals(2).toFixed(2)}</Badge>
+                      </div>
+                      {getFixedCommitmentsByPayPeriod(2).length === 0 ? (
+                        <p className="text-xs text-muted-foreground text-center py-3 border rounded-lg border-dashed">No commitments</p>
+                      ) : (
+                        getFixedCommitmentsByPayPeriod(2).map(c => {
+                          const Icon = getCommitmentIcon(c.category);
+                          return (
+                            <div key={c.id} className="flex items-center justify-between p-3 border rounded-lg">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium truncate">{c.description}</p>
+                                  <p className="text-xs text-muted-foreground">{getCommitmentLabel(c.category)}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="font-semibold text-sm">${c.amount.toFixed(2)}</span>
+                                <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => deleteFixedCommitment(c.id)}>
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>

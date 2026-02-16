@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { ExpenseCategory, MonthlyBudget, Expense, BiweeklyPaySettings, CategoryWithBudgetAndSpending } from '@/types/finance';
+import { ExpenseCategory, MonthlyBudget, Expense, BiweeklyPaySettings, CategoryWithBudgetAndSpending, FixedCommitment } from '@/types/finance';
 
 export const useFinance = (month: number, year: number) => {
   const { user } = useAuth();
@@ -9,6 +9,7 @@ export const useFinance = (month: number, year: number) => {
   const [budgets, setBudgets] = useState<MonthlyBudget[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [paySettings, setPaySettings] = useState<BiweeklyPaySettings | null>(null);
+  const [fixedCommitments, setFixedCommitments] = useState<FixedCommitment[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -16,11 +17,12 @@ export const useFinance = (month: number, year: number) => {
     setLoading(true);
 
     try {
-      const [categoriesRes, budgetsRes, expensesRes, payRes] = await Promise.all([
+      const [categoriesRes, budgetsRes, expensesRes, payRes, commitmentsRes] = await Promise.all([
         supabase.from('expense_categories').select('*').eq('user_id', user.id),
         supabase.from('monthly_budgets').select('*').eq('user_id', user.id).eq('month', month).eq('year', year),
         supabase.from('expenses').select('*').eq('user_id', user.id),
         supabase.from('biweekly_pay_settings').select('*').eq('user_id', user.id).single(),
+        supabase.from('fixed_commitments').select('*').eq('user_id', user.id).eq('is_active', true),
       ]);
 
       if (categoriesRes.data) {
@@ -72,6 +74,20 @@ export const useFinance = (month: number, year: number) => {
           createdAt: payRes.data.created_at,
           updatedAt: payRes.data.updated_at,
         });
+      }
+
+      if (commitmentsRes.data) {
+        setFixedCommitments(commitmentsRes.data.map((c: any) => ({
+          id: c.id,
+          userId: c.user_id,
+          description: c.description,
+          amount: Number(c.amount),
+          payPeriod: c.pay_period,
+          category: c.category,
+          isActive: c.is_active,
+          createdAt: c.created_at,
+          updatedAt: c.updated_at,
+        })));
       }
     } catch (error) {
       console.error('Error fetching finance data:', error);
@@ -285,18 +301,54 @@ export const useFinance = (month: number, year: number) => {
     await fetchData();
   };
 
+  // Fixed Commitments CRUD
+  const addFixedCommitment = async (data: { description: string; amount: number; payPeriod: number; category?: string }) => {
+    if (!user) return;
+    const { error } = await supabase.from('fixed_commitments').insert({
+      user_id: user.id,
+      description: data.description,
+      amount: data.amount,
+      pay_period: data.payPeriod,
+      category: data.category || 'other',
+    });
+    if (error) throw error;
+    await fetchData();
+  };
+
+  const deleteFixedCommitment = async (id: string) => {
+    const { error } = await supabase.from('fixed_commitments').delete().eq('id', id);
+    if (error) throw error;
+    await fetchData();
+  };
+
+  // Get fixed commitments by pay period
+  const getFixedCommitmentsByPayPeriod = (payPeriod: 1 | 2) => {
+    return fixedCommitments.filter(c => c.payPeriod === payPeriod);
+  };
+
+  // Fixed commitment totals per pay period
+  const getFixedCommitmentTotals = (payPeriod: 1 | 2) => {
+    return getFixedCommitmentsByPayPeriod(payPeriod).reduce((sum, c) => sum + c.amount, 0);
+  };
+
+  const totalFixedCommitments = fixedCommitments.reduce((sum, c) => sum + c.amount, 0);
+
   return {
     categories,
     budgets,
     expenses,
     monthlyExpenses,
     paySettings,
+    fixedCommitments,
     loading,
     categorySummaries,
     totals,
     biweeklyBreakdown,
+    totalFixedCommitments,
     getExpensesByPayPeriod,
     getPayPeriodTotals,
+    getFixedCommitmentsByPayPeriod,
+    getFixedCommitmentTotals,
     addCategory,
     updateCategory,
     deleteCategory,
@@ -305,6 +357,8 @@ export const useFinance = (month: number, year: number) => {
     updateExpense,
     deleteExpense,
     updatePaySettings,
+    addFixedCommitment,
+    deleteFixedCommitment,
     refresh: fetchData,
   };
 };

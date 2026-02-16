@@ -46,3 +46,15 @@ export interface CategoryWithBudgetAndSpending extends ExpenseCategory {
   spent: number;
   remaining: number;
 }
+
+export interface FixedCommitment {
+  id: string;
+  userId: string;
+  description: string;
+  amount: number;
+  payPeriod: number;
+  category: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
