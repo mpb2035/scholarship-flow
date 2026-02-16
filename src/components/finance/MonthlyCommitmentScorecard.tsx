@@ -204,7 +204,7 @@ const MonthlyCommitmentScorecard = ({
         </div>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-        <div className="space-y-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
           {renderPeriodSection('Pay Period 1', period1Items)}
           {renderPeriodSection('Pay Period 2', period2Items)}
         </div>
