@@ -115,11 +115,17 @@ export const useSavingsTracker = (month: number, year: number) => {
     await fetchData();
   };
 
+  const updateContribution = async (id: string, amount: number) => {
+    const { error } = await supabase.from('savings_contributions').update({ amount }).eq('id', id);
+    if (error) throw error;
+    await fetchData();
+  };
+
   return {
     goals, contributions, loading,
     grandTotal, monthTotal,
     getGoalTotal, getGoalMonthTotal, getGoalMonthContributions,
-    addGoal, deleteGoal, addContribution, deleteContribution,
+    addGoal, deleteGoal, addContribution, deleteContribution, updateContribution,
     refresh: fetchData,
   };
 };

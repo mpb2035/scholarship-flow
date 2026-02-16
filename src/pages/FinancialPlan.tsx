@@ -115,7 +115,7 @@ const FinancialPlan = () => {
     grandTotal: savingsGrandTotal,
     monthTotal: savingsMonthTotal,
     getGoalTotal, getGoalMonthTotal, getGoalMonthContributions,
-    addGoal, deleteGoal, addContribution, deleteContribution,
+    addGoal, deleteGoal, addContribution, deleteContribution, updateContribution,
   } = useSavingsTracker(selectedMonth, selectedYear);
 
   const { sectionOrder, moveUp, moveDown } = useSectionOrder();
@@ -819,6 +819,7 @@ const FinancialPlan = () => {
                     deleteGoal={deleteGoal}
                     addContribution={addContribution}
                     deleteContribution={deleteContribution}
+                    updateContribution={updateContribution}
                   />
                 );
                 break;

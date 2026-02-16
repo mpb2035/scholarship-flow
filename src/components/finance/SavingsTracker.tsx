@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PiggyBank, Plus, Trash2, TrendingUp, Target, Wallet, ChevronDown } from 'lucide-react';
+import { PiggyBank, Plus, Trash2, TrendingUp, Target, Wallet, ChevronDown, Pencil, Check, X } from 'lucide-react';
 import { SavingsGoal, SavingsContribution } from '@/hooks/useSavingsTracker';
 
 const MONTHS = [
@@ -29,12 +29,13 @@ interface Props {
   deleteGoal: (id: string) => Promise<void>;
   addContribution: (data: { goalId: string; amount: number; payPeriod: number; notes?: string }) => Promise<void>;
   deleteContribution: (id: string) => Promise<void>;
+  updateContribution: (id: string, amount: number) => Promise<void>;
 }
 
 const SavingsTracker = ({
   month, year, goals, grandTotal, monthTotal,
   getGoalTotal, getGoalMonthTotal, getGoalMonthContributions,
-  addGoal, deleteGoal, addContribution, deleteContribution,
+  addGoal, deleteGoal, addContribution, deleteContribution, updateContribution,
 }: Props) => {
   const [isOpen, setIsOpen] = useState(true);
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
@@ -42,6 +43,8 @@ const SavingsTracker = ({
   const [selectedGoalId, setSelectedGoalId] = useState('');
   const [newGoal, setNewGoal] = useState({ name: '', targetAmount: '' });
   const [newContrib, setNewContrib] = useState({ goalId: '', amount: '', payPeriod: '1', notes: '' });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editAmount, setEditAmount] = useState('');
 
   const handleAddGoal = async () => {
     if (!newGoal.name.trim()) return;
@@ -265,10 +268,41 @@ const SavingsTracker = ({
                               {c.notes && <span className="text-muted-foreground truncate max-w-[120px]">{c.notes}</span>}
                             </div>
                             <div className="flex items-center gap-1.5">
-                              <span className="font-medium text-emerald-600">+${c.amount.toFixed(2)}</span>
-                              <Button size="icon" variant="ghost" className="h-5 w-5 text-destructive" onClick={() => deleteContribution(c.id)}>
-                                <Trash2 className="h-2.5 w-2.5" />
-                              </Button>
+                              {editingId === c.id ? (
+                                <>
+                                  <Input
+                                    type="number"
+                                    value={editAmount}
+                                    onChange={e => setEditAmount(e.target.value)}
+                                    className="h-6 w-20 text-xs px-1.5"
+                                    autoFocus
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter' && editAmount) {
+                                        updateContribution(c.id, parseFloat(editAmount));
+                                        setEditingId(null);
+                                      } else if (e.key === 'Escape') {
+                                        setEditingId(null);
+                                      }
+                                    }}
+                                  />
+                                  <Button size="icon" variant="ghost" className="h-5 w-5 text-emerald-600" onClick={() => { if (editAmount) { updateContribution(c.id, parseFloat(editAmount)); setEditingId(null); } }}>
+                                    <Check className="h-2.5 w-2.5" />
+                                  </Button>
+                                  <Button size="icon" variant="ghost" className="h-5 w-5 text-muted-foreground" onClick={() => setEditingId(null)}>
+                                    <X className="h-2.5 w-2.5" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="font-medium text-emerald-600">+${c.amount.toFixed(2)}</span>
+                                  <Button size="icon" variant="ghost" className="h-5 w-5 text-muted-foreground" onClick={() => { setEditingId(c.id); setEditAmount(c.amount.toString()); }}>
+                                    <Pencil className="h-2.5 w-2.5" />
+                                  </Button>
+                                  <Button size="icon" variant="ghost" className="h-5 w-5 text-destructive" onClick={() => deleteContribution(c.id)}>
+                                    <Trash2 className="h-2.5 w-2.5" />
+                                  </Button>
+                                </>
+                              )}
                             </div>
                           </div>
                         ))}
