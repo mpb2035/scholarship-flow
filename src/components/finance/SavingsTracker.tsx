@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PiggyBank, Plus, Trash2, TrendingUp, Target, Wallet, ChevronDown, Pencil, Check, X } from 'lucide-react';
+import { DollarSign, Plus, Trash2, TrendingUp, Target, Wallet, ChevronDown, Pencil, Check, X } from 'lucide-react';
 import { SavingsGoal, SavingsContribution } from '@/hooks/useSavingsTracker';
 
 const MONTHS = [
@@ -72,7 +72,7 @@ const SavingsTracker = ({
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-full bg-emerald-500/20">
-                <PiggyBank className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600" />
+                <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-600" />
               </div>
               <div>
                 <p className="text-xs sm:text-sm text-muted-foreground">Total Savings (All Time)</p>
