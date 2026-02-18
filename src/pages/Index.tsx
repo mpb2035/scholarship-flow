@@ -19,6 +19,7 @@ import { DeadlineCounterCard } from '@/components/dashboard/DeadlineCounterCard'
 import { DeadlineDetailDialog } from '@/components/dashboard/DeadlineDetailDialog';
 import { UpcomingEventsCard } from '@/components/dashboard/UpcomingEventsCard';
 import { Matter, OverallStatus, SLAStatus } from '@/types/matter';
+import { MatterErrorDialog } from '@/components/dashboard/MatterErrorDialog';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { 
@@ -69,6 +70,10 @@ const Index = () => {
   const [selectedKPI, setSelectedKPI] = useState<KPIType | null>(null);
   const [statusToggle, setStatusToggle] = useState<StatusToggle>('all');
   const [deadlineDialogOpen, setDeadlineDialogOpen] = useState(false);
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [errorDialogError, setErrorDialogError] = useState<unknown>(null);
+  const [errorDialogContext, setErrorDialogContext] = useState<'create' | 'update' | 'delete'>('create');
+  const [errorDialogMatterData, setErrorDialogMatterData] = useState<{ caseId?: string; caseTitle?: string; caseType?: string } | undefined>();
   const [selectedDeadlineCategory, setSelectedDeadlineCategory] = useState<'overdue' | 'thisWeek' | 'upcoming' | 'noDeadline' | null>(null);
 
   // Apply status toggle filter to filteredMatters
@@ -177,12 +182,11 @@ const Index = () => {
         title: 'Matter Deleted',
         description: 'The matter has been removed from tracking.',
       });
-    } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete matter.',
-        variant: 'destructive',
-      });
+    } catch (error) {
+      setErrorDialogError(error);
+      setErrorDialogContext('delete');
+      setErrorDialogMatterData(undefined);
+      setErrorDialogOpen(true);
     }
   };
 
@@ -268,7 +272,6 @@ const Index = () => {
     try {
       if (editingMatter) {
         await updateMatter(editingMatter.id, data);
-        // Check if there's pending attachment data for updates
         if (data.caseType === 'Attachment Overseas') {
           await saveAttachmentOverseas(editingMatter.id);
         }
@@ -286,12 +289,12 @@ const Index = () => {
           description: 'New matter has been added to tracking.',
         });
       }
-    } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to save matter. Please try again.',
-        variant: 'destructive',
-      });
+    } catch (error) {
+      console.error('Matter save error:', error);
+      setErrorDialogError(error);
+      setErrorDialogContext(editingMatter ? 'update' : 'create');
+      setErrorDialogMatterData({ caseId: data.caseId, caseTitle: data.caseTitle, caseType: data.caseType });
+      setErrorDialogOpen(true);
     }
   };
 
@@ -538,6 +541,14 @@ const Index = () => {
             setDeadlineDialogOpen(false);
             handleView(matter);
           }}
+        />
+
+        <MatterErrorDialog
+          open={errorDialogOpen}
+          onOpenChange={setErrorDialogOpen}
+          error={errorDialogError}
+          context={errorDialogContext}
+          matterData={errorDialogMatterData}
         />
       </div>
     </div>
