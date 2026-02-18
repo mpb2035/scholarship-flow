@@ -239,7 +239,7 @@ export function TrainingPlanView({ completedTrainingDates = new Set(), onLogRun 
                             </div>
 
                             <div className="text-center min-w-[50px]">
-                              <p className="text-[10px] text-muted-foreground uppercase">{day.dayLabel}</p>
+                              <p className="text-[10px] text-muted-foreground uppercase">{format(parseISO(day.date), 'EEE')}</p>
                               <p className="text-xs font-semibold">{format(parseISO(day.date), 'MMM d')}</p>
                             </div>
 
