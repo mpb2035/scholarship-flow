@@ -29,11 +29,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, FolderKanban, Plus, Link2, CalendarClock } from 'lucide-react';
+import { ExternalLink, FolderKanban, Plus, Link2, CalendarClock, X } from 'lucide-react';
 import { Matter, CaseType, Priority, OverallStatus, QueryStatus, SLAStatus } from '@/types/matter';
 import { Project } from '@/hooks/useProjects';
 import { AttachmentOverseasFields } from './AttachmentOverseasFields';
 import { useAttachmentOverseas } from '@/hooks/useAttachmentOverseas';
+import { useCustomDropdownOptions } from '@/hooks/useCustomDropdownOptions';
 
 const formSchema = z.object({
   caseId: z.string().min(1, 'Case ID is required'),
@@ -84,7 +85,7 @@ interface MatterFormProps {
   linkedProjectId?: string;
 }
 
-const caseTypes: CaseType[] = [
+const baseCaseTypes: CaseType[] = [
   'Ministerial Inquiry',
   'Event Coordination',
   'Policy Review',
@@ -100,7 +101,23 @@ const caseTypes: CaseType[] = [
   'Greening Education Plan',
   'SUSLR',
   'MKPK',
-  'Other',
+];
+
+const baseDepartments = [
+  'Jabatan Pentadbiran dan Perkhidmatan-perkhidmatan',
+  'Jabatan Sekolah-sekolah',
+  'Jabatan Peperiksaan',
+  'Jabatan Perancangan dan Pengurusan Dasar Pendidikan',
+  'Jabatan Kurikulum',
+  'Jabatan Teknologi Maklumat dan Komunikasi',
+  'Jabatan Pengajian Tinggi',
+  'Jabatan Pengurusan Biasiswa',
+  'Majlis Kebangsaan Pengiktirafan Kelulusan',
+  'Institut Pendidikan Teknik Brunei (IBTE)',
+  'Universiti Brunei Darussalam (UBD)',
+  'Universiti Teknologi Brunei (UTB)',
+  'Universiti Islam Sultan Sharif Ali (UNISSA)',
+  'Politeknik Brunei (PB)',
 ];
 
 const priorities: Priority[] = ['Urgent', 'High', 'Medium', 'Low'];
@@ -124,7 +141,16 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
   const [selectedExisting, setSelectedExisting] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [newCaseType, setNewCaseType] = useState('');
+  const [showNewCaseType, setShowNewCaseType] = useState(false);
+  const [newDepartment, setNewDepartment] = useState('');
+  const [showNewDepartment, setShowNewDepartment] = useState(false);
   const { getByMatterId } = useAttachmentOverseas();
+  const { options: customCaseTypes, addOption: addCaseType, removeOption: removeCaseType } = useCustomDropdownOptions('case_type');
+  const { options: customDepartments, addOption: addDepartment, removeOption: removeDepartment } = useCustomDropdownOptions('department');
+
+  const allCaseTypes = [...baseCaseTypes, ...customCaseTypes];
+  const allDepartments = [...baseDepartments, ...customDepartments];
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -415,18 +441,66 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Case Type</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={(val) => {
+                      if (val === '__add_new__') {
+                        setShowNewCaseType(true);
+                      } else {
+                        field.onChange(val);
+                      }
+                    }} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-input border-border/50">
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-popover border-border">
-                        {caseTypes.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                      <SelectContent className="bg-popover border-border max-h-[250px]">
+                        {allCaseTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            <span className="flex items-center gap-2">
+                              {type}
+                              {customCaseTypes.includes(type) && (
+                                <Badge variant="outline" className="text-[10px] px-1 py-0">Custom</Badge>
+                              )}
+                            </span>
+                          </SelectItem>
                         ))}
+                        <SelectItem value="__add_new__" className="text-primary font-medium">
+                          <span className="flex items-center gap-1"><Plus className="h-3 w-3" /> Add New Case Type</span>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
+                    {showNewCaseType && (
+                      <div className="flex gap-2 mt-2">
+                        <Input
+                          placeholder="Enter new case type..."
+                          value={newCaseType}
+                          onChange={(e) => setNewCaseType(e.target.value)}
+                          className="bg-input border-border/50 text-sm"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (newCaseType.trim()) {
+                                addCaseType(newCaseType.trim());
+                                field.onChange(newCaseType.trim());
+                                setNewCaseType('');
+                                setShowNewCaseType(false);
+                              }
+                            }
+                          }}
+                        />
+                        <Button type="button" size="sm" onClick={() => {
+                          if (newCaseType.trim()) {
+                            addCaseType(newCaseType.trim());
+                            field.onChange(newCaseType.trim());
+                            setNewCaseType('');
+                            setShowNewCaseType(false);
+                          }
+                        }}>Save</Button>
+                        <Button type="button" size="sm" variant="ghost" onClick={() => { setShowNewCaseType(false); setNewCaseType(''); }}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -483,30 +557,66 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>SUT HE Pass to Department</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <Select onValueChange={(val) => {
+                      if (val === '__add_new_dept__') {
+                        setShowNewDepartment(true);
+                      } else {
+                        field.onChange(val);
+                      }
+                    }} value={field.value || ''}>
                       <FormControl>
                         <SelectTrigger className="bg-input border-border/50">
                           <SelectValue placeholder="Select department..." />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-popover border-border max-h-[200px]">
-                        <SelectItem value="Jabatan Pentadbiran dan Perkhidmatan-perkhidmatan">Jabatan Pentadbiran dan Perkhidmatan-perkhidmatan</SelectItem>
-                        <SelectItem value="Jabatan Sekolah-sekolah">Jabatan Sekolah-sekolah</SelectItem>
-                        <SelectItem value="Jabatan Peperiksaan">Jabatan Peperiksaan</SelectItem>
-                        <SelectItem value="Jabatan Perancangan dan Pengurusan Dasar Pendidikan">Jabatan Perancangan dan Pengurusan Dasar Pendidikan</SelectItem>
-                        <SelectItem value="Jabatan Kurikulum">Jabatan Kurikulum</SelectItem>
-                        <SelectItem value="Jabatan Teknologi Maklumat dan Komunikasi">Jabatan Teknologi Maklumat dan Komunikasi</SelectItem>
-                        <SelectItem value="Jabatan Pengajian Tinggi">Jabatan Pengajian Tinggi</SelectItem>
-                        <SelectItem value="Jabatan Pengurusan Biasiswa">Jabatan Pengurusan Biasiswa</SelectItem>
-                        <SelectItem value="Majlis Kebangsaan Pengiktirafan Kelulusan">Majlis Kebangsaan Pengiktirafan Kelulusan</SelectItem>
-                        <SelectItem value="Institut Pendidikan Teknik Brunei (IBTE)">Institut Pendidikan Teknik Brunei (IBTE)</SelectItem>
-                        <SelectItem value="Universiti Brunei Darussalam (UBD)">Universiti Brunei Darussalam (UBD)</SelectItem>
-                        <SelectItem value="Universiti Teknologi Brunei (UTB)">Universiti Teknologi Brunei (UTB)</SelectItem>
-                        <SelectItem value="Universiti Islam Sultan Sharif Ali (UNISSA)">Universiti Islam Sultan Sharif Ali (UNISSA)</SelectItem>
-                        <SelectItem value="Politeknik Brunei (PB)">Politeknik Brunei (PB)</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
+                        {allDepartments.map((dept) => (
+                          <SelectItem key={dept} value={dept}>
+                            <span className="flex items-center gap-2">
+                              {dept}
+                              {customDepartments.includes(dept) && (
+                                <Badge variant="outline" className="text-[10px] px-1 py-0">Custom</Badge>
+                              )}
+                            </span>
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="__add_new_dept__" className="text-primary font-medium">
+                          <span className="flex items-center gap-1"><Plus className="h-3 w-3" /> Add New Department</span>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
+                    {showNewDepartment && (
+                      <div className="flex gap-2 mt-2">
+                        <Input
+                          placeholder="Enter new department..."
+                          value={newDepartment}
+                          onChange={(e) => setNewDepartment(e.target.value)}
+                          className="bg-input border-border/50 text-sm"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (newDepartment.trim()) {
+                                addDepartment(newDepartment.trim());
+                                field.onChange(newDepartment.trim());
+                                setNewDepartment('');
+                                setShowNewDepartment(false);
+                              }
+                            }
+                          }}
+                        />
+                        <Button type="button" size="sm" onClick={() => {
+                          if (newDepartment.trim()) {
+                            addDepartment(newDepartment.trim());
+                            field.onChange(newDepartment.trim());
+                            setNewDepartment('');
+                            setShowNewDepartment(false);
+                          }
+                        }}>Save</Button>
+                        <Button type="button" size="sm" variant="ghost" onClick={() => { setShowNewDepartment(false); setNewDepartment(''); }}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}

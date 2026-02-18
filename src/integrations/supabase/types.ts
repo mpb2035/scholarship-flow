@@ -94,6 +94,30 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_dropdown_options: {
+        Row: {
+          created_at: string
+          field_name: string
+          id: string
+          option_value: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          field_name: string
+          id?: string
+          option_value: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          field_name?: string
+          id?: string
+          option_value?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       expense_categories: {
         Row: {
           color: string | null
