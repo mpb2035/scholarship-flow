@@ -4,6 +4,7 @@ import { useMatters } from '@/hooks/useMatters';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects } from '@/hooks/useProjects';
 import { useMeetings } from '@/hooks/useMeetings';
+import { useReminders } from '@/hooks/useReminders';
 import { useAttachmentOverseas } from '@/hooks/useAttachmentOverseas';
 import { Header } from '@/components/dashboard/Header';
 import { KPICard } from '@/components/dashboard/KPICard';
@@ -60,6 +61,7 @@ const Index = () => {
 
   const { projects, createProjectFromMatter, refreshProjects } = useProjects();
   const { upcomingMeetings, addMeeting, updateMeeting, deleteMeeting } = useMeetings();
+  const { activeReminders, completedReminders, addReminder, updateReminder, deleteReminder } = useReminders();
   const { addAttachment, updateAttachment, getByMatterId, refreshAttachments } = useAttachmentOverseas();
   const { toast } = useToast();
   const [formOpen, setFormOpen] = useState(false);
@@ -478,6 +480,10 @@ const Index = () => {
             onAdd={addMeeting}
             onUpdate={updateMeeting}
             onDelete={deleteMeeting}
+            reminders={[...activeReminders, ...completedReminders]}
+            onAddReminder={addReminder}
+            onUpdateReminder={updateReminder}
+            onDeleteReminder={deleteReminder}
           />
         </div>
 
