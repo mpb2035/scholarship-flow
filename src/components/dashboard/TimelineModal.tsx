@@ -6,10 +6,17 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Matter } from '@/types/matter';
-import { History, Copy, Check, Clock, Briefcase } from 'lucide-react';
+import { History, Copy, Check, Clock, Briefcase, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { differenceInDays, addDays, getDay, format } from 'date-fns';
+
+interface ExcludedDate {
+  date: string;
+  displayDate: string;
+  reason: 'Friday' | 'Sunday' | string; // string for PH name
+}
 
 interface TimelineEvent {
   date: string;
@@ -25,61 +32,60 @@ interface TimelineModalProps {
 
 // Brunei Darussalam public holidays (fixed + estimated dates for moveable holidays)
 // Moveable Islamic holidays are approximated for 2024-2027 range
-function getBruneiPublicHolidays(year: number): Set<string> {
-  const holidays = new Set<string>();
+function getBruneiPublicHolidays(year: number): Map<string, string> {
+  const holidays = new Map<string, string>();
 
-  const fixed = [
-    `${year}-01-01`, // New Year
-    `${year}-02-23`, // National Day
-    `${year}-03-01`, // Anniversary of Royal Brunei Armed Forces
-    `${year}-05-31`, // Anniversary of Royal Brunei Malay Regiment
-    `${year}-07-15`, // Sultan's Birthday
-    `${year}-12-25`, // Christmas Day
+  const fixed: [string, string][] = [
+    [`${year}-01-01`, 'New Year'],
+    [`${year}-02-23`, 'National Day'],
+    [`${year}-03-01`, 'Anniv. Royal Brunei Armed Forces'],
+    [`${year}-05-31`, 'Anniv. Royal Brunei Malay Regiment'],
+    [`${year}-07-15`, "Sultan's Birthday"],
+    [`${year}-12-25`, 'Christmas Day'],
   ];
-  fixed.forEach(d => holidays.add(d));
+  fixed.forEach(([d, name]) => holidays.set(d, name));
 
-  // Approximate moveable Islamic holidays by year
-  const moveableByYear: Record<number, string[]> = {
+  const moveableByYear: Record<number, [string, string][]> = {
     2024: [
-      '2024-01-01', // Awal Muharram (approx)
-      '2024-02-08', // Israk Mi'raj
-      '2024-03-12', '2024-03-13', // Start of Ramadan
-      '2024-03-27', // Nuzul Al-Quran
-      '2024-04-10', '2024-04-11', '2024-04-12', // Hari Raya Aidilfitri
-      '2024-06-17', '2024-06-18', // Hari Raya Aidiladha
-      '2024-07-08', // Awal Muharram
-      '2024-09-16', // Maulud Nabi
+      ['2024-01-01', 'Awal Muharram'],
+      ['2024-02-08', 'Israk Mi\'raj'],
+      ['2024-03-12', 'Start of Ramadan'], ['2024-03-13', 'Start of Ramadan'],
+      ['2024-03-27', 'Nuzul Al-Quran'],
+      ['2024-04-10', 'Hari Raya Aidilfitri'], ['2024-04-11', 'Hari Raya Aidilfitri'], ['2024-04-12', 'Hari Raya Aidilfitri'],
+      ['2024-06-17', 'Hari Raya Aidiladha'], ['2024-06-18', 'Hari Raya Aidiladha'],
+      ['2024-07-08', 'Awal Muharram'],
+      ['2024-09-16', 'Maulud Nabi'],
     ],
     2025: [
-      '2025-01-27', // Israk Mi'raj
-      '2025-03-01', '2025-03-02', // Start of Ramadan
-      '2025-03-15', // Nuzul Al-Quran
-      '2025-03-30', '2025-03-31', '2025-04-01', // Hari Raya Aidilfitri
-      '2025-06-06', '2025-06-07', // Hari Raya Aidiladha
-      '2025-06-27', // Awal Muharram
-      '2025-09-05', // Maulud Nabi
+      ['2025-01-27', 'Israk Mi\'raj'],
+      ['2025-03-01', 'Start of Ramadan'], ['2025-03-02', 'Start of Ramadan'],
+      ['2025-03-15', 'Nuzul Al-Quran'],
+      ['2025-03-30', 'Hari Raya Aidilfitri'], ['2025-03-31', 'Hari Raya Aidilfitri'], ['2025-04-01', 'Hari Raya Aidilfitri'],
+      ['2025-06-06', 'Hari Raya Aidiladha'], ['2025-06-07', 'Hari Raya Aidiladha'],
+      ['2025-06-27', 'Awal Muharram'],
+      ['2025-09-05', 'Maulud Nabi'],
     ],
     2026: [
-      '2026-01-16', // Israk Mi'raj
-      '2026-02-18', '2026-02-19', // Start of Ramadan
-      '2026-03-04', // Nuzul Al-Quran
-      '2026-03-20', '2026-03-21', '2026-03-22', // Hari Raya Aidilfitri
-      '2026-05-27', '2026-05-28', // Hari Raya Aidiladha
-      '2026-06-17', // Awal Muharram
-      '2026-08-26', // Maulud Nabi
+      ['2026-01-16', 'Israk Mi\'raj'],
+      ['2026-02-18', 'Start of Ramadan'], ['2026-02-19', 'Start of Ramadan'],
+      ['2026-03-04', 'Nuzul Al-Quran'],
+      ['2026-03-20', 'Hari Raya Aidilfitri'], ['2026-03-21', 'Hari Raya Aidilfitri'], ['2026-03-22', 'Hari Raya Aidilfitri'],
+      ['2026-05-27', 'Hari Raya Aidiladha'], ['2026-05-28', 'Hari Raya Aidiladha'],
+      ['2026-06-17', 'Awal Muharram'],
+      ['2026-08-26', 'Maulud Nabi'],
     ],
     2027: [
-      '2027-01-06', // Israk Mi'raj
-      '2027-02-08', '2027-02-09', // Start of Ramadan
-      '2027-02-21', // Nuzul Al-Quran
-      '2027-03-09', '2027-03-10', '2027-03-11', // Hari Raya Aidilfitri
-      '2027-05-16', '2027-05-17', // Hari Raya Aidiladha
-      '2027-06-06', // Awal Muharram
-      '2027-08-15', // Maulud Nabi
+      ['2027-01-06', 'Israk Mi\'raj'],
+      ['2027-02-08', 'Start of Ramadan'], ['2027-02-09', 'Start of Ramadan'],
+      ['2027-02-21', 'Nuzul Al-Quran'],
+      ['2027-03-09', 'Hari Raya Aidilfitri'], ['2027-03-10', 'Hari Raya Aidilfitri'], ['2027-03-11', 'Hari Raya Aidilfitri'],
+      ['2027-05-16', 'Hari Raya Aidiladha'], ['2027-05-17', 'Hari Raya Aidiladha'],
+      ['2027-06-06', 'Awal Muharram'],
+      ['2027-08-15', 'Maulud Nabi'],
     ],
   };
 
-  (moveableByYear[year] || []).forEach(d => holidays.add(d));
+  (moveableByYear[year] || []).forEach(([d, name]) => holidays.set(d, name));
   return holidays;
 }
 
@@ -87,19 +93,18 @@ function getWorkingDaysBetween(startDate: Date, endDate: Date): number {
   const start = startDate < endDate ? startDate : endDate;
   const end = startDate < endDate ? endDate : startDate;
 
-  // Collect holidays for all years in range
   const startYear = start.getFullYear();
   const endYear = end.getFullYear();
-  const allHolidays = new Set<string>();
+  const allHolidays = new Map<string, string>();
   for (let y = startYear; y <= endYear; y++) {
-    getBruneiPublicHolidays(y).forEach(h => allHolidays.add(h));
+    getBruneiPublicHolidays(y).forEach((name, d) => allHolidays.set(d, name));
   }
 
   let workingDays = 0;
-  let current = addDays(start, 1); // Start counting from next day
+  let current = addDays(start, 1);
 
   while (current <= end) {
-    const dayOfWeek = getDay(current); // 0=Sun, 5=Fri
+    const dayOfWeek = getDay(current);
     const isFriday = dayOfWeek === 5;
     const isSunday = dayOfWeek === 0;
     const dateStr = format(current, 'yyyy-MM-dd');
@@ -112,6 +117,44 @@ function getWorkingDaysBetween(startDate: Date, endDate: Date): number {
   }
 
   return workingDays;
+}
+
+function getExcludedDates(startDate: Date, endDate: Date): ExcludedDate[] {
+  const start = startDate < endDate ? startDate : endDate;
+  const end = startDate < endDate ? endDate : startDate;
+
+  const startYear = start.getFullYear();
+  const endYear = end.getFullYear();
+  const allHolidays = new Map<string, string>();
+  for (let y = startYear; y <= endYear; y++) {
+    getBruneiPublicHolidays(y).forEach((name, d) => allHolidays.set(d, name));
+  }
+
+  const excluded: ExcludedDate[] = [];
+  let current = addDays(start, 1);
+
+  while (current <= end) {
+    const dayOfWeek = getDay(current);
+    const isFriday = dayOfWeek === 5;
+    const isSunday = dayOfWeek === 0;
+    const dateStr = format(current, 'yyyy-MM-dd');
+    const holidayName = allHolidays.get(dateStr);
+
+    if (isFriday || isSunday || holidayName) {
+      const reasons: string[] = [];
+      if (isFriday) reasons.push('Friday');
+      if (isSunday) reasons.push('Sunday');
+      if (holidayName) reasons.push(holidayName);
+      excluded.push({
+        date: dateStr,
+        displayDate: format(current, 'dd MMM yyyy (EEE)'),
+        reason: reasons.join(' + '),
+      });
+    }
+    current = addDays(current, 1);
+  }
+
+  return excluded;
 }
 
 function buildTimeline(matter: Matter): TimelineEvent[] {
@@ -159,6 +202,7 @@ function getDaysBetween(date1: Date, date2: Date): number {
 
 export function TimelineModal({ open, onOpenChange, matter }: TimelineModalProps) {
   const [copied, setCopied] = useState(false);
+  const [showExcluded, setShowExcluded] = useState(false);
 
   if (!matter) return null;
 
@@ -167,6 +211,10 @@ export function TimelineModal({ open, onOpenChange, matter }: TimelineModalProps
   const latestEvent = timeline.length > 0 ? timeline[timeline.length - 1] : null;
   const daysSinceLatest = latestEvent ? getDaysBetween(latestEvent.sortDate, today) : 0;
   const workingDaysSinceLatest = latestEvent ? getWorkingDaysBetween(latestEvent.sortDate, today) : 0;
+  const excludedDates = latestEvent ? getExcludedDates(latestEvent.sortDate, today) : [];
+  const fridayCount = excludedDates.filter(d => d.reason.includes('Friday')).length;
+  const sundayCount = excludedDates.filter(d => d.reason.includes('Sunday')).length;
+  const phCount = excludedDates.filter(d => !['Friday', 'Sunday'].includes(d.reason)).length;
 
   const handleCopyHistory = async () => {
     const historyText = timeline
@@ -264,15 +312,55 @@ export function TimelineModal({ open, onOpenChange, matter }: TimelineModalProps
                     <p className="font-mono font-bold text-primary">{daysSinceLatest} days</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm p-2 rounded-md bg-muted/50">
+                <button
+                  type="button"
+                  onClick={() => setShowExcluded(!showExcluded)}
+                  className="flex items-center gap-2 text-sm p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors text-left w-full"
+                >
                   <Briefcase className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className="text-[11px] text-muted-foreground">Working Days</p>
                     <p className="font-mono font-bold text-primary">{workingDaysSinceLatest} days</p>
                     <p className="text-[10px] text-muted-foreground">Excl. Fri, Sun & PH</p>
                   </div>
-                </div>
+                  {showExcluded ? (
+                    <ChevronUp className="h-3 w-3 text-muted-foreground shrink-0" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
+                  )}
+                </button>
               </div>
+
+              {/* Excluded dates breakdown */}
+              {showExcluded && excludedDates.length > 0 && (
+                <div className="mt-3 rounded-md border border-border bg-muted/30 overflow-hidden">
+                  <div className="px-3 py-2 border-b border-border bg-muted/50">
+                    <p className="text-[11px] font-semibold text-foreground">
+                      Excluded Dates ({excludedDates.length})
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {fridayCount} Fri · {sundayCount} Sun · {phCount} PH
+                    </p>
+                  </div>
+                  <ScrollArea className="max-h-40">
+                    <div className="divide-y divide-border">
+                      {excludedDates.map((d) => (
+                        <div key={d.date} className="flex items-center justify-between px-3 py-1.5">
+                          <span className="text-[11px] font-mono text-foreground">{d.displayDate}</span>
+                          <span className={cn(
+                            "text-[10px] px-1.5 py-0.5 rounded font-medium",
+                            d.reason === 'Friday' ? 'bg-blue-500/15 text-blue-400' :
+                            d.reason === 'Sunday' ? 'bg-purple-500/15 text-purple-400' :
+                            'bg-amber-500/15 text-amber-400'
+                          )}>
+                            {d.reason}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+              )}
             </div>
           )}
         </div>
