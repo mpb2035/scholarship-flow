@@ -1,6 +1,6 @@
 export type Priority = 'Urgent' | 'High' | 'Medium' | 'Low';
 
-export type QueryStatus = 'No Query' | 'Query Issued' | 'Query Resolved';
+export type QueryStatus = 'No Query' | 'Query Issued' | 'Query Resolved' | 'Query from SUT HE' | 'Query from Higher Up';
 
 export type OverallStatus = 
   | 'Pending SUT HE Review'
