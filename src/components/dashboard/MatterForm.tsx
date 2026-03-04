@@ -122,7 +122,7 @@ const baseDepartments = [
 
 const priorities: Priority[] = ['Urgent', 'High', 'Medium', 'Low'];
 
-const queryStatuses: QueryStatus[] = ['No Query', 'Query Issued', 'Query Resolved'];
+const queryStatuses: QueryStatus[] = ['No Query', 'Query Issued', 'Query Resolved', 'Query from SUT HE', 'Query from Higher Up'];
 
 const overallStatuses: OverallStatus[] = [
   'Pending SUT HE Review',
@@ -174,6 +174,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
 
   const watchCaseType = form.watch('caseType');
   const watchSecondQueryStatus = form.watch('secondQueryStatus');
+  const watchReceivedFrom = form.watch('receivedFrom');
   const attachmentPrefillRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -525,6 +526,30 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
               )}
             />
 
+            {/* Overall Status - moved to top under case title */}
+            <FormField
+              control={form.control}
+              name="overallStatus"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Overall Status</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-input border-border/50">
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-popover border-border">
+                      {overallStatuses.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {/* Received From */}
             <FormField
               control={form.control}
@@ -549,21 +574,19 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
               )}
             />
 
-            {/* SUT HE Pass to Department + Date */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* If received from Department - show which department */}
+            {watchReceivedFrom === 'Department' && (
               <FormField
                 control={form.control}
-                name="suthePassToDepartment"
-                render={({ field }) => (
+                name="receivedFrom"
+                render={() => (
                   <FormItem>
-                    <FormLabel>SUT HE Pass to Department</FormLabel>
+                    <FormLabel>Received from Department</FormLabel>
                     <Select onValueChange={(val) => {
-                      if (val === '__add_new_dept__') {
-                        setShowNewDepartment(true);
-                      } else {
-                        field.onChange(val);
+                      if (val !== '__add_new_dept_recv__') {
+                        form.setValue('receivedFrom', `Department - ${val}`);
                       }
-                    }} value={field.value || ''}>
+                    }} value="">
                       <FormControl>
                         <SelectTrigger className="bg-input border-border/50">
                           <SelectValue placeholder="Select department..." />
@@ -580,62 +603,108 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
                             </span>
                           </SelectItem>
                         ))}
-                        <SelectItem value="__add_new_dept__" className="text-primary font-medium">
-                          <span className="flex items-center gap-1"><Plus className="h-3 w-3" /> Add New Department</span>
-                        </SelectItem>
                       </SelectContent>
                     </Select>
-                    {showNewDepartment && (
-                      <div className="flex gap-2 mt-2">
-                        <Input
-                          placeholder="Enter new department..."
-                          value={newDepartment}
-                          onChange={(e) => setNewDepartment(e.target.value)}
-                          className="bg-input border-border/50 text-sm"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              if (newDepartment.trim()) {
-                                addDepartment(newDepartment.trim());
-                                field.onChange(newDepartment.trim());
-                                setNewDepartment('');
-                                setShowNewDepartment(false);
-                              }
-                            }
-                          }}
-                        />
-                        <Button type="button" size="sm" onClick={() => {
-                          if (newDepartment.trim()) {
-                            addDepartment(newDepartment.trim());
-                            field.onChange(newDepartment.trim());
-                            setNewDepartment('');
-                            setShowNewDepartment(false);
-                          }
-                        }}>Save</Button>
-                        <Button type="button" size="sm" variant="ghost" onClick={() => { setShowNewDepartment(false); setNewDepartment(''); }}>
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
+                    {form.watch('receivedFrom')?.startsWith('Department - ') && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Selected: <span className="font-medium text-foreground">{form.watch('receivedFrom')?.replace('Department - ', '')}</span>
+                      </p>
                     )}
                     <FormMessage />
                   </FormItem>
                 )}
               />
+            )}
 
-              <FormField
-                control={form.control}
-                name="suthePassToDepartmentDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Date Passed to Department</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} value={field.value || ''} className="bg-input border-border/50" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            {/* SUT HE Pass to Department + Date - only if received from Higher Up or Other Agency */}
+            {(watchReceivedFrom === 'Higher Up' || watchReceivedFrom === 'Other Agency') && (
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="suthePassToDepartment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>SUT HE Pass to Department</FormLabel>
+                      <Select onValueChange={(val) => {
+                        if (val === '__add_new_dept__') {
+                          setShowNewDepartment(true);
+                        } else {
+                          field.onChange(val);
+                        }
+                      }} value={field.value || ''}>
+                        <FormControl>
+                          <SelectTrigger className="bg-input border-border/50">
+                            <SelectValue placeholder="Select department..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-popover border-border max-h-[200px]">
+                          {allDepartments.map((dept) => (
+                            <SelectItem key={dept} value={dept}>
+                              <span className="flex items-center gap-2">
+                                {dept}
+                                {customDepartments.includes(dept) && (
+                                  <Badge variant="outline" className="text-[10px] px-1 py-0">Custom</Badge>
+                                )}
+                              </span>
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="__add_new_dept__" className="text-primary font-medium">
+                            <span className="flex items-center gap-1"><Plus className="h-3 w-3" /> Add New Department</span>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {showNewDepartment && (
+                        <div className="flex gap-2 mt-2">
+                          <Input
+                            placeholder="Enter new department..."
+                            value={newDepartment}
+                            onChange={(e) => setNewDepartment(e.target.value)}
+                            className="bg-input border-border/50 text-sm"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                if (newDepartment.trim()) {
+                                  addDepartment(newDepartment.trim());
+                                  field.onChange(newDepartment.trim());
+                                  setNewDepartment('');
+                                  setShowNewDepartment(false);
+                                }
+                              }
+                            }}
+                          />
+                          <Button type="button" size="sm" onClick={() => {
+                            if (newDepartment.trim()) {
+                              addDepartment(newDepartment.trim());
+                              field.onChange(newDepartment.trim());
+                              setNewDepartment('');
+                              setShowNewDepartment(false);
+                            }
+                          }}>Save</Button>
+                          <Button type="button" size="sm" variant="ghost" onClick={() => { setShowNewDepartment(false); setNewDepartment(''); }}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="suthePassToDepartmentDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Date Passed to Department</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} value={field.value || ''} className="bg-input border-border/50" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
 
             {/* Conditional Attachment Overseas Fields */}
             {watchCaseType === 'Attachment Overseas' && (
@@ -668,49 +737,10 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
 
               <FormField
                 control={form.control}
-                name="overallStatus"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Overall Status</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-input border-border/50">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-popover border-border">
-                        {overallStatuses.map((s) => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
                 name="dsmSubmittedDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Submitted Date</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} className="bg-input border-border/50" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="sutheReceivedDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Received Date</FormLabel>
+                    <FormLabel>Signed Date</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} className="bg-input border-border/50" />
                     </FormControl>
@@ -719,6 +749,20 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="sutheReceivedDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Received Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} className="bg-input border-border/50" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
