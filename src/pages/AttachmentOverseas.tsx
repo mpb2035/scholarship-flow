@@ -285,6 +285,10 @@ export default function AttachmentOverseas() {
                         <span>{att.country} • {att.destinationInstitution}</span>
                         <span className="font-bold text-primary">{att.studentCount} students</span>
                       </div>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span>Start: <span className="text-foreground font-medium">{new Date(att.programStartDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></span>
+                        <span>End: <span className="text-foreground font-medium">{new Date(att.programEndDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span></span>
+                      </div>
                       <Badge variant={att.fundingType === 'Organizer Funded' ? 'default' : 'outline'} className="text-xs">
                         {att.fundingType}
                       </Badge>
@@ -303,6 +307,8 @@ export default function AttachmentOverseas() {
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Country</th>
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Destination</th>
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Students</th>
+                      <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Start Date</th>
+                      <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">End Date</th>
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Duration</th>
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Days Left</th>
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Funding</th>
@@ -336,6 +342,8 @@ export default function AttachmentOverseas() {
                           <td className="py-3 px-3">
                             <span className="font-bold text-primary">{att.studentCount}</span>
                           </td>
+                          <td className="py-3 px-3 text-sm text-muted-foreground">{startDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                          <td className="py-3 px-3 text-sm text-muted-foreground">{endDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                           <td className="py-3 px-3 text-sm text-muted-foreground">{totalDays} days</td>
                           <td className="py-3 px-3">
                             <span className={`font-bold ${daysRemaining <= 7 ? 'text-destructive' : daysRemaining <= 30 ? 'text-warning' : 'text-green-500'}`}>
