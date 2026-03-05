@@ -249,10 +249,11 @@ export function TimelineModal({ open, onOpenChange, matter }: TimelineModalProps
 
   const timeline = buildTimeline(matter);
   const today = new Date();
+  const receivedDate = matter.sutheReceivedDate ? new Date(matter.sutheReceivedDate) : null;
   const latestEvent = timeline.length > 0 ? timeline[timeline.length - 1] : null;
-  const daysSinceLatest = latestEvent ? getDaysBetween(latestEvent.sortDate, today) : 0;
-  const workingDaysSinceLatest = latestEvent ? getWorkingDaysBetween(latestEvent.sortDate, today) : 0;
-  const excludedDates = latestEvent ? getExcludedDates(latestEvent.sortDate, today) : [];
+  const daysSinceReceived = receivedDate ? getDaysBetween(receivedDate, today) : 0;
+  const workingDaysSinceReceived = receivedDate ? getWorkingDaysBetween(receivedDate, today) : 0;
+  const excludedDates = receivedDate ? getExcludedDates(receivedDate, today) : [];
   const fridayCount = excludedDates.filter(d => d.reason.includes('Friday')).length;
   const sundayCount = excludedDates.filter(d => d.reason.includes('Sunday')).length;
   const phCount = excludedDates.filter(d => !['Friday', 'Sunday'].includes(d.reason)).length;
@@ -262,13 +263,13 @@ export function TimelineModal({ open, onOpenChange, matter }: TimelineModalProps
       .map((event, index) => {
         const daysPart = index > 0
           ? ` (+${getDaysBetween(timeline[index - 1].sortDate, event.sortDate)}d / ${getWorkingDaysBetween(timeline[index - 1].sortDate, event.sortDate)}wd)`
-          : '';
+          : receivedDate ? ` (+${getDaysBetween(receivedDate, event.sortDate)}d / ${getWorkingDaysBetween(receivedDate, event.sortDate)}wd from received)` : '';
         return `${formatDateForCopy(event.date)} - ${event.status}${daysPart}`;
       })
       .join('\n');
 
-    const latestNote = latestEvent
-      ? `\n\nDays since last update: ${daysSinceLatest} calendar days / ${workingDaysSinceLatest} working days`
+    const latestNote = receivedDate
+      ? `\n\nDays since received: ${daysSinceReceived} calendar days / ${workingDaysSinceReceived} working days`
       : '';
 
     try {
@@ -343,14 +344,15 @@ export function TimelineModal({ open, onOpenChange, matter }: TimelineModalProps
           )}
 
           {/* Days since latest update - Calendar & Working */}
-          {latestEvent && (
+          {receivedDate && (
             <div className="mt-6 pt-4 border-t border-border">
+              <p className="text-[11px] text-muted-foreground mb-2">Since Received Date ({formatDateDisplay(matter.sutheReceivedDate)})</p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2 text-sm p-2 rounded-md bg-muted/50">
                   <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div>
                     <p className="text-[11px] text-muted-foreground">Calendar Days</p>
-                    <p className="font-mono font-bold text-primary">{daysSinceLatest} days</p>
+                    <p className="font-mono font-bold text-primary">{daysSinceReceived} days</p>
                   </div>
                 </div>
                 <button
@@ -361,7 +363,7 @@ export function TimelineModal({ open, onOpenChange, matter }: TimelineModalProps
                   <Briefcase className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] text-muted-foreground">Working Days</p>
-                    <p className="font-mono font-bold text-primary">{workingDaysSinceLatest} days</p>
+                    <p className="font-mono font-bold text-primary">{workingDaysSinceReceived} days</p>
                     <p className="text-[10px] text-muted-foreground">Excl. Fri, Sun & PH</p>
                   </div>
                   {showExcluded ? (
