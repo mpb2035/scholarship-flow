@@ -372,26 +372,30 @@ export function TimelineModal({ open, onOpenChange, matter }: TimelineModalProps
                 </button>
               </div>
 
-              {/* Excluded dates breakdown */}
+              {/* Excluded dates breakdown - all skipped days listed */}
               {showExcluded && excludedDates.length > 0 && (
                 <div className="mt-3 rounded-md border border-border bg-muted/30 overflow-hidden">
                   <div className="px-3 py-2 border-b border-border bg-muted/50">
                     <p className="text-[11px] font-semibold text-foreground">
-                      Excluded Dates ({excludedDates.length})
+                      Days Skipped ({excludedDates.length})
                     </p>
                     <p className="text-[10px] text-muted-foreground">
                       {fridayCount} Fri · {sundayCount} Sun · {phCount} PH
                     </p>
                   </div>
-                  <ScrollArea className="max-h-40">
+                  <ScrollArea className="max-h-64">
                     <div className="divide-y divide-border">
-                      {excludedDates.map((d) => (
+                      {excludedDates.map((d, idx) => (
                         <div key={d.date} className="flex items-center justify-between px-3 py-1.5">
-                          <span className="text-[11px] font-mono text-foreground">{d.displayDate}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-muted-foreground font-mono w-5 text-right">{idx + 1}.</span>
+                            <span className="text-[11px] font-mono text-foreground">{d.displayDate}</span>
+                          </div>
                           <span className={cn(
                             "text-[10px] px-1.5 py-0.5 rounded font-medium",
-                            d.reason === 'Friday' ? 'bg-blue-500/15 text-blue-400' :
-                            d.reason === 'Sunday' ? 'bg-purple-500/15 text-purple-400' :
+                            d.reason.includes('Friday') && !d.reason.includes('+') ? 'bg-blue-500/15 text-blue-400' :
+                            d.reason.includes('Sunday') && !d.reason.includes('+') ? 'bg-purple-500/15 text-purple-400' :
+                            d.reason.includes('+') ? 'bg-rose-500/15 text-rose-400' :
                             'bg-amber-500/15 text-amber-400'
                           )}>
                             {d.reason}
