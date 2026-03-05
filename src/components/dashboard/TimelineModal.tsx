@@ -35,57 +35,98 @@ interface TimelineModalProps {
 function getBruneiPublicHolidays(year: number): Map<string, string> {
   const holidays = new Map<string, string>();
 
-  const fixed: [string, string][] = [
-    [`${year}-01-01`, 'New Year'],
-    [`${year}-02-23`, 'National Day'],
-    [`${year}-03-01`, 'Anniv. Royal Brunei Armed Forces'],
-    [`${year}-05-31`, 'Anniv. Royal Brunei Malay Regiment'],
-    [`${year}-07-15`, "Sultan's Birthday"],
-    [`${year}-12-25`, 'Christmas Day'],
-  ];
-  fixed.forEach(([d, name]) => holidays.set(d, name));
-
-  const moveableByYear: Record<number, [string, string][]> = {
+  // All holidays by year (fixed + moveable combined, sourced from official gazette / publicholidays.asia)
+  const holidaysByYear: Record<number, [string, string][]> = {
     2024: [
-      ['2024-01-01', 'Awal Muharram'],
-      ['2024-02-08', 'Israk Mi\'raj'],
-      ['2024-03-12', 'Start of Ramadan'], ['2024-03-13', 'Start of Ramadan'],
+      ['2024-01-01', "New Year's Day"],
+      ['2024-02-08', 'Israk Mikraj'],
+      ['2024-02-10', 'Chinese New Year'],
+      ['2024-02-23', 'National Day'],
+      ['2024-03-12', 'Awal Ramadhan'],
       ['2024-03-27', 'Nuzul Al-Quran'],
       ['2024-04-10', 'Hari Raya Aidilfitri'], ['2024-04-11', 'Hari Raya Aidilfitri'], ['2024-04-12', 'Hari Raya Aidilfitri'],
+      ['2024-05-31', 'RBAF Day'],
       ['2024-06-17', 'Hari Raya Aidiladha'], ['2024-06-18', 'Hari Raya Aidiladha'],
       ['2024-07-08', 'Awal Muharram'],
+      ['2024-07-15', "Sultan's Birthday"],
       ['2024-09-16', 'Maulud Nabi'],
+      ['2024-12-25', 'Christmas Day'],
     ],
     2025: [
-      ['2025-01-27', 'Israk Mi\'raj'],
-      ['2025-03-01', 'Start of Ramadan'], ['2025-03-02', 'Start of Ramadan'],
+      ['2025-01-01', "New Year's Day"],
+      ['2025-01-27', 'Israk Mikraj'],
+      ['2025-01-29', 'Chinese New Year'],
+      ['2025-02-23', 'National Day'],
+      ['2025-03-01', 'Awal Ramadhan'], ['2025-03-02', 'Awal Ramadhan'],
       ['2025-03-15', 'Nuzul Al-Quran'],
       ['2025-03-30', 'Hari Raya Aidilfitri'], ['2025-03-31', 'Hari Raya Aidilfitri'], ['2025-04-01', 'Hari Raya Aidilfitri'],
+      ['2025-05-31', 'RBAF Day'],
       ['2025-06-06', 'Hari Raya Aidiladha'], ['2025-06-07', 'Hari Raya Aidiladha'],
       ['2025-06-27', 'Awal Muharram'],
+      ['2025-07-15', "Sultan's Birthday"],
       ['2025-09-05', 'Maulud Nabi'],
+      ['2025-12-25', 'Christmas Day'],
     ],
+    // 2026: Official gazetted holidays (ref: pmo.gov.bn circular jpmsk04-2025)
     2026: [
-      ['2026-01-16', 'Israk Mi\'raj'],
-      ['2026-02-18', 'Start of Ramadan'], ['2026-02-19', 'Start of Ramadan'],
-      ['2026-03-04', 'Nuzul Al-Quran'],
-      ['2026-03-20', 'Hari Raya Aidilfitri'], ['2026-03-21', 'Hari Raya Aidilfitri'], ['2026-03-22', 'Hari Raya Aidilfitri'],
-      ['2026-05-27', 'Hari Raya Aidiladha'], ['2026-05-28', 'Hari Raya Aidiladha'],
+      ['2026-01-01', "New Year's Day"],
+      ['2026-01-17', 'Israk Mikraj'],
+      ['2026-02-17', 'Chinese New Year'],
+      ['2026-02-19', 'Awal Ramadhan'],
+      ['2026-02-23', 'National Day'],
+      ['2026-03-07', 'Nuzul Al-Quran'],
+      ['2026-03-21', 'Hari Raya Aidilfitri'], ['2026-03-22', 'Hari Raya Aidilfitri'], ['2026-03-23', 'Hari Raya Aidilfitri'], ['2026-03-24', 'Hari Raya Aidilfitri'],
+      ['2026-05-27', 'Hari Raya Aidiladha'],
+      ['2026-05-31', 'RBAF Day'],
+      ['2026-06-01', 'RBAF Day Holiday'],
       ['2026-06-17', 'Awal Muharram'],
-      ['2026-08-26', 'Maulud Nabi'],
+      ['2026-07-15', "Sultan's Birthday"],
+      ['2026-08-25', 'Maulud Nabi'],
+      ['2026-12-25', 'Christmas Day'],
+      ['2026-12-26', 'Christmas Holiday'],
     ],
+    // 2027: Estimated dates (moveable Islamic holidays approximate)
     2027: [
-      ['2027-01-06', 'Israk Mi\'raj'],
-      ['2027-02-08', 'Start of Ramadan'], ['2027-02-09', 'Start of Ramadan'],
-      ['2027-02-21', 'Nuzul Al-Quran'],
-      ['2027-03-09', 'Hari Raya Aidilfitri'], ['2027-03-10', 'Hari Raya Aidilfitri'], ['2027-03-11', 'Hari Raya Aidilfitri'],
-      ['2027-05-16', 'Hari Raya Aidiladha'], ['2027-05-17', 'Hari Raya Aidiladha'],
+      ['2027-01-01', "New Year's Day"],
+      ['2027-01-02', "New Year Holiday"],
+      ['2027-01-05', 'Israk Mikraj'],
+      ['2027-02-06', 'Chinese New Year'],
+      ['2027-02-08', 'Awal Ramadhan'],
+      ['2027-02-23', 'National Day'],
+      ['2027-02-24', 'Nuzul Al-Quran'],
+      ['2027-03-10', 'Hari Raya Aidilfitri'], ['2027-03-11', 'Hari Raya Aidilfitri'], ['2027-03-12', 'Hari Raya Aidilfitri'], ['2027-03-13', 'Hari Raya Aidilfitri'],
+      ['2027-05-17', 'Hari Raya Aidiladha'],
+      ['2027-05-31', 'RBAF Day'],
       ['2027-06-06', 'Awal Muharram'],
+      ['2027-06-07', 'Awal Muharram Holiday'],
+      ['2027-07-15', "Sultan's Birthday"],
       ['2027-08-15', 'Maulud Nabi'],
+      ['2027-08-16', 'Maulud Nabi Holiday'],
+      ['2027-12-25', 'Christmas Day'],
+      ['2027-12-26', 'Israk Mikraj'],
+      ['2027-12-27', 'Israk Mikraj Holiday'],
+    ],
+    // 2028: Estimated dates
+    2028: [
+      ['2028-01-01', "New Year's Day"],
+      ['2028-01-26', 'Chinese New Year'],
+      ['2028-01-28', 'Awal Ramadhan'],
+      ['2028-01-29', 'Awal Ramadhan Holiday'],
+      ['2028-02-13', 'Nuzul Al-Quran'],
+      ['2028-02-23', 'National Day'],
+      ['2028-02-26', 'Hari Raya Aidilfitri'], ['2028-02-27', 'Hari Raya Aidilfitri'], ['2028-02-28', 'Hari Raya Aidilfitri'], ['2028-02-29', 'Hari Raya Aidilfitri'],
+      ['2028-05-05', 'Hari Raya Aidiladha'],
+      ['2028-05-06', 'Hari Raya Aidiladha Holiday'],
+      ['2028-05-25', 'Awal Muharram'],
+      ['2028-05-31', 'RBAF Day'],
+      ['2028-07-15', "Sultan's Birthday"],
+      ['2028-08-03', 'Maulud Nabi'],
+      ['2028-12-14', 'Israk Mikraj'],
+      ['2028-12-25', 'Christmas Day'],
     ],
   };
 
-  (moveableByYear[year] || []).forEach(([d, name]) => holidays.set(d, name));
+  (holidaysByYear[year] || []).forEach(([d, name]) => holidays.set(d, name));
   return holidays;
 }
 
