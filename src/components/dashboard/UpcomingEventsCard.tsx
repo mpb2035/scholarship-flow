@@ -141,7 +141,7 @@ export function UpcomingEventsCard({ meetings, onAdd, onUpdate, onDelete, remind
                 </DialogContent>
               </Dialog>
             </div>
-            <MeetingScorecard meetings={meetings} />
+            <MeetingScorecard meetings={meetings} onUpdate={onUpdate} />
           </TabsContent>
 
           {/* Events Tab */}
