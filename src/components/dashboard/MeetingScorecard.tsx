@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CalendarIcon, Clock, MapPin, Users, FileText, Timer, ChevronRight } from 'lucide-react';
+import { CalendarIcon, Clock, MapPin, Users, FileText, Timer, ChevronRight, Plus, X } from 'lucide-react';
 import { format, differenceInDays, differenceInHours, differenceInMinutes, isToday, isTomorrow } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Meeting } from '@/types/meeting';
+import { Meeting, MeetingInput } from '@/types/meeting';
 
 interface MeetingScorecardProps {
   meetings: Meeting[];
+  onUpdate: (id: string, input: Partial<MeetingInput>) => Promise<any>;
 }
 
 function getCountdown(dateStr: string, timeStr: string | null) {
@@ -24,7 +26,7 @@ function getCountdown(dateStr: string, timeStr: string | null) {
   }
 
   const totalMinutes = differenceInMinutes(meetingDate, now);
-  if (totalMinutes <= 0) return { label: 'Now', urgent: true, days: 0, hours: 0, minutes: 0 };
+  if (totalMinutes <= 0) return { label: 'Now', urgent: true };
 
   const days = differenceInDays(meetingDate, now);
   const hours = differenceInHours(meetingDate, now) % 24;
@@ -35,7 +37,7 @@ function getCountdown(dateStr: string, timeStr: string | null) {
   else if (hours > 0) label = `${hours}h ${minutes}m`;
   else label = `${minutes}m`;
 
-  return { label, urgent: totalMinutes < 120, days, hours, minutes };
+  return { label, urgent: totalMinutes < 120 };
 }
 
 function getUrgencyColor(dateStr: string) {
@@ -46,7 +48,7 @@ function getUrgencyColor(dateStr: string) {
   return 'border-border bg-card';
 }
 
-export function MeetingScorecard({ meetings }: MeetingScorecardProps) {
+export function MeetingScorecard({ meetings, onUpdate }: MeetingScorecardProps) {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
 
   const meetingTypeEvents = meetings.filter(m => m.meeting_type === 'meeting');
@@ -59,6 +61,14 @@ export function MeetingScorecard({ meetings }: MeetingScorecardProps) {
       </div>
     );
   }
+
+  const handleUpdate = async (id: string, input: Partial<MeetingInput>) => {
+    const result = await onUpdate(id, input);
+    // Update local selected meeting state to reflect changes
+    if (result && selectedMeeting?.id === id) {
+      setSelectedMeeting(prev => prev ? { ...prev, ...input } as Meeting : null);
+    }
+  };
 
   return (
     <>
@@ -80,7 +90,6 @@ export function MeetingScorecard({ meetings }: MeetingScorecardProps) {
                 getUrgencyColor(meeting.meeting_date)
               )}
             >
-              {/* Countdown badge */}
               <div className="flex items-center justify-between mb-2">
                 <Badge
                   variant="outline"
@@ -95,10 +104,8 @@ export function MeetingScorecard({ meetings }: MeetingScorecardProps) {
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
 
-              {/* Title */}
               <p className="font-semibold text-sm truncate mb-1.5">{meeting.title}</p>
 
-              {/* Date & Time */}
               <div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-1">
                 <CalendarIcon className="h-3 w-3 shrink-0" />
                 <span>{dateLabel}</span>
@@ -110,7 +117,6 @@ export function MeetingScorecard({ meetings }: MeetingScorecardProps) {
                 )}
               </div>
 
-              {/* Location */}
               {meeting.location && (
                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-1">
                   <MapPin className="h-3 w-3 shrink-0" />
@@ -118,7 +124,6 @@ export function MeetingScorecard({ meetings }: MeetingScorecardProps) {
                 </div>
               )}
 
-              {/* Footer badges */}
               <div className="flex items-center gap-2 mt-2">
                 {meeting.attendees && meeting.attendees.length > 0 && (
                   <Badge variant="secondary" className="text-[10px] py-0">
@@ -142,7 +147,6 @@ export function MeetingScorecard({ meetings }: MeetingScorecardProps) {
         <p className="text-xs text-center text-muted-foreground mt-2">+{meetingTypeEvents.length - 4} more meetings</p>
       )}
 
-      {/* Meeting Detail Dialog */}
       <Dialog open={!!selectedMeeting} onOpenChange={(open) => !open && setSelectedMeeting(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -151,16 +155,50 @@ export function MeetingScorecard({ meetings }: MeetingScorecardProps) {
               Meeting Details
             </DialogTitle>
           </DialogHeader>
-          {selectedMeeting && <MeetingDetailContent meeting={selectedMeeting} />}
+          {selectedMeeting && (
+            <MeetingDetailContent
+              meeting={selectedMeeting}
+              onUpdate={(input) => handleUpdate(selectedMeeting.id, input)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </>
   );
 }
 
-function MeetingDetailContent({ meeting }: { meeting: Meeting }) {
+function MeetingDetailContent({ meeting, onUpdate }: { meeting: Meeting; onUpdate: (input: Partial<MeetingInput>) => Promise<any> }) {
+  const [newAttendee, setNewAttendee] = useState('');
+  const [newItem, setNewItem] = useState('');
+
   const countdown = getCountdown(meeting.meeting_date, meeting.meeting_time);
   const dateLabel = format(new Date(meeting.meeting_date), 'EEEE, dd MMMM yyyy');
+
+  const addAttendee = async () => {
+    if (!newAttendee.trim()) return;
+    const updated = [...(meeting.attendees || []), newAttendee.trim()];
+    await onUpdate({ attendees: updated });
+    setNewAttendee('');
+  };
+
+  const removeAttendee = async (index: number) => {
+    const updated = [...(meeting.attendees || [])];
+    updated.splice(index, 1);
+    await onUpdate({ attendees: updated });
+  };
+
+  const addItem = async () => {
+    if (!newItem.trim()) return;
+    const updated = [...(meeting.required_items || []), newItem.trim()];
+    await onUpdate({ required_items: updated });
+    setNewItem('');
+  };
+
+  const removeItem = async (index: number) => {
+    const updated = [...(meeting.required_items || [])];
+    updated.splice(index, 1);
+    await onUpdate({ required_items: updated });
+  };
 
   return (
     <ScrollArea className="max-h-[60vh]">
@@ -208,40 +246,72 @@ function MeetingDetailContent({ meeting }: { meeting: Meeting }) {
           </div>
         )}
 
-        {/* Required Items */}
-        {meeting.required_items && meeting.required_items.length > 0 && (
-          <div>
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-              <FileText className="h-3.5 w-3.5" /> Required for Meeting
-            </h4>
-            <div className="space-y-1.5">
-              {meeting.required_items.map((item, i) => (
-                <div key={i} className="flex items-center gap-2 text-sm p-2 rounded-md bg-muted/50 border">
-                  <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0">
-                    {i + 1}
-                  </span>
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
+        {/* Required Items - Editable */}
+        <div>
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
+            <FileText className="h-3.5 w-3.5" /> Required for Meeting
+          </h4>
+          <div className="space-y-1.5">
+            {(meeting.required_items || []).map((item, i) => (
+              <div key={i} className="flex items-center gap-2 text-sm p-2 rounded-md bg-muted/50 border group">
+                <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0">
+                  {i + 1}
+                </span>
+                <span className="flex-1">{item}</span>
+                <button
+                  onClick={() => removeItem(i)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
           </div>
-        )}
+          <div className="flex gap-2 mt-2">
+            <Input
+              value={newItem}
+              onChange={(e) => setNewItem(e.target.value)}
+              placeholder="e.g. Slides, Report, Agenda"
+              className="text-sm h-8"
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addItem())}
+            />
+            <Button size="sm" variant="outline" className="h-8 px-2" onClick={addItem} disabled={!newItem.trim()}>
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
 
-        {/* Attendees */}
-        {meeting.attendees && meeting.attendees.length > 0 && (
-          <div>
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
-              <Users className="h-3.5 w-3.5" /> Attendees ({meeting.attendees.length})
-            </h4>
-            <div className="flex flex-wrap gap-2">
-              {meeting.attendees.map((name, i) => (
-                <Badge key={i} variant="secondary" className="text-xs py-1 px-2.5">
-                  {name}
-                </Badge>
-              ))}
-            </div>
+        {/* Attendees - Editable */}
+        <div>
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1">
+            <Users className="h-3.5 w-3.5" /> Attendees ({(meeting.attendees || []).length})
+          </h4>
+          <div className="flex flex-wrap gap-1.5">
+            {(meeting.attendees || []).map((name, i) => (
+              <Badge key={i} variant="secondary" className="text-xs py-1 px-2.5 group pr-1.5">
+                {name}
+                <button
+                  onClick={() => removeAttendee(i)}
+                  className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
           </div>
-        )}
+          <div className="flex gap-2 mt-2">
+            <Input
+              value={newAttendee}
+              onChange={(e) => setNewAttendee(e.target.value)}
+              placeholder="Add attendee name"
+              className="text-sm h-8"
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addAttendee())}
+            />
+            <Button size="sm" variant="outline" className="h-8 px-2" onClick={addAttendee} disabled={!newAttendee.trim()}>
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
       </div>
     </ScrollArea>
   );
