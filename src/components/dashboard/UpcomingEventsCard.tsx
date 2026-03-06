@@ -29,7 +29,7 @@ export function UpcomingEventsCard({ meetings, onAdd, onUpdate, onDelete, remind
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState<Meeting | null>(null);
   const [formData, setFormData] = useState<MeetingInput>({
-    title: '', description: '', meeting_date: '', meeting_time: '', location: '', meeting_type: 'meeting',
+    title: '', description: '', meeting_date: '', meeting_time: '', location: '', meeting_type: 'meeting', attendees: [], required_items: [],
   });
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [newReminderTitle, setNewReminderTitle] = useState('');
