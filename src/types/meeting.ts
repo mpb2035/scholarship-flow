@@ -8,6 +8,8 @@ export interface Meeting {
   location: string | null;
   meeting_type: 'meeting' | 'event' | 'reminder' | 'deadline';
   status: 'scheduled' | 'completed' | 'cancelled';
+  attendees: string[];
+  required_items: string[];
   created_at: string;
   updated_at: string;
 }
@@ -20,4 +22,6 @@ export interface MeetingInput {
   location?: string;
   meeting_type?: 'meeting' | 'event' | 'reminder' | 'deadline';
   status?: 'scheduled' | 'completed' | 'cancelled';
+  attendees?: string[];
+  required_items?: string[];
 }
