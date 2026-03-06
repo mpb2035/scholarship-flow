@@ -527,6 +527,7 @@ export type Database = {
       }
       meetings: {
         Row: {
+          attendees: string[]
           created_at: string
           description: string | null
           id: string
@@ -534,12 +535,14 @@ export type Database = {
           meeting_date: string
           meeting_time: string | null
           meeting_type: string
+          required_items: string[]
           status: string
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          attendees?: string[]
           created_at?: string
           description?: string | null
           id?: string
@@ -547,12 +550,14 @@ export type Database = {
           meeting_date: string
           meeting_time?: string | null
           meeting_type?: string
+          required_items?: string[]
           status?: string
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          attendees?: string[]
           created_at?: string
           description?: string | null
           id?: string
@@ -560,6 +565,7 @@ export type Database = {
           meeting_date?: string
           meeting_time?: string | null
           meeting_type?: string
+          required_items?: string[]
           status?: string
           title?: string
           updated_at?: string
