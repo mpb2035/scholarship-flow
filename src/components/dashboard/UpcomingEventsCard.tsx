@@ -35,7 +35,7 @@ export function UpcomingEventsCard({ meetings, onAdd, onUpdate, onDelete, remind
   const [newReminderTitle, setNewReminderTitle] = useState('');
 
   const resetForm = () => {
-    setFormData({ title: '', description: '', meeting_date: '', meeting_time: '', location: '', meeting_type: 'meeting' });
+    setFormData({ title: '', description: '', meeting_date: '', meeting_time: '', location: '', meeting_type: 'meeting', attendees: [], required_items: [] });
     setSelectedDate(undefined);
   };
 
