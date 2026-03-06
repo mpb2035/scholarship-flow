@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CalendarIcon, Plus, Edit2, Trash2, Clock, MapPin, CalendarCheck, Pin, PinOff, Bell } from 'lucide-react';
+import { CalendarIcon, Plus, Edit2, Trash2, Clock, MapPin, CalendarCheck, Pin, PinOff, Bell, Users } from 'lucide-react';
 import { format, differenceInDays, isToday, isTomorrow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Meeting, MeetingInput } from '@/types/meeting';
