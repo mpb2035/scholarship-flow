@@ -51,6 +51,7 @@ export function UpcomingEventsCard({ meetings, onAdd, onUpdate, onDelete, remind
     setFormData({
       title: meeting.title, description: meeting.description || '', meeting_date: meeting.meeting_date,
       meeting_time: meeting.meeting_time || '', location: meeting.location || '', meeting_type: meeting.meeting_type,
+      attendees: meeting.attendees || [], required_items: meeting.required_items || [],
     });
     setSelectedDate(new Date(meeting.meeting_date));
   };
