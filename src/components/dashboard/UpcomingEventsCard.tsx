@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { Meeting, MeetingInput } from '@/types/meeting';
 import { Reminder, ReminderInput } from '@/hooks/useReminders';
 import { EventFormContent } from './EventFormContent';
+import { MeetingScorecard } from './MeetingScorecard';
 
 interface UpcomingEventsCardProps {
   meetings: Meeting[];
