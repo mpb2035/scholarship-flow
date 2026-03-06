@@ -100,8 +100,13 @@ export function UpcomingEventsCard({ meetings, onAdd, onUpdate, onDelete, remind
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="events">
+        <Tabs defaultValue="meetings">
           <TabsList className="mb-4">
+            <TabsTrigger value="meetings">
+              <Users className="h-4 w-4 mr-1" />
+              Meetings
+              {meetings.filter(m => m.meeting_type === 'meeting').length > 0 && <Badge variant="secondary" className="ml-1 text-xs">{meetings.filter(m => m.meeting_type === 'meeting').length}</Badge>}
+            </TabsTrigger>
             <TabsTrigger value="events">
               <CalendarCheck className="h-4 w-4 mr-1" />
               Events
@@ -113,6 +118,31 @@ export function UpcomingEventsCard({ meetings, onAdd, onUpdate, onDelete, remind
               {activeReminders.length > 0 && <Badge variant="destructive" className="ml-1 text-xs">{activeReminders.length}</Badge>}
             </TabsTrigger>
           </TabsList>
+
+          {/* Meetings Scorecard Tab */}
+          <TabsContent value="meetings">
+            <div className="flex justify-end mb-3">
+              <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" onClick={() => { resetForm(); setFormData(prev => ({ ...prev, meeting_type: 'meeting' })); setIsAddOpen(true); }}>
+                    <Plus className="h-4 w-4 mr-1" /> Add Meeting
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>Add New Meeting</DialogTitle></DialogHeader>
+                  <EventFormContent
+                    isEdit={false}
+                    formData={formData}
+                    selectedDate={selectedDate}
+                    onFormDataChange={setFormData}
+                    onDateChange={setSelectedDate}
+                    onSubmit={handleAdd}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
+            <MeetingScorecard meetings={meetings} />
+          </TabsContent>
 
           {/* Events Tab */}
           <TabsContent value="events">
