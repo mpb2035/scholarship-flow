@@ -51,6 +51,10 @@ const mapDbToAttachmentOverseas = (db: DbAttachmentOverseas): AttachmentOverseas
   country: db.country,
   destinationInstitution: db.destination_institution,
   studentCount: db.student_count,
+  deptMemoRef: db.dept_memo_ref,
+  deptMemoDate: db.dept_memo_date,
+  officeMemoRef: db.office_memo_ref,
+  officeMemoDate: db.office_memo_date,
   createdAt: db.created_at,
   updatedAt: db.updated_at,
 });
