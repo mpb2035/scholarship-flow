@@ -34,6 +34,10 @@ export function AttachmentEditDialog({ attachment, open, onOpenChange, onSave }:
     country: attachment.country,
     destinationInstitution: attachment.destinationInstitution,
     studentCount: attachment.studentCount,
+    deptMemoRef: attachment.deptMemoRef || '',
+    deptMemoDate: attachment.deptMemoDate || '',
+    officeMemoRef: attachment.officeMemoRef || '',
+    officeMemoDate: attachment.officeMemoDate || '',
   });
 
   const [newProgramme, setNewProgramme] = useState('');
@@ -202,6 +206,50 @@ export function AttachmentEditDialog({ attachment, open, onOpenChange, onSave }:
               value={formData.studentCount}
               onChange={(e) => setFormData(prev => ({ ...prev, studentCount: parseInt(e.target.value) || 0 }))}
             />
+          </div>
+          {/* Memo References */}
+          <div className="space-y-2 p-3 bg-muted/50 rounded-lg border">
+            <p className="text-sm font-medium text-muted-foreground">Department Memo</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Reference Code</Label>
+                <Input
+                  value={formData.deptMemoRef}
+                  onChange={(e) => setFormData(prev => ({ ...prev, deptMemoRef: e.target.value }))}
+                  placeholder="e.g., DEPT/2026/001"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Date Signed</Label>
+                <Input
+                  type="date"
+                  value={formData.deptMemoDate}
+                  onChange={(e) => setFormData(prev => ({ ...prev, deptMemoDate: e.target.value }))}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 p-3 bg-muted/50 rounded-lg border">
+            <p className="text-sm font-medium text-muted-foreground">Office Memo</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Reference Code</Label>
+                <Input
+                  value={formData.officeMemoRef}
+                  onChange={(e) => setFormData(prev => ({ ...prev, officeMemoRef: e.target.value }))}
+                  placeholder="e.g., SUT/HE/2026/001"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Date Signed</Label>
+                <Input
+                  type="date"
+                  value={formData.officeMemoDate}
+                  onChange={(e) => setFormData(prev => ({ ...prev, officeMemoDate: e.target.value }))}
+                />
+              </div>
+            </div>
           </div>
         </div>
 

@@ -13,6 +13,10 @@ export interface AttachmentOverseas {
   country: string;
   destinationInstitution: string;
   studentCount: number;
+  deptMemoRef: string | null;
+  deptMemoDate: string | null;
+  officeMemoRef: string | null;
+  officeMemoDate: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,6 +32,10 @@ interface DbAttachmentOverseas {
   country: string;
   destination_institution: string;
   student_count: number;
+  dept_memo_ref: string | null;
+  dept_memo_date: string | null;
+  office_memo_ref: string | null;
+  office_memo_date: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -43,6 +51,10 @@ const mapDbToAttachmentOverseas = (db: DbAttachmentOverseas): AttachmentOverseas
   country: db.country,
   destinationInstitution: db.destination_institution,
   studentCount: db.student_count,
+  deptMemoRef: db.dept_memo_ref,
+  deptMemoDate: db.dept_memo_date,
+  officeMemoRef: db.office_memo_ref,
+  officeMemoDate: db.office_memo_date,
   createdAt: db.created_at,
   updatedAt: db.updated_at,
 });
@@ -206,6 +218,10 @@ export function useAttachmentOverseas() {
         country: data.country,
         destination_institution: data.destinationInstitution,
         student_count: data.studentCount,
+        dept_memo_ref: data.deptMemoRef,
+        dept_memo_date: data.deptMemoDate,
+        office_memo_ref: data.officeMemoRef,
+        office_memo_date: data.officeMemoDate,
       })
       .select()
       .single();
@@ -227,6 +243,10 @@ export function useAttachmentOverseas() {
     if (updates.country !== undefined) dbUpdates.country = updates.country;
     if (updates.destinationInstitution !== undefined) dbUpdates.destination_institution = updates.destinationInstitution;
     if (updates.studentCount !== undefined) dbUpdates.student_count = updates.studentCount;
+    if (updates.deptMemoRef !== undefined) dbUpdates.dept_memo_ref = updates.deptMemoRef;
+    if (updates.deptMemoDate !== undefined) dbUpdates.dept_memo_date = updates.deptMemoDate;
+    if (updates.officeMemoRef !== undefined) dbUpdates.office_memo_ref = updates.officeMemoRef;
+    if (updates.officeMemoDate !== undefined) dbUpdates.office_memo_date = updates.officeMemoDate;
 
     const { error } = await supabase
       .from('attachment_overseas')

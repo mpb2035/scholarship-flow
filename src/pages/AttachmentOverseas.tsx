@@ -17,7 +17,8 @@ import {
   Clock,
   CheckCircle2,
   TrendingUp,
-  Pencil
+  Pencil,
+  FileText
 } from 'lucide-react';
 
 export default function AttachmentOverseas() {
@@ -292,6 +293,22 @@ export default function AttachmentOverseas() {
                       <Badge variant={att.fundingType === 'Organizer Funded' ? 'default' : 'outline'} className="text-xs">
                         {att.fundingType}
                       </Badge>
+                      {(att.deptMemoRef || att.officeMemoRef) && (
+                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                          {att.deptMemoRef && (
+                            <span className="flex items-center gap-1">
+                              <FileText className="h-3 w-3" />
+                              Dept: <span className="font-medium text-foreground">{att.deptMemoRef}</span>
+                            </span>
+                          )}
+                          {att.officeMemoRef && (
+                            <span className="flex items-center gap-1">
+                              <FileText className="h-3 w-3" />
+                              Office: <span className="font-medium text-foreground">{att.officeMemoRef}</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -312,6 +329,8 @@ export default function AttachmentOverseas() {
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Duration</th>
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Days Left</th>
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Funding</th>
+                      <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Dept Memo</th>
+                      <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Office Memo</th>
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
@@ -354,6 +373,22 @@ export default function AttachmentOverseas() {
                             <Badge variant={att.fundingType === 'Organizer Funded' ? 'default' : 'outline'}>
                               {att.fundingType}
                             </Badge>
+                          </td>
+                          <td className="py-3 px-3 text-sm">
+                            {att.deptMemoRef ? (
+                              <div>
+                                <span className="font-medium">{att.deptMemoRef}</span>
+                                {att.deptMemoDate && <div className="text-xs text-muted-foreground">{new Date(att.deptMemoDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</div>}
+                              </div>
+                            ) : <span className="text-muted-foreground">—</span>}
+                          </td>
+                          <td className="py-3 px-3 text-sm">
+                            {att.officeMemoRef ? (
+                              <div>
+                                <span className="font-medium">{att.officeMemoRef}</span>
+                                {att.officeMemoDate && <div className="text-xs text-muted-foreground">{new Date(att.officeMemoDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</div>}
+                              </div>
+                            ) : <span className="text-muted-foreground">—</span>}
                           </td>
                           <td className="py-3 px-3">
                             <Button variant="ghost" size="sm" onClick={() => setEditingAttachment(att)} className="h-8 w-8 p-0">

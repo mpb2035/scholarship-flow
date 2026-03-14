@@ -18,11 +18,15 @@ export type Database = {
         Row: {
           country: string
           created_at: string
+          dept_memo_date: string | null
+          dept_memo_ref: string | null
           destination_institution: string
           funding_type: string
           id: string
           institution: string
           matter_id: string
+          office_memo_date: string | null
+          office_memo_ref: string | null
           program_end_date: string
           program_start_date: string
           programmes: string[]
@@ -32,11 +36,15 @@ export type Database = {
         Insert: {
           country: string
           created_at?: string
+          dept_memo_date?: string | null
+          dept_memo_ref?: string | null
           destination_institution: string
           funding_type: string
           id?: string
           institution: string
           matter_id: string
+          office_memo_date?: string | null
+          office_memo_ref?: string | null
           program_end_date: string
           program_start_date: string
           programmes?: string[]
@@ -46,11 +54,15 @@ export type Database = {
         Update: {
           country?: string
           created_at?: string
+          dept_memo_date?: string | null
+          dept_memo_ref?: string | null
           destination_institution?: string
           funding_type?: string
           id?: string
           institution?: string
           matter_id?: string
+          office_memo_date?: string | null
+          office_memo_ref?: string | null
           program_end_date?: string
           program_start_date?: string
           programmes?: string[]

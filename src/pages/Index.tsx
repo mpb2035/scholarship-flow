@@ -239,6 +239,10 @@ const Index = () => {
       country: attachmentData.country || '',
       destinationInstitution: attachmentData.destinationInstitution || '',
       studentCount: attachmentData.studentCount || 1,
+      deptMemoRef: attachmentData.deptMemoRef || null,
+      deptMemoDate: attachmentData.deptMemoDate || null,
+      officeMemoRef: attachmentData.officeMemoRef || null,
+      officeMemoDate: attachmentData.officeMemoDate || null,
     };
 
     try {
