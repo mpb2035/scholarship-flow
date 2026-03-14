@@ -313,6 +313,8 @@ export default function AttachmentOverseas() {
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Duration</th>
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Days Left</th>
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Funding</th>
+                      <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Dept Memo</th>
+                      <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Office Memo</th>
                       <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
