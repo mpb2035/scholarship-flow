@@ -28,6 +28,7 @@ interface UpcomingEventsCardProps {
 }
 
 export function UpcomingEventsCard({ meetings, onAdd, onUpdate, onDelete, reminders, onAddReminder, onUpdateReminder, onDeleteReminder }: UpcomingEventsCardProps) {
+  const { todos, isLoading: todosLoading, createTodo, updateTodo, deleteTodo, createSubTodo, updateSubTodo, deleteSubTodo } = useTodos();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState<Meeting | null>(null);
   const [formData, setFormData] = useState<MeetingInput>({
