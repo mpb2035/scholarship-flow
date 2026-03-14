@@ -293,6 +293,22 @@ export default function AttachmentOverseas() {
                       <Badge variant={att.fundingType === 'Organizer Funded' ? 'default' : 'outline'} className="text-xs">
                         {att.fundingType}
                       </Badge>
+                      {(att.deptMemoRef || att.officeMemoRef) && (
+                        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                          {att.deptMemoRef && (
+                            <span className="flex items-center gap-1">
+                              <FileText className="h-3 w-3" />
+                              Dept: <span className="font-medium text-foreground">{att.deptMemoRef}</span>
+                            </span>
+                          )}
+                          {att.officeMemoRef && (
+                            <span className="flex items-center gap-1">
+                              <FileText className="h-3 w-3" />
+                              Office: <span className="font-medium text-foreground">{att.officeMemoRef}</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
