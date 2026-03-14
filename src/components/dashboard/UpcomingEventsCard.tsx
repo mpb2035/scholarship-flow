@@ -6,13 +6,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CalendarIcon, Plus, Edit2, Trash2, Clock, MapPin, CalendarCheck, Pin, PinOff, Bell, Users } from 'lucide-react';
+import { CalendarIcon, Plus, Edit2, Trash2, Clock, MapPin, CalendarCheck, Pin, PinOff, Bell, Users, ListTodo } from 'lucide-react';
 import { format, differenceInDays, isToday, isTomorrow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Meeting, MeetingInput } from '@/types/meeting';
 import { Reminder, ReminderInput } from '@/hooks/useReminders';
 import { EventFormContent } from './EventFormContent';
 import { MeetingScorecard } from './MeetingScorecard';
+import { DailyTodoCard } from './DailyTodoCard';
+import { useTodos } from '@/hooks/useTodos';
 
 interface UpcomingEventsCardProps {
   meetings: Meeting[];
