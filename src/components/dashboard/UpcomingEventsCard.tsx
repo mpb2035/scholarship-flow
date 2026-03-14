@@ -295,8 +295,23 @@ export function UpcomingEventsCard({ meetings, onAdd, onUpdate, onDelete, remind
               </div>
             )}
           </TabsContent>
+          {/* Tasks Tab */}
+          <TabsContent value="tasks">
+            <DailyTodoCard
+              todos={todos}
+              isLoading={todosLoading}
+              onCreateTodo={createTodo}
+              onUpdateTodo={updateTodo}
+              onDeleteTodo={deleteTodo}
+              onCreateSubTodo={createSubTodo}
+              onUpdateSubTodo={updateSubTodo}
+              onDeleteSubTodo={deleteSubTodo}
+            />
+          </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
+  );
+}
   );
 }
