@@ -14,7 +14,7 @@ export function useGTCIStrategicAnalysis() {
   const queryClient = useQueryClient();
   const [localData, setLocalData] = useState<GTCIStrategicAnalysis>(defaultGTCIStrategicAnalysis);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const autoSaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
 
   // Fetch existing data
