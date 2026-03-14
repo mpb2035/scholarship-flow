@@ -239,6 +239,10 @@ export function useAttachmentOverseas() {
     if (updates.country !== undefined) dbUpdates.country = updates.country;
     if (updates.destinationInstitution !== undefined) dbUpdates.destination_institution = updates.destinationInstitution;
     if (updates.studentCount !== undefined) dbUpdates.student_count = updates.studentCount;
+    if (updates.deptMemoRef !== undefined) dbUpdates.dept_memo_ref = updates.deptMemoRef;
+    if (updates.deptMemoDate !== undefined) dbUpdates.dept_memo_date = updates.deptMemoDate;
+    if (updates.officeMemoRef !== undefined) dbUpdates.office_memo_ref = updates.officeMemoRef;
+    if (updates.officeMemoDate !== undefined) dbUpdates.office_memo_date = updates.officeMemoDate;
 
     const { error } = await supabase
       .from('attachment_overseas')
