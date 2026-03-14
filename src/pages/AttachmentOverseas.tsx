@@ -17,7 +17,8 @@ import {
   Clock,
   CheckCircle2,
   TrendingUp,
-  Pencil
+  Pencil,
+  FileText
 } from 'lucide-react';
 
 export default function AttachmentOverseas() {
