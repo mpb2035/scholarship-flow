@@ -120,6 +120,11 @@ export function UpcomingEventsCard({ meetings, onAdd, onUpdate, onDelete, remind
               Reminders
               {activeReminders.length > 0 && <Badge variant="destructive" className="ml-1 text-xs">{activeReminders.length}</Badge>}
             </TabsTrigger>
+            <TabsTrigger value="tasks">
+              <ListTodo className="h-4 w-4 mr-1" />
+              Tasks
+              {todos.filter(t => t.is_main_timer_running).length > 0 && <Badge variant="secondary" className="ml-1 text-xs">{todos.filter(t => t.is_main_timer_running).length}</Badge>}
+            </TabsTrigger>
           </TabsList>
 
           {/* Meetings Scorecard Tab */}
