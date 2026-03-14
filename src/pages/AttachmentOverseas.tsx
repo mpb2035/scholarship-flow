@@ -358,6 +358,22 @@ export default function AttachmentOverseas() {
                               {att.fundingType}
                             </Badge>
                           </td>
+                          <td className="py-3 px-3 text-sm">
+                            {att.deptMemoRef ? (
+                              <div>
+                                <span className="font-medium">{att.deptMemoRef}</span>
+                                {att.deptMemoDate && <div className="text-xs text-muted-foreground">{new Date(att.deptMemoDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</div>}
+                              </div>
+                            ) : <span className="text-muted-foreground">—</span>}
+                          </td>
+                          <td className="py-3 px-3 text-sm">
+                            {att.officeMemoRef ? (
+                              <div>
+                                <span className="font-medium">{att.officeMemoRef}</span>
+                                {att.officeMemoDate && <div className="text-xs text-muted-foreground">{new Date(att.officeMemoDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</div>}
+                              </div>
+                            ) : <span className="text-muted-foreground">—</span>}
+                          </td>
                           <td className="py-3 px-3">
                             <Button variant="ghost" size="sm" onClick={() => setEditingAttachment(att)} className="h-8 w-8 p-0">
                               <Pencil className="h-4 w-4" />
