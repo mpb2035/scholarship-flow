@@ -70,7 +70,7 @@ const Index = () => {
   const [editingMatter, setEditingMatter] = useState<Matter | undefined>();
   const [kpiDialogOpen, setKpiDialogOpen] = useState(false);
   const [selectedKPI, setSelectedKPI] = useState<KPIType | null>(null);
-  const [statusToggle, setStatusToggle] = useState<StatusToggle>('all');
+  const [statusToggle, setStatusToggle] = useState<StatusToggle>('in-process');
   const [deadlineDialogOpen, setDeadlineDialogOpen] = useState(false);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [errorDialogError, setErrorDialogError] = useState<unknown>(null);
