@@ -218,6 +218,10 @@ export function useAttachmentOverseas() {
         country: data.country,
         destination_institution: data.destinationInstitution,
         student_count: data.studentCount,
+        dept_memo_ref: data.deptMemoRef,
+        dept_memo_date: data.deptMemoDate,
+        office_memo_ref: data.officeMemoRef,
+        office_memo_date: data.officeMemoDate,
       })
       .select()
       .single();

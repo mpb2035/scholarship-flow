@@ -34,6 +34,10 @@ export function AttachmentEditDialog({ attachment, open, onOpenChange, onSave }:
     country: attachment.country,
     destinationInstitution: attachment.destinationInstitution,
     studentCount: attachment.studentCount,
+    deptMemoRef: attachment.deptMemoRef || '',
+    deptMemoDate: attachment.deptMemoDate || '',
+    officeMemoRef: attachment.officeMemoRef || '',
+    officeMemoDate: attachment.officeMemoDate || '',
   });
 
   const [newProgramme, setNewProgramme] = useState('');
