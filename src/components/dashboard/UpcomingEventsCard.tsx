@@ -6,13 +6,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CalendarIcon, Plus, Edit2, Trash2, Clock, MapPin, CalendarCheck, Pin, PinOff, Bell, Users } from 'lucide-react';
+import { CalendarIcon, Plus, Edit2, Trash2, Clock, MapPin, CalendarCheck, Pin, PinOff, Bell, Users, ListTodo } from 'lucide-react';
 import { format, differenceInDays, isToday, isTomorrow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Meeting, MeetingInput } from '@/types/meeting';
 import { Reminder, ReminderInput } from '@/hooks/useReminders';
 import { EventFormContent } from './EventFormContent';
 import { MeetingScorecard } from './MeetingScorecard';
+import { DailyTodoCard } from './DailyTodoCard';
+import { useTodos } from '@/hooks/useTodos';
 
 interface UpcomingEventsCardProps {
   meetings: Meeting[];
@@ -26,6 +28,7 @@ interface UpcomingEventsCardProps {
 }
 
 export function UpcomingEventsCard({ meetings, onAdd, onUpdate, onDelete, reminders, onAddReminder, onUpdateReminder, onDeleteReminder }: UpcomingEventsCardProps) {
+  const { todos, isLoading: todosLoading, createTodo, updateTodo, deleteTodo, createSubTodo, updateSubTodo, deleteSubTodo } = useTodos();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingMeeting, setEditingMeeting] = useState<Meeting | null>(null);
   const [formData, setFormData] = useState<MeetingInput>({
@@ -116,6 +119,11 @@ export function UpcomingEventsCard({ meetings, onAdd, onUpdate, onDelete, remind
               <Bell className="h-4 w-4 mr-1" />
               Reminders
               {activeReminders.length > 0 && <Badge variant="destructive" className="ml-1 text-xs">{activeReminders.length}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="tasks">
+              <ListTodo className="h-4 w-4 mr-1" />
+              Tasks
+              {todos.filter(t => t.is_main_timer_running).length > 0 && <Badge variant="secondary" className="ml-1 text-xs">{todos.filter(t => t.is_main_timer_running).length}</Badge>}
             </TabsTrigger>
           </TabsList>
 
@@ -286,6 +294,19 @@ export function UpcomingEventsCard({ meetings, onAdd, onUpdate, onDelete, remind
                 )}
               </div>
             )}
+          </TabsContent>
+          {/* Tasks Tab */}
+          <TabsContent value="tasks">
+            <DailyTodoCard
+              todos={todos}
+              isLoading={todosLoading}
+              onCreateTodo={createTodo}
+              onUpdateTodo={updateTodo}
+              onDeleteTodo={deleteTodo}
+              onCreateSubTodo={createSubTodo}
+              onUpdateSubTodo={updateSubTodo}
+              onDeleteSubTodo={deleteSubTodo}
+            />
           </TabsContent>
         </Tabs>
       </CardContent>
