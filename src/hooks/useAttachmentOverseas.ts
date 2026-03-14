@@ -13,6 +13,10 @@ export interface AttachmentOverseas {
   country: string;
   destinationInstitution: string;
   studentCount: number;
+  deptMemoRef: string | null;
+  deptMemoDate: string | null;
+  officeMemoRef: string | null;
+  officeMemoDate: string | null;
   createdAt: string;
   updatedAt: string;
 }
