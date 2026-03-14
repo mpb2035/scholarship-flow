@@ -32,6 +32,10 @@ interface DbAttachmentOverseas {
   country: string;
   destination_institution: string;
   student_count: number;
+  dept_memo_ref: string | null;
+  dept_memo_date: string | null;
+  office_memo_ref: string | null;
+  office_memo_date: string | null;
   created_at: string;
   updated_at: string;
 }
