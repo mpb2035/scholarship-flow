@@ -313,5 +313,3 @@ export function UpcomingEventsCard({ meetings, onAdd, onUpdate, onDelete, remind
     </Card>
   );
 }
-  );
-}
