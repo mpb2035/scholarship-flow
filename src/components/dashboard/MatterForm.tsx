@@ -926,7 +926,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
                   <FormItem>
                     <FormLabel>Signed Date (if approved)</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} className="bg-input border-border/50" />
+                      <Input type="date" {...field} value={field.value || ''} className="bg-input border-border/50" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
