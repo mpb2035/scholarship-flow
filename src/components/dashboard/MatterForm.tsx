@@ -757,7 +757,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
                 <FormItem>
                   <FormLabel>Received Date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} className="bg-input border-border/50" />
+                    <Input type="date" {...field} value={field.value || ''} className="bg-input border-border/50" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
