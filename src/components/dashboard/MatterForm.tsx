@@ -557,7 +557,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Received From</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                  <Select onValueChange={field.onChange} value={field.value?.startsWith('Department') ? 'Department' : (field.value || '')}>
                     <FormControl>
                       <SelectTrigger className="bg-input border-border/50">
                         <SelectValue placeholder="Select source..." />
