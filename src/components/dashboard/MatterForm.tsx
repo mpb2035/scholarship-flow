@@ -575,7 +575,7 @@ export function MatterForm({ open, onOpenChange, matter, existingCaseIds, onSubm
             />
 
             {/* If received from Department - show which department */}
-            {watchReceivedFrom === 'Department' && (
+            {watchReceivedFrom?.startsWith('Department') && (
               <FormField
                 control={form.control}
                 name="receivedFrom"
