@@ -5,8 +5,9 @@ import { GTCIExecutiveDashboard } from '@/components/gtci/GTCIExecutiveDashboard
 import { GTCIPillarCard } from '@/components/gtci/GTCIPillarCard';
 import { GTCIDataGapsTable } from '@/components/gtci/GTCIDataGapsTable';
 import { GTCIPolicyPriorities } from '@/components/gtci/GTCIPolicyPriorities';
+import { GTCIExtendedAnalysis } from '@/components/gtci/GTCIExtendedAnalysis';
 import { pillars } from '@/data/gtciData';
-import { LayoutDashboard, Layers, AlertCircle, Target } from 'lucide-react';
+import { LayoutDashboard, Layers, AlertCircle, Target, Database } from 'lucide-react';
 
 export default function GTCIDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
