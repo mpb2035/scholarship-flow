@@ -20,7 +20,7 @@ export default function GTCIDashboard() {
 
         {/* Tab Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline">Executive Overview</span>
@@ -40,6 +40,11 @@ export default function GTCIDashboard() {
               <Target className="h-4 w-4" />
               <span className="hidden sm:inline">Policy & Targets</span>
               <span className="sm:hidden">Action</span>
+            </TabsTrigger>
+            <TabsTrigger value="extended" className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              <span className="hidden sm:inline">Extended Analysis</span>
+              <span className="sm:hidden">Extended</span>
             </TabsTrigger>
           </TabsList>
 
