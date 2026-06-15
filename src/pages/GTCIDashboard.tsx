@@ -99,6 +99,11 @@ export default function GTCIDashboard() {
               <GTCIPolicyPriorities />
             </div>
           </TabsContent>
+
+          {/* Extended Analysis Tab */}
+          <TabsContent value="extended" className="space-y-6">
+            <GTCIExtendedAnalysis />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
